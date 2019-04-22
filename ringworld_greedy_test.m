@@ -42,7 +42,7 @@ end
 
 L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 12);
-set(L, 'Location', 'east');
+set(L, 'Location', 'southwest');
 set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
 drawnow;
