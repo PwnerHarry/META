@@ -7,7 +7,7 @@ import numpy.matlib
 from frozen_lake import FrozenLakeEnv
 
 
-unit = 100.0
+unit = 1.0
 
 # experiment Preparation
 env = FrozenLakeEnv(None, '4x4', True, unit)
@@ -19,7 +19,7 @@ target_policy = np.matlib.repmat(np.ones((1, env.action_space.n)) / env.action_s
 # behavior_policy = np.matlib.repmat(np.ones((1, env.action_space.n)) / env.action_space.n, env.observation_space.n, 1)
 
 # get ground truth expectation, variance and stationary distribution
-filename = 'froze_lake_ground_truths_uniform_%d.npz' % mc_episodes
+filename = 'frozen_lake_ground_truths_uniform_%d.npz' % mc_episodes
 try:
     loaded = np.load(filename)
     true_expectation, true_variance, stationary_dist = loaded['true_expectation'], loaded['true_variance'], loaded['stationary_dist']
@@ -49,6 +49,6 @@ on_togtd_results = eval_method(true_online_gtd, env, true_expectation, stationar
 
 # plot_results(off_togtd_results, label='off-policy true online GTD(1)')
 plot_results(on_togtd_results, label='on-policy true online GTD(1)')
-plt.yscale('log'); plt.xscale('symlog');
+plt.yscale('log'); plt.xscale('symlog')
 plt.show()
 pass

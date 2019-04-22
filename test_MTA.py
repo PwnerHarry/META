@@ -10,10 +10,10 @@ import warnings
 import scipy.io
 
 # experiment Preparation
-N = 11; env, runtimes, episodes, gamma = RingWorldEnv(N, unit = 1), int(80), int(1e3), lambda x: 0.95
-alpha, beta = 0.05, 0.01
-target_policy = npm.repmat(np.array([0.5, 0.5]).reshape(1, -1), env.observation_space.n, 1)
-behavior_policy = npm.repmat(np.array([0.5, 0.5]).reshape(1, -1), env.observation_space.n, 1)
+N = 11; env, runtimes, episodes, gamma = RingWorldEnv(N, unit = 1), int(160), int(1e3), lambda x: 0.95
+alpha, beta = 0.05, 0.05
+target_policy = npm.repmat(np.array([0.05, 0.95]).reshape(1, -1), env.observation_space.n, 1)
+behavior_policy = npm.repmat(np.array([0.05, 0.95]).reshape(1, -1), env.observation_space.n, 1)
 
 # get ground truth expectation, variance and stationary distribution
 true_expectation, true_variance, stationary_dist = iterative_policy_evaluation(env, target_policy, gamma=gamma)

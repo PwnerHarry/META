@@ -1,2 +1,3 @@
 *.pyc
-figures/*
+figures*
+__pycache__*

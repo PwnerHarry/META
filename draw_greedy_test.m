@@ -2,7 +2,7 @@
 % things_to_save['error_V'] = error_V
 % things_to_save['lambda_trace'] = lambda_trace
 
-expectation_list = ["error_value", ...
+expectation_list = ["direct_greedy_results", ...
                     "off_togtd_00_results", ...
                     "off_togtd_02_results", ...
                     "off_togtd_04_results", ...
@@ -17,12 +17,12 @@ CURVES = []; LEGENDS = {};
 figure();
 
 for result_index = 1: numel(expectation_list)
-   result_name  = expectation_list(result_index);
+	result_name  = expectation_list(result_index);
     eval(sprintf('results = %s;', result_name))
     [X, MEAN, INTERVAL] = get_statistics(results, num_points);
     [CURVE, ~] = band_drawer(X, MEAN, INTERVAL, LineColors(result_index, :)); %X, MEAN, INTERVAL, COLOR
     CURVES = [CURVES, CURVE];
-    if strcmp(result_name, "error_value")
+    if strcmp(result_name, "direct_greedy_results")
         LEGEND = "greedy";
     elseif strcmp(result_name, "off_togtd_00_results")
         LEGEND = "GTD(0)";
