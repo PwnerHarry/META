@@ -1,3 +1,5 @@
 *.pyc
-figures*
 __pycache__*
+*.mat
+*.pdf
+*.eps

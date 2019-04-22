@@ -10,7 +10,7 @@ unit = 1
 env = FrozenLakeEnv(None, '4x4', True, unit)
 N = env.observation_space.n
 
-runtimes = 9
+runtimes = 10
 mc_episodes = int(1e7)
 gamma = lambda x: 0.95
 runtime = 0
@@ -20,7 +20,7 @@ true_variances = np.zeros((runtimes, env.action_space.n ** 2))
 stationary_dists = np.zeros((runtimes, env.action_space.n ** 2))
 
 while runtime < runtimes:
-    filename = 'frozen_lake_ground_truths_uniform_%d_%d.npz' % (mc_episodes, runtime)
+    filename = 'frozenlake/frozen_lake_ground_truths_uniform_%d_%d.npz' % (mc_episodes, runtime)
     loaded = np.load(filename)
     true_expectations[runtime, :] = loaded['true_expectation']
     true_variances[runtime, :] = loaded['true_variance']

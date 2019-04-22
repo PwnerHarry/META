@@ -44,7 +44,7 @@ end
 
 L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 12);
-set(L, 'Location', 'east');
+set(L, 'Location', 'southwest');
 set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
 axis([1, inf, 0, inf]);
