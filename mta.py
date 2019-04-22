@@ -3,16 +3,16 @@ from utils import *
 from methods import *
 from true_online_GTD import *
 
-def eval_MTA_per_run(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta):
+def eval_MTA_per_run(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, Lambda, alpha, beta):
     print('running %d of %d for MTA' % (runtime + 1, runtimes))
-    MC_exp_trace, L_exp_trace, L_var_trace, value_trace, lambda_trace = MTA(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, diagnose = False)
+    MC_exp_trace, L_exp_trace, L_var_trace, value_trace, lambda_trace = MTA(env, episodes, target, behavior, Lambda, kappa = 0.1, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, diagnose = False)
     return (MC_exp_trace, L_exp_trace, L_var_trace, value_trace, lambda_trace)
 
-def eval_MTA(env, expectation, variance, stat_dist, behavior, target, gamma = lambda x: 0.95, alpha=0.05, beta=0.05, runtimes=20, episodes=int(1e5)):
+def eval_MTA(env, expectation, variance, stat_dist, behavior, target, kappa = 0.1, gamma = lambda x: 0.95, alpha=0.05, beta=0.05, runtimes=20, episodes=int(1e5)):
     LAMBDAS = []
     for runtime in range(runtimes):
         LAMBDAS.append(LAMBDA(env, lambda_type = 'variable'))
-    results = Parallel(n_jobs = -1)(delayed(eval_MTA_per_run)(env, runtime, runtimes, episodes, target, behavior, gamma, LAMBDAS[runtime], alpha, beta) for runtime in range(runtimes))
+    results = Parallel(n_jobs = -1)(delayed(eval_MTA_per_run)(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, LAMBDAS[runtime], alpha, beta) for runtime in range(runtimes))
     MC_exp_traces = [entry[0] for entry in results]
     L_exp_traces = [entry[1] for entry in results]
     L_var_traces = [entry[2] for entry in results]
@@ -46,7 +46,7 @@ def eval_MTA(env, expectation, variance, stat_dist, behavior, target, gamma = la
     
     return error_MC_exp, error_L_exp, error_L_var, error_value, np.concatenate(lambda_trace, axis = 1).T
 
-def MTA(env, episodes, target, behavior, Lambda, omega = 0.1, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05, diagnose = False):
+def MTA(env, episodes, target, behavior, Lambda, kappa = 0.1, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05, diagnose = False):
     N = env.observation_space.n
     lambda_trace = np.zeros((episodes, 1))
     lambda_trace[:] = np.nan
@@ -82,13 +82,14 @@ def MTA(env, episodes, target, behavior, Lambda, omega = 0.1, gamma = lambda x: 
                 r_bar_next = delta_curr ** 2
             except RuntimeWarning:
                 pass
-            gamma_bar_next = (rho_curr * Lambda.value(x_next) * gamma(x_next)) ** 2
+            # gamma_bar_next = (rho_curr * Lambda.value(x_next) * gamma(x_next)) ** 2
+            gamma_bar_next = (Lambda.value(x_next) * gamma(x_next)) ** 2
             L_var_learner.learn(r_bar_next, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, alpha, beta)
             # GD on greedy meta-objective
             v_next = np.dot(x_next, value_learner.w_curr)
             var_L_next, exp_L_next, exp_MC_next = np.dot(x_next, L_var_learner.w_curr), np.dot(x_next, L_exp_learner.w_curr), np.dot(x_next, MC_exp_learner.w_curr)
             coefficient = Lambda.value(x_next) * ((v_next - exp_L_next) ** 2 + var_L_next) + v_next * (exp_L_next + exp_MC_next) - v_next ** 2 - exp_L_next * exp_MC_next
-            Lambda.gradient_descent(x_next, omega * rho_accu_nume / rho_accu_deno * coefficient)
+            Lambda.gradient_descent(x_next, kappa * rho_accu_nume / rho_accu_deno * coefficient)
             # learn value
             value_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)
             MC_exp_learner.next(); L_exp_learner.next(); L_var_learner.next(); value_learner.next()
