@@ -32,6 +32,7 @@ else:
     behavior_policy = np.matlib.repmat(np.array([0.25, 0.25, 0.25, 0.25]).reshape(1, 4), env.observation_space.n, 1)
 alpha, beta, kappa = args.alpha, args.beta, args.kappa
 
+
 # get ground truth expectation, variance and stationary distribution
 filename = 'frozen_lake_ground_truths_uniform.npz'
 loaded = np.load(filename)
@@ -41,12 +42,13 @@ true_variance = true_variance * (unit ** 2)
 
 N = args.N ** 2
 
-BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
-things_to_save = {}
-for baseline_lambda in BASELINE_LAMBDAS:
-    Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = baseline_lambda * np.ones(N))
-    results = eval_method(true_online_gtd, env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
-    exec("things_to_save[\'togtd_%g_results\'] = results.copy()" % (baseline_lambda * 1e5))
+if kappa == 0.1:
+    BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
+    things_to_save = {}
+    for baseline_lambda in BASELINE_LAMBDAS:
+        Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = baseline_lambda * np.ones(N))
+        results = eval_method(true_online_gtd, env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
+        exec("things_to_save[\'togtd_%g_results\'] = results.copy()" % (baseline_lambda * 1e5))
 
 _, error_L_exp, error_L_var, error_value, lambda_trace_mta = eval_MTA(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, kappa = kappa, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
 _, error_var_greedy, direct_greedy_results, lambda_trace_greedy = eval_greedy(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
