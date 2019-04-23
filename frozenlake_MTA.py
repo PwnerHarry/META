@@ -1,5 +1,3 @@
-import matplotlib as mpl
-mpl.use('Agg')
 from utils import *
 from methods import *
 from greedy import *
