@@ -29,5 +29,5 @@ target_policy = np.matlib.repmat(np.array([0.2, 0.3, 0.3, 0.2]).reshape(1, 4), e
 
 while True:
     filename = 'frozenlake_truths_uniform_%d_%d.npz' % (episodes, random.randint(0, 1e6))
-    true_expectation, true_variance, stationary_dist = rollout_MC(env, target_policy, gamma = gamma, runtimes=8, episodes=episodes)
+    true_expectation, true_variance, stationary_dist = rollout_MC(env, target_policy, gamma = gamma, runtimes=40, episodes=episodes)
     np.savez(filename, true_expectation = true_expectation, true_variance = true_variance, stationary_dist = stationary_dist)
