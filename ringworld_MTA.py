@@ -28,7 +28,7 @@ behavior_policy = npm.repmat(np.array([args.behavior, 1 - args.behavior]).reshap
 # get ground truth expectation, variance and stationary distribution
 true_expectation, true_variance, stationary_dist = iterative_policy_evaluation(env, target_policy, gamma=gamma)
 
-_, error_L_exp, error_L_var, error_value, lambda_trace_mta = eval_MTA(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, kappa = kappa, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
+error_value, lambda_trace_mta, error_L_var  = eval_MTA(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, kappa = kappa, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
 
 Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = 1.0 * np.ones(N))
 off_togtd_10_results = eval_method(true_online_gtd, env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
@@ -53,7 +53,6 @@ _, error_var_greedy, direct_greedy_results, lambda_trace_greedy = eval_greedy(en
 things_to_save = {}
 
 things_to_save['error_value'] = error_value
-things_to_save['error_L_exp'] = error_L_exp
 things_to_save['error_L_var'] = error_L_var
 things_to_save['error_var_greedy'] = error_var_greedy
 things_to_save['lambda_trace_mta'] = lambda_trace_mta

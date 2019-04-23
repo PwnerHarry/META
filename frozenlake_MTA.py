@@ -15,8 +15,8 @@ parser.add_argument('--N', type=int, default=4, help='')
 parser.add_argument('--alpha', type=float, default=0.05, help='')
 parser.add_argument('--beta', type=float, default=0.05, help='')
 parser.add_argument('--kappa', type=float, default=0.1, help='')
-parser.add_argument('--episodes', type=int, default=1000, help='')
-parser.add_argument('--runtimes', type=int, default=160, help='')
+parser.add_argument('--episodes', type=int, default=int(1e7), help='')
+parser.add_argument('--runtimes', type=int, default=16, help='')
 parser.add_argument('--off_policy', type=int, default=0, help='')
 args = parser.parse_args()
 
@@ -34,31 +34,28 @@ alpha, beta, kappa = args.alpha, args.beta, args.kappa
 
 
 # get ground truth expectation, variance and stationary distribution
-filename = 'frozen_lake_ground_truths_uniform.npz'
+filename = 'frozenlake_truths_uniform_%dx%d.npz' % (args.N, args.N)
 loaded = np.load(filename)
 true_expectation, true_variance, stationary_dist = loaded['true_expectation'], loaded['true_variance'], loaded['stationary_dist']
 true_expectation = true_expectation * unit
 true_variance = true_variance * (unit ** 2)
-
+evaluation = lambda estimate, stat_type: evaluate_estimate(estimate, true_expectation, true_variance, stationary_dist, stat_type)
 N = args.N ** 2
 things_to_save = {}
+
+
 if kappa == 0.1:
     BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
         Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = baseline_lambda * np.ones(N))
-        results = eval_method(true_online_gtd, env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
-        exec("things_to_save[\'togtd_%g_results\'] = results.copy()" % (baseline_lambda * 1e5))
-    _, error_var_greedy, direct_greedy_results, lambda_trace_greedy = eval_greedy(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
-    things_to_save['lambda_trace_greedy'] = lambda_trace_greedy
-    things_to_save['direct_greedy_results'] = direct_greedy_results
+        results = eval_togtd(env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluation = evaluation)
+        exec("things_to_save[\'error_value_togtd_%g\'] = results.copy()" % (baseline_lambda * 1e5))
+    
+    error_value_greedy, lambda_greedy, error_var_greedy = eval_greedy(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluation = evaluation)
+    things_to_save['error_value_greedy'], things_to_save['lambda_greedy'], things_to_save['error_var_greedy'] = error_value_greedy, lambda_greedy, error_var_greedy
 
-_, error_L_exp, error_L_var, error_value, lambda_trace_mta = eval_MTA(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, kappa = kappa, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
-
-things_to_save['error_value'] = error_value
-things_to_save['error_L_exp'] = error_L_exp
-things_to_save['error_L_var'] = error_L_var
-things_to_save['error_var_greedy'] = error_var_greedy
-things_to_save['lambda_trace_mta'] = lambda_trace_mta
+error_value_mta, lambda_mta, error_var_mta = eval_MTA(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, kappa = kappa, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluation = evaluation)
+things_to_save['error_value_mta'], things_to_save['lambda_mta'], things_to_save['error_var_mta'] = error_value_mta, lambda_mta, error_var_mta
 
 filename = 'frozenlake_N_%s_behavior_%g_target_%g_episodes_%g_kappa_%g' % (N, behavior_policy[0, 0], target_policy[0, 0], episodes, kappa)
 scipy.io.savemat(filename, things_to_save)

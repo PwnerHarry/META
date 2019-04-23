@@ -6,8 +6,7 @@ expectation_list = ["off_togtd_00_results", ...
                     "off_togtd_10_results", ...
                     "direct_greedy_results", ...
                     "error_value"];
-LineColors = linspecer(numel(expectation_list) - 2);
-LineColors = [LineColors; [1, 0, 0]; [0, 0, 1];];
+LineColors = [linspecer(numel(expectation_list) - 2); [1, 0, 0]; [0, 0, 1];];
 num_points = 201;
 
 % filename = 'mta_N_11_behavior_0.15_target_0.05_episodes_5000.mat';

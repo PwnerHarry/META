@@ -3,52 +3,56 @@ from utils import *
 from methods import *
 from true_online_GTD import *
 
-def eval_greedy_per_run(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta):
+def eval_greedy_per_run(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluation):
     print('running %d of %d for greedy' % (runtime + 1, runtimes))
-    first_trace, var_trace, value_trace, lambda_trace = greedy(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, diagnose = False)
-    return (first_trace, var_trace, value_trace, lambda_trace)
+    value_trace, lambda_trace, var_trace = greedy(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, diagnose = False, evaluation = evaluation)
+    return (value_trace, lambda_trace, var_trace)
 
-def eval_greedy(env, expectation, variance, stat_dist, behavior, target, gamma = lambda x: 0.95, alpha=0.05, beta=0.05, runtimes=20, episodes=int(1e5)):
+def eval_greedy(env, expectation, variance, stat_dist, behavior, target, gamma = lambda x: 0.95, alpha=0.05, beta=0.05, runtimes=20, episodes=int(1e5), evaluation = None):
     LAMBDAS = []
     for runtime in range(runtimes):
         LAMBDAS.append(LAMBDA(env, lambda_type = 'constant', initial_value = np.ones(env.observation_space.n)))
-    results = Parallel(n_jobs = -1)(delayed(eval_greedy_per_run)(env, runtime, runtimes, episodes, target, behavior, gamma, LAMBDAS[runtime], alpha, beta) for runtime in range(runtimes))
-    E = [entry[0] for entry in results]; V = [entry[1] for entry in results]
-    values = [entry[2] for entry in results]; TRACE = [entry[3] for entry in results]
-    error_E = np.zeros((runtimes, episodes))
-    for runtime in range(runtimes):
-        w_trace = E[runtime]
-        for j in range(len(w_trace)):
-            error_E[runtime, j] = mse(w_trace[j], expectation, stat_dist)
-    error_V = np.zeros((runtimes, episodes))
-    for runtime in range(runtimes):
-        w_trace = V[runtime]
-        for j in range(len(w_trace)):
-            error_V[runtime, j] = mse(w_trace[j], variance, stat_dist)
-    error_value = np.zeros((runtimes, episodes)) 
-    for runtime in range(runtimes):
-        w_trace = values[runtime]
-        for j in range(len(w_trace)):
-            error_value[runtime, j] = mse(w_trace[j], expectation, stat_dist)
-    lambda_trace = np.zeros((runtimes, episodes))
-    return error_E, error_V, error_value, np.concatenate(TRACE, axis = 1).T
+    results = Parallel(n_jobs = -1)(delayed(eval_greedy_per_run)(env, runtime, runtimes, episodes, target, behavior, gamma, LAMBDAS[runtime], alpha, beta, evaluation) for runtime in range(runtimes))
+    value_traces = [entry[0] for entry in results]
+    lambda_trace = [entry[1] for entry in results]
+    var_traces = [entry[2] for entry in results]
+    if evaluation is None:
+        error_value = np.zeros((runtimes, episodes))
+        error_var = np.zeros((runtimes, episodes))
+        for runtime in range(runtimes):
+            w_trace = var_traces[runtime]
+            for j in range(len(w_trace)):
+                error_var[runtime, j] = mse(w_trace[j], variance, stat_dist)
+        for runtime in range(runtimes):
+            w_trace = value_traces[runtime]
+            for j in range(len(w_trace)):
+                error_value[runtime, j] = mse(w_trace[j], expectation, stat_dist)
+        return error_value, np.concatenate(lambda_trace, axis = 1).T, error_var
+    else:
+        return np.concatenate(value_traces, axis = 1).T, np.concatenate(lambda_trace, axis = 1).T, np.concatenate(var_traces, axis = 1).T
 
-def greedy(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, diagnose = False):
+def greedy(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05, diagnose = False, evaluation = None):
     N = env.observation_space.n
     lambda_trace = np.zeros((episodes, 1))
     lambda_trace[:] = np.nan
     first_moment_learner, variance_learner, value_learner = TRUE_ONLINE_GTD_LEARNER(env), TRUE_ONLINE_GTD_LEARNER(env), TRUE_ONLINE_GTD_LEARNER(env)
-    # first_moment_learner.w_prev, first_moment_learner.w_curr = np.zeros(env.observation_space.n), np.zeros(env.observation_space.n)
     variance_learner.w_prev, variance_learner.w_curr = np.zeros(env.observation_space.n), np.zeros(env.observation_space.n)
-    first_trace, var_trace, value_trace = [], [], []
+    if evaluation is not None:
+        value_trace, var_trace = np.zeros((episodes, 1)), np.zeros((episodes, 1))
+        value_trace[:] = np.nan; var_trace[:] = np.nan
+    else:
+        value_trace, var_trace = [], []
     for epi in range(episodes):
         s_curr, done = env.reset(), False
         starting_state = s_curr
         x_curr = onehot(s_curr, N)
         value_learner.refresh(); first_moment_learner.refresh(); variance_learner.refresh()
-        first_trace.append(np.copy(first_moment_learner.w_curr))
-        var_trace.append(np.copy(variance_learner.w_curr))
-        value_trace.append(np.copy(value_learner.w_curr))
+        if evaluation is not None:
+            value_trace[epi, 0] = evaluation(value_learner.w_curr, 'expectation')
+            var_trace[epi, 0] = evaluation(variance_learner.w_curr, 'variance')
+        else:
+            value_trace.append(np.copy(value_learner.w_curr))
+            var_trace.append(np.copy(variance_learner.w_curr))
         while not done:
             action = decide(s_curr, behavior)
             rho_curr = importance_sampling_ratio(target, behavior, s_curr, action)
@@ -70,4 +74,4 @@ def greedy(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alph
             value_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)
             first_moment_learner.next(); variance_learner.next(); value_learner.next()
             s_curr, x_curr = s_next, x_next
-    return first_trace, var_trace, value_trace, lambda_trace
+    return value_trace, lambda_trace, var_trace

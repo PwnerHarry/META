@@ -54,44 +54,6 @@ def gtd(env, behavior, target, nx, n_episodes, Lambda, gamma = lambda x: 0.95, a
         w_trace.append(np.copy(learner.w_curr))
     return w_trace, []
 
-
-
-def greedy(env, behavior, target, observation_to_phi, nx, n_episodes, rho = lambda x, a: 1, gamma = lambda x: 0.95, alpha = 0.005, beta = 0.0025):
-    first_moment_learner, second_moment_learner, value_learner = GTD_LEARNER(env), GTD_LEARNER(env), GTD_LEARNER(env)
-    first_moment_learner.w_prev, first_moment_learner.w_curr = 100 * np.ones(env.observation_space.n), 100 * np.ones(env.observation_space.n)
-    second_moment_learner.w_prev, second_moment_learner.w_curr = 0.01 * np.ones(env.observation_space.n), 0.01 * np.zeros(env.observation_space.n)
-    w_trace, lambda_trace = [], []
-    for _ in range(n_episodes):
-        lambda_curr = 1.0
-        observation, done = env.reset(), False
-        start_observation = observation
-        x_curr = observation_to_phi(start_observation)
-        value_learner.refresh()
-        first_moment_learner.refresh()
-        second_moment_learner.refresh()
-        while not done:
-            if observation == start_observation:
-                lambda_trace.append(lambda_curr)
-            action = behavior(observation)
-            rho_curr = rho(x_curr, action)
-            observation, r_next, done, _ = env.step(action)
-            x_next = observation_to_phi(observation)
-            first_moment_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha, beta)
-            second_moment_learner.learn((rho_curr * r_next) ** 2 + 2 * rho_curr ** 2 * gamma(x_next) * r_next * np.dot(x_next, first_moment_learner.w_curr), (rho_curr * gamma(x_next)) ** 2, gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, alpha, beta)
-            errsq = (np.dot(x_next, first_moment_learner.w_next) - np.dot(x_next, value_learner.w_curr)) ** 2
-            varg = max(0, np.dot(x_next, second_moment_learner.w_next) - np.dot(x_next, first_moment_learner.w_next) ** 2)
-            lambda_next = errsq / (errsq + varg)
-            if math.isnan(lambda_next):
-                lambda_next = lambda_curr
-            # print("errsq %.2e, varg %.2e, lambda_next %.2e" % (errsq, varg, lambda_next))
-            value_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha, beta)
-            first_moment_learner.next()
-            second_moment_learner.next()
-            value_learner.next()
-            x_curr, lambda_curr = x_next, lambda_next
-        w_trace.append(np.copy(value_learner.w_curr))
-    return w_trace, lambda_trace
-
 # TODO: to be simplified
 def true_online_greedy(env, behavior, target, observation_to_x, nx, n_episodes, rho = lambda x, a: 1, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.025):
     W = []

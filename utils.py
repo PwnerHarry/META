@@ -7,14 +7,6 @@ def mse(x, target, weight):
     diff = target - x.reshape(np.shape(target))
     return np.linalg.norm(np.multiply(diff, weight.reshape(np.shape(target))), 2) ** 2
 
-def eval_method_per_run(method, env, truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta):
-    result = np.zeros((1, episodes))
-    print('running %d of %d for %s' % (runtime + 1, runtimes, method.__name__))
-    w_trace, lambda_trace = method(env, episodes, target, behavior, Lambda, gamma = gamma, alpha = alpha, beta = beta)
-    for j in range(len(w_trace)):
-        result[0, j] = mse(w_trace[j], truth, stat_dist)
-    return result
-
 def eval_method_with_variance_per_run(method, env, truth, var_truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta):
     result, var_result = np.zeros((1, episodes)), np.zeros((1, episodes))
     print('running %d of %d for %s' % (runtime + 1, runtimes, method.__name__))
@@ -25,10 +17,11 @@ def eval_method_with_variance_per_run(method, env, truth, var_truth, stat_dist, 
         var_result[0, j] = mse(var_trace[j], var_truth, stat_dist)
     return (result, var_result)
 
-def eval_method(method, env, truth, stat_dist, behavior, target, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, runtimes=20, episodes=100000):
-    results = Parallel(n_jobs = -1)(delayed(eval_method_per_run)(method, env, truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta) for runtime in range(runtimes))
-    results = np.concatenate(results, axis=0)
-    return results
+def evaluate_estimate(estimate, expectation, variance, distribution, stat_type):
+    if stat_type == 'expectation':
+        return mse(estimate, expectation, distribution)
+    elif stat_type == 'variance':
+        return mse(estimate, variance, distribution)
 
 def eval_method_with_variance(method, env, truth, var_truth, stat_dist, behavior, target, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, runtimes=20, episodes=100000):
     results = Parallel(n_jobs = -1)(delayed(eval_method_with_variance_per_run)(method, env, truth, var_truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta) for runtime in range(runtimes))

@@ -2,18 +2,21 @@ import numpy as np
 from joblib import Parallel, delayed
 from utils import onehot, decide, importance_sampling_ratio, mse
 
-# def eval_true_online_GTD_method_per_run(env, truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta):
-#     result = np.zeros((1, episodes))
-#     print('running %d of %d for %s' % (runtime + 1, runtimes, true_online_gtd.__name__))
-#     w_trace, _ = true_online_gtd(env, episodes, target, behavior, Lambda, gamma = gamma, alpha = alpha, beta = beta)
-#     for j in range(len(w_trace)):
-#         result[0, j] = mse(w_trace[j], truth, stat_dist)
-#     return result
+def eval_togtd_per_run(env, truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluation):
+    print('running %d of %d for togtd' % (runtime + 1, runtimes))
+    value_trace = true_online_gtd(env, episodes, target, behavior, Lambda, gamma = gamma, alpha = alpha, beta = beta, evaluation = evaluation)
+    if evaluation is not None:
+        return value_trace.T
+    else:
+        result = np.zeros((1, episodes))
+        for j in range(len(value_trace)):
+            result[0, j] = mse(value_trace[j], truth, stat_dist)
+        return result
 
-# def eval_true_online_GTD_method(env, truth, stat_dist, behavior, target, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, runtimes=20, episodes=int(1e5)):
-#     results = Parallel(n_jobs = -1)(delayed(eval_true_online_GTD_method_per_run)(env, truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta) for runtime in range(runtimes))
-#     results = np.concatenate(results, axis=0)
-#     return results
+def eval_togtd(env, truth, stat_dist, behavior, target, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, runtimes=20, episodes=100000, evaluation=None):
+    results = Parallel(n_jobs = -1)(delayed(eval_togtd_per_run)(env, truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluation) for runtime in range(runtimes))
+    results = np.concatenate(results, axis=0)
+    return results
 
 class TRUE_ONLINE_GTD_LEARNER():
     def __init__(self, env):
@@ -54,7 +57,7 @@ class TRUE_ONLINE_GTD_LEARNER():
         h_next = h_curr + rho_curr * delta_curr * e_h_curr - beta_curr * np.dot(x_curr, h_curr) * x_curr
         return w_next, e_curr, e_grad_curr, e_h_curr, h_next
 
-def true_online_gtd(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, diagnose = False):
+def true_online_gtd(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, diagnose = False, evaluation = None):
     """
     episodes:   number of episodes
     target:     target policy matrix (|S|*|A|)
@@ -64,12 +67,19 @@ def true_online_gtd(env, episodes, target, behavior, Lambda, gamma = lambda x: 0
     alpha:      learning rate for the weight vector of the values
     beta:       learning rate for the auxiliary vector for off-policy
     """
-    learner, w_trace = TRUE_ONLINE_GTD_LEARNER(env), []
-    for _ in range(episodes):
+    learner = TRUE_ONLINE_GTD_LEARNER(env)
+    if evaluation is not None:
+        value_trace = np.zeros((episodes, 1)); value_trace[:] = np.nan
+    else:
+        value_trace = []
+    for epi in range(episodes):
         s_curr, done = env.reset(), False
         x_curr = onehot(s_curr, env.observation_space.n)
         learner.refresh()
-        w_trace.append(np.copy(learner.w_curr))
+        if evaluation is not None:
+            value_trace[epi, 0] = evaluation(learner.w_curr, 'expectation')
+        else:
+            value_trace.append(np.copy(learner.w_curr))
         while not done:
             action = decide(s_curr, behavior)
             rho_curr = importance_sampling_ratio(target, behavior, s_curr, action)
@@ -80,4 +90,4 @@ def true_online_gtd(env, episodes, target, behavior, Lambda, gamma = lambda x: 0
             learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)
             learner.next()
             x_curr = x_next
-    return w_trace, []
+    return value_trace
