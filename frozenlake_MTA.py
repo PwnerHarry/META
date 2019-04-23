@@ -34,7 +34,7 @@ alpha, beta, kappa = args.alpha, args.beta, args.kappa
 
 
 # get ground truth expectation, variance and stationary distribution
-filename = 'frozenlake_truths_uniform_%dx%d.npz' % (args.N, args.N)
+filename = 'frozenlake_truths_%dx%d.npz' % (args.N, args.N)
 loaded = np.load(filename)
 true_expectation, true_variance, stationary_dist = loaded['true_expectation'], loaded['true_variance'], loaded['stationary_dist']
 true_expectation = true_expectation * unit
