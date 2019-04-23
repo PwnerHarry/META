@@ -23,7 +23,7 @@ unit = 1
 env = FrozenLakeEnv(None, '4x4', True, unit)
 N = env.observation_space.n
 
-episodes = int(1e7)
+episodes = int(1e6)
 gamma = lambda x: 0.95
 target_policy = np.matlib.repmat(np.array([0.2, 0.3, 0.3, 0.2]).reshape(1, 4), env.observation_space.n, 1)
 
