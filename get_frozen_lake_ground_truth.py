@@ -26,5 +26,5 @@ while runtime < runtimes:
     true_variances[runtime, :] = loaded['true_variance']
     stationary_dists[runtime, :] = loaded['stationary_dist']
     runtime += 1
-filename = 'frozen_lake_ground_truths_uniform.npz'
+filename = 'frozenlake_truths_uniform_4x4.npz'
 np.savez(filename, true_expectation = np.mean(true_expectations, axis=0), true_variance = np.mean(true_variances, axis=0), stationary_dist = np.mean(stationary_dists, axis=0))

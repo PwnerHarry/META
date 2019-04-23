@@ -27,45 +27,22 @@ behavior_policy = npm.repmat(np.array([args.behavior, 1 - args.behavior]).reshap
 
 # get ground truth expectation, variance and stationary distribution
 true_expectation, true_variance, stationary_dist = iterative_policy_evaluation(env, target_policy, gamma=gamma)
-
-error_value, lambda_trace_mta, error_L_var  = eval_MTA(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, kappa = kappa, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
-
-Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = 1.0 * np.ones(N))
-off_togtd_10_results = eval_method(true_online_gtd, env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
-
-Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = 0.8 * np.ones(N))
-off_togtd_08_results = eval_method(true_online_gtd, env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
-
-Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = 0.6 * np.ones(N))
-off_togtd_06_results = eval_method(true_online_gtd, env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
-
-Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = 0.4 * np.ones(N))
-off_togtd_04_results = eval_method(true_online_gtd, env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
-
-Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = 0.2 * np.ones(N))
-off_togtd_02_results = eval_method(true_online_gtd, env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
-
-Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = 0 * np.ones(N))
-off_togtd_00_results = eval_method(true_online_gtd, env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
-
-_, error_var_greedy, direct_greedy_results, lambda_trace_greedy = eval_greedy(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
-
+evaluation = lambda estimate, stat_type: evaluate_estimate(estimate, true_expectation, true_variance, stationary_dist, stat_type)
 things_to_save = {}
 
-things_to_save['error_value'] = error_value
-things_to_save['error_L_var'] = error_L_var
-things_to_save['error_var_greedy'] = error_var_greedy
-things_to_save['lambda_trace_mta'] = lambda_trace_mta
-things_to_save['lambda_trace_greedy'] = lambda_trace_greedy
-things_to_save['off_togtd_00_results'] = off_togtd_00_results
-things_to_save['off_togtd_02_results'] = off_togtd_02_results
-things_to_save['off_togtd_04_results'] = off_togtd_04_results
-things_to_save['off_togtd_06_results'] = off_togtd_06_results
-things_to_save['off_togtd_08_results'] = off_togtd_08_results
-things_to_save['off_togtd_10_results'] = off_togtd_10_results
-things_to_save['direct_greedy_results'] = direct_greedy_results
+error_value_mta, lambda_mta, error_var_mta = eval_MTA(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, kappa = kappa, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
+things_to_save['error_value_mta'], things_to_save['lambda_mta'], things_to_save['error_var_mta'] = error_value_mta, lambda_mta, error_var_mta
+
+
+BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
+for baseline_lambda in BASELINE_LAMBDAS:
+    Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = baseline_lambda * np.ones(N))
+    results = eval_togtd(env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluation = evaluation)
+    exec("things_to_save[\'error_value_togtd_%g\'] = results.copy()" % (baseline_lambda * 1e5))
+
+error_value_greedy, lambda_greedy, error_var_greedy = eval_greedy(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluation = evaluation)
+things_to_save['error_value_greedy'], things_to_save['lambda_greedy'], things_to_save['error_var_greedy'] = error_value_greedy, lambda_greedy, error_var_greedy
 
 filename = 'ringworld_N_%s_behavior_%g_target_%g_episodes_%g' % (N, behavior_policy[0, 0], target_policy[0, 0], episodes)
 scipy.io.savemat(filename, things_to_save)
-
 pass
