@@ -63,6 +63,6 @@ things_to_save['lambda_trace_mta'] = lambda_trace_mta
 things_to_save['lambda_trace_greedy'] = lambda_trace_greedy
 things_to_save['direct_greedy_results'] = direct_greedy_results
 
-filename = 'frozenlake_N_%s_behavior_%g_target_%g_episodes_%g' % (N, behavior_policy[0, 0], target_policy[0, 0], episodes)
+filename = 'frozenlake_N_%s_behavior_%g_target_%g_episodes_%g_kappa_%g' % (N, behavior_policy[0, 0], target_policy[0, 0], episodes, kappa)
 scipy.io.savemat(filename, things_to_save)
 pass
