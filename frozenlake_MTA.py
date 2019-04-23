@@ -44,7 +44,7 @@ true_variance = true_variance * (unit ** 2)
 BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
 things_to_save = {}
 for baseline_lambda in BASELINE_LAMBDAS:
-    Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = baseline_lambda * np.ones(N))
+    Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = baseline_lambda * np.ones(args.N))
     results = eval_method(true_online_gtd, env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
     exec("things_to_save[\'togtd_%g_results\'] = results.copy()" % (baseline_lambda * 1e5))
 
@@ -61,6 +61,6 @@ things_to_save['lambda_trace_mta'] = lambda_trace_mta
 things_to_save['lambda_trace_greedy'] = lambda_trace_greedy
 things_to_save['direct_greedy_results'] = direct_greedy_results
 
-filename = 'frozenlake_N_%s_behavior_%g_target_%g_episodes_%g' % (N, behavior_policy[0, 0], target_policy[0, 0], episodes)
+filename = 'frozenlake_N_%s_behavior_%g_target_%g_episodes_%g' % (args.N, behavior_policy[0, 0], target_policy[0, 0], episodes)
 scipy.io.savemat(filename, things_to_save)
 pass
