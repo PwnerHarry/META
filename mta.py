@@ -79,7 +79,7 @@ def MTA(env, episodes, target, behavior, Lambda, kappa = 0.1, gamma = lambda x: 
             # GD on greedy meta-objective
             v_next = np.dot(x_next, value_learner.w_curr)
             var_L_next, exp_L_next, exp_MC_next = np.dot(x_next, L_var_learner.w_curr), np.dot(x_next, L_exp_learner.w_curr), np.dot(x_next, MC_exp_learner.w_curr)
-            coefficient = Lambda.value(x_next) * ((v_next - exp_L_next) ** 2 + var_L_next) + v_next * (exp_L_next + exp_MC_next) - v_next ** 2 - exp_L_next * exp_MC_next
+            coefficient = gamma(x_next) ** 2 * Lambda.value(x_next) * ((v_next - exp_L_next) ** 2 + var_L_next) + v_next * (exp_L_next + exp_MC_next) - v_next ** 2 - exp_L_next * exp_MC_next
             Lambda.gradient_descent(x_next, kappa * rho_accu_nume / rho_accu_deno * coefficient)
             # learn value
             value_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)

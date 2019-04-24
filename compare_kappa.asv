@@ -1,6 +1,6 @@
-folder = 'F:\MTA_DATA\ringworld\100000';
-behavior = 0.25;
-target = 0.15;
+folder = 'F:\MTA_DATA\ringworld\10000';
+behavior = 0.05;
+target = 0.05;
 dirOutput = dir(fullfile(folder, '*'));
 subfolders = {dirOutput.name}';
 subfolders(1: 2) = [];
@@ -26,16 +26,13 @@ for i = 1: length(subfolders)
     catch ME
         continue;
     end
-    KAPPAS = [KAPPAS, str2double(subfoler)];
-    VALUES = [VALUES, mean(MEAN(end - 5 : end))];
-% 	if strcmp(subfoler, '0.2') || strcmp(subfoler, '0.1')
-%         continue; 
-%     end
     [X, MEAN, INTERVAL] = get_statistics(loaded.error_value_mta, 201, true);
     [CURVE, ~] = band_drawer(X, MEAN, INTERVAL);
     CURVES = [CURVES, CURVE];
     LEGEND = sprintf('\\kappa=%s', subfoler);
     LEGENDS = [LEGENDS, LEGEND];
+    KAPPAS = [KAPPAS, str2double(subfoler)];
+    VALUES = [VALUES, mean(MEAN(end - 5 : end))];
 end
 
 L = legend(CURVES, LEGENDS);
@@ -47,8 +44,8 @@ axis([1, inf, 0, inf]);
 drawnow;
 
 figure;
-plot(KAPPAS, VALUES, 'LineWidth', 2);
+plot(KAPPAS, VALUES);
 set(gca, 'xscale', 'log');
-% set(gca, 'yscale', 'log');
+set(gca, 'yscale', 'log');
 axis([0, inf, 0, inf]);
 drawnow;

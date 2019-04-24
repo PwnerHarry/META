@@ -1,7 +1,7 @@
 clear all;
 figure;
 folder = 'frozenlake';
-policy = 'on';
+policy = 'off';
 dirOutput = dir(fullfile(folder, '*'));
 filenames = {dirOutput.name}';
 reduce_index = [];
@@ -19,15 +19,13 @@ end
 CURVES = [];
 LEGENDS = {};
 for i = 1: length(samples)
-    if ~isempty(strfind(samples(i).name, 'mta'))
-        if ~isempty(strfind(samples(i).name, '0.25'))
-            [CURVE, ~] = band_drawer(samples(i).X, samples(i).MEAN, samples(i).INTERVAL, [0, 0, 1]); %
-        else
-            continue;
-        end
+    if ~isempty(strfind(samples(i).name, 'mta'))% && ~isempty(strfind(samples(i).name, '0.5'))
+        [CURVE, ~] = band_drawer(samples(i).X, samples(i).MEAN, samples(i).INTERVAL); %, [0, 0, 1] 
     elseif ~isempty(strfind(samples(i).name, 'greedy'))
+        continue;
         [CURVE, ~] = band_drawer(samples(i).X, samples(i).MEAN, samples(i).INTERVAL, [1, 0, 0]);
     else
+        continue;
         [CURVE, ~] = band_drawer(samples(i).X, samples(i).MEAN, samples(i).INTERVAL);
     end
     CURVES = [CURVES, CURVE];
@@ -35,7 +33,7 @@ for i = 1: length(samples)
     LEGEND = strrep(LEGEND, 'error_value_', '');
     LEGEND = strrep(LEGEND, policy, '');
     LEGEND = strrep(LEGEND, '_', ' ');
-    LEGEND = regexprep(LEGEND, 'mta.+', 'MTA');
+    LEGEND = strrep(LEGEND, 'mta', 'MTA');
     LEGEND = strrep(LEGEND, '  ', ' ');
     LEGEND = strrep(LEGEND, 'togtd 0', 'GTD(0)');
     LEGEND = strrep(LEGEND, 'togtd 20000', 'GTD(0.2)');

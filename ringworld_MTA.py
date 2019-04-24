@@ -42,6 +42,6 @@ if args.kappa == 0.01:
     error_value_greedy, lambda_greedy, error_var_greedy = eval_greedy(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluation = evaluation)
     things_to_save['error_value_greedy'], things_to_save['lambda_greedy'], things_to_save['error_var_greedy'] = error_value_greedy, lambda_greedy, error_var_greedy
 
-filename = 'ringworld_N_%s_behavior_%g_target_%g_episodes_%g' % (N, behavior_policy[0, 0], target_policy[0, 0], episodes)
+filename = 'ringworld_N_%s_behavior_%g_target_%g_episodes_%g_kappa_%g' % (N, behavior_policy[0, 0], target_policy[0, 0], episodes, kappa)
 scipy.io.savemat(filename, things_to_save)
 pass
