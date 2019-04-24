@@ -33,7 +33,7 @@ things_to_save = {}
 error_value_mta, lambda_mta, error_var_mta = eval_MTA(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, kappa = kappa, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
 things_to_save['error_value_mta'], things_to_save['lambda_mta'], things_to_save['error_var_mta'] = error_value_mta, lambda_mta, error_var_mta
 
-if args.kappa == 0.1:
+if args.kappa == 0.01:
     BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
         Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = baseline_lambda * np.ones(N))
