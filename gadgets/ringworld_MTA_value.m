@@ -1,3 +1,6 @@
+% LOAD BASELINE RESULTS FIRST
+% THEN LOAD THE MTA RESULTS
+
 expectation_list = ["error_value_togtd_0", ...
     "error_value_togtd_20000", ...
     "error_value_togtd_40000", ...
@@ -8,9 +11,6 @@ expectation_list = ["error_value_togtd_0", ...
     "error_value_mta"];
 LineColors = [linspecer(numel(expectation_list) - 2); [1, 0, 0]; [0, 0, 1];];
 num_points = 201;
-
-% filename = 'mta_N_11_behavior_0.15_target_0.05_episodes_5000.mat';
-% load(filename);
 
 CURVES = []; LEGENDS = {};
 figure();
@@ -23,7 +23,7 @@ for result_index = 1: numel(expectation_list)
         continue;
     end
     eval(sprintf('results = %s;', result_name))
-    [X, MEAN, INTERVAL] = get_statistics(results, num_points);
+    [X, MEAN, INTERVAL] = get_statistics(results, num_points, true);
     [CURVE, ~] = band_drawer(X, MEAN, INTERVAL, LineColors(result_index, :)); %X, MEAN, INTERVAL, COLOR
     CURVES = [CURVES, CURVE];
     if strcmp(result_name, "error_value_mta")
