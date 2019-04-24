@@ -1,6 +1,6 @@
 clear all;
 folder = 'frozenlake';
-policy = 'off';
+policy = 'on';
 dirOutput = dir(fullfile(folder, '*'));
 filenames = {dirOutput.name}';
 reduce_index = [];
@@ -18,19 +18,32 @@ end
 CURVES = [];
 LEGENDS = {};
 for i = 1: length(samples)
-    [CURVE, ~] = band_drawer(samples(i).X, samples(i).MEAN, samples(i).INTERVAL); %X, MEAN, INTERVAL, COLOR
+    if ~isempty(strfind(samples(i).name, 'mta'))
+        [CURVE, ~] = band_drawer(samples(i).X, samples(i).MEAN, samples(i).INTERVAL, [0, 0, 1]); %X, MEAN, INTERVAL, COLOR
+    elseif ~isempty(strfind(samples(i).name, 'greedy'))
+        [CURVE, ~] = band_drawer(samples(i).X, samples(i).MEAN, samples(i).INTERVAL, [1, 0, 0]);
+    else
+        [CURVE, ~] = band_drawer(samples(i).X, samples(i).MEAN, samples(i).INTERVAL);
+    end
     CURVES = [CURVES, CURVE];
     LEGEND = samples(i).name;
     LEGEND = strrep(LEGEND, 'error_value_', '');
     LEGEND = strrep(LEGEND, policy, '');
     LEGEND = strrep(LEGEND, '_', ' ');
-    LEGEND = strrep(LEGEND, 'mta ', 'MTA');
+    LEGEND = strrep(LEGEND, 'mta', 'MTA');
+    LEGEND = strrep(LEGEND, '  ', ' ');
+    LEGEND = strrep(LEGEND, 'togtd 0', 'GTD(0)');
+    LEGEND = strrep(LEGEND, 'togtd 20000', 'GTD(0.2)');
+    LEGEND = strrep(LEGEND, 'togtd 40000', 'GTD(0.4)');
+    LEGEND = strrep(LEGEND, 'togtd 60000', 'GTD(0.6)');
+    LEGEND = strrep(LEGEND, 'togtd 80000', 'GTD(0.8)');
+    LEGEND = strrep(LEGEND, 'togtd 100000', 'GTD(1)');
     LEGENDS = [LEGENDS, LEGEND];
 end
 
 L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 14);
-set(L, 'Location', 'southwest');
+set(L, 'Location', 'northwest');
 set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
 axis([1, inf, 0, inf]);

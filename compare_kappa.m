@@ -1,5 +1,5 @@
 folder = 'ringworld';
-behavior = 0.4;
+behavior = 0.5;
 target = 0.4;
 dirOutput = dir(fullfile(folder, '*'));
 subfolders = {dirOutput.name}';
@@ -24,7 +24,7 @@ for i = 1: length(subfolders)
     catch ME
         continue;
     end
-    [X, MEAN, INTERVAL] = get_statistics(loaded.error_value_mta, 501, true);
+    [X, MEAN, INTERVAL] = get_statistics(loaded.error_value_mta, 201, true);
     [CURVE, ~] = band_drawer(X, MEAN, INTERVAL);
     CURVES = [CURVES, CURVE];
     LEGEND = sprintf('\\kappa=%s', subfoler);

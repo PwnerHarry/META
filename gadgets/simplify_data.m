@@ -4,6 +4,6 @@ sample.name = name;
 band_drawer(sample.X, sample.MEAN, sample.INTERVAL);
 set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
-filename = sprintf('ringworld/%s.mat', name);
+filename = sprintf('frozenlake/%s.mat', name);
 save(filename, 'sample');
 end
