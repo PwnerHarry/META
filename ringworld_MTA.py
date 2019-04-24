@@ -16,7 +16,7 @@ parser.add_argument('--episodes', type=int, default=1000, help='')
 parser.add_argument('--runtimes', type=int, default=160, help='')
 parser.add_argument('--N', type=int, default=11, help='')
 parser.add_argument('--target', type=float, default=0.4, help='')
-parser.add_argument('--behavior', type=float, default=0.4, help='')
+parser.add_argument('--behavior', type=float, default=0.5, help='')
 args = parser.parse_args()
 
 # experiment Preparation
