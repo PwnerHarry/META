@@ -1,0 +1,16 @@
+folder = 'frozenlake';
+dirOutput = dir(fullfile(folder, '*'));
+filenames = {dirOutput.name}';
+reduce_index = [];
+for i = 1: numel(filenames)
+    if isempty(strfind(filenames{i}, 'value'))
+        reduce_index = [reduce_index, i];
+    end
+end
+samples = [];
+filenames(reduce_index) = [];
+for i = 1: length(filenames)
+    filename = filenames{i};
+    shelled_sample = load(fullfile(folder, ));
+    samples(i) = shelled_sample.sample;
+end

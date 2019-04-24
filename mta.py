@@ -5,7 +5,7 @@ from true_online_GTD import *
 
 def eval_MTA_per_run(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, Lambda, alpha, beta, evaluation):
     print('running %d of %d for MTA' % (runtime + 1, runtimes))
-    value_trace, lambda_trace, L_var_trace = MTA(env, episodes, target, behavior, Lambda, kappa = 0.1, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, diagnose = False, evaluation = evaluation)
+    value_trace, lambda_trace, L_var_trace = MTA(env, episodes, target, behavior, Lambda, kappa = kappa, gamma = gamma, alpha = 0.05, beta = 0.05, diagnose = False, evaluation = evaluation)
     return (value_trace, lambda_trace, L_var_trace)
 
 def eval_MTA(env, expectation, variance, stat_dist, behavior, target, kappa = 0.1, gamma = lambda x: 0.95, alpha=0.05, beta=0.05, runtimes=20, episodes=int(1e5), evaluation = None):
@@ -65,7 +65,7 @@ def MTA(env, episodes, target, behavior, Lambda, kappa = 0.1, gamma = lambda x: 
             if s_curr == starting_state and s_next == starting_state + 1:
                 lambda_trace[epi, 0] = Lambda.value(x_next)
             # learn expectation of MC-return!
-            MC_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha, beta)
+            MC_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, 2 * alpha, 2 * beta)
             # learn expectation of \Lambda-return!
             L_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)
             # learn variance of \Lambda-return!
