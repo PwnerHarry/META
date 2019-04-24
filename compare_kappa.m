@@ -1,6 +1,6 @@
 folder = 'ringworld';
-behavior = 0.25;
-target = 0.25;
+behavior = 0.15;
+target = 0.05;
 dirOutput = dir(fullfile(folder, '*'));
 subfolders = {dirOutput.name}';
 subfolders(1: 2) = [];
