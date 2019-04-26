@@ -24,7 +24,7 @@ for episode = 1: episodes
         INTERVAL(:, episode) = INTERVAL(:, episode - 1);
     else
         [phat, pci] = mle(D, 'dist', 'logn');
-        INTERVAL(:, episode) = MEAN(episode) + 5 * (exp(pci(:, 1)) - exp(phat(1)));
+        INTERVAL(:, episode) = MEAN(episode) + 2 * (exp(pci(:, 1)) - exp(phat(1)));
         if INTERVAL(1, episode) <= 0
             INTERVAL(1, episode) = MEAN(episode) + (INTERVAL(1, episode - 1) - MEAN(episode - 1)) * MEAN(episode) / MEAN(episode - 1);
         end

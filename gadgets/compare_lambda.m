@@ -14,7 +14,7 @@ CURVES = []; LEGENDS = {};
 figure();
 
 for result_index = 1: numel(expectation_list)
-   result_name  = expectation_list(result_index);
+	result_name  = expectation_list(result_index);
     eval(sprintf('results = %s;', result_name))
     [X, MEAN, INTERVAL] = get_statistics(results, num_points, true);
     [CURVE, ~] = band_drawer(X, MEAN, INTERVAL, LineColors(result_index, :)); %X, MEAN, INTERVAL, COLOR
@@ -28,8 +28,10 @@ for result_index = 1: numel(expectation_list)
 end
 
 L = legend(CURVES, LEGENDS);
-set(L, 'FontName', 'Book Antiqua', 'FontSize', 12);
+set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 set(L, 'Location', 'east');
 set(gca, 'xscale', 'log');
 axis([0, inf, 0, 1]);
+set(gca, 'FontSize', 16);
+set(gca, 'FontName', 'Book Antiqua');
 drawnow;

@@ -47,9 +47,11 @@ for result_index = 1: numel(expectation_list)
 end
 
 L = legend(CURVES, LEGENDS);
-set(L, 'FontName', 'Book Antiqua', 'FontSize', 12);
+set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 set(L, 'Location', 'southwest');
 set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
 axis([1, inf, 0, inf]);
+set(gca, 'FontSize', 16);
+set(gca, 'FontName', 'Book Antiqua');
 drawnow;

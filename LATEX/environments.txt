@@ -1,0 +1,55 @@
+\documentclass{article}
+% \usepackage{geometry}
+% \geometry{left=3cm,right=3cm,top=2cm,bottom=2cm}
+% \usepackage{neurips_2019}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype} 
+\usepackage{float, array}
+\usepackage{amssymb, amsmath, bm, amsthm}
+\usepackage[caption=false,font=scriptsize]{subfig}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{color, colortbl}
+\usepackage{epstopdf}
+\usepackage{booktabs, multirow}
+\definecolor{darkgreen}{rgb}{0, 0.5, 0}
+\definecolor{red}{rgb}{1, 0, 0}
+\usepackage{chngpage}
+
+\usepackage{mfirstuc}
+\usepackage{mathtools}
+\usepackage{lettrine}
+\usepackage{pxfonts}
+\usepackage{epstopdf}
+\usepackage{url}
+\def\UrlBreaks{\do\/\do-}
+
+\DeclareMathOperator*{\minimize}{minimize}
+\DeclareMathOperator*{\maximize}{maximize}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+
+\newcommand\etal{\textit{et al.}}
+\newcommand\ie{\textit{i.e.}}
+\newcommand\eg{\textit{e.g.}}
+\newcommand\st{\textit{s.t.}}
+\newcommand\wrt{\textit{w.r.t.}}
+\newcommand\etc{\textit{etc.}}
+\newcommand\doubleE{\mathbb{E}}
+\newcommand\doubleP{\mathbb{P}}
+\newcommand\doubleR{\mathbb{R}}
+\newcommand\scriptS{\mathcal{S}}
+\newcommand\scriptO{\mathcal{O}}
+\newcommand\scriptA{\mathcal{A}}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{fact}{Fact}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proofidea}{Proof Idea}[section]

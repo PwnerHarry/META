@@ -20,7 +20,7 @@ CURVES = [];
 LEGENDS = {};
 for i = 1: length(samples)
     if ~isempty(strfind(samples(i).name, 'mta'))
-        if ~isempty(strfind(samples(i).name, '0.25'))
+        if ~isempty(strfind(samples(i).name, '0.5'))
             [CURVE, ~] = band_drawer(samples(i).X, samples(i).MEAN, samples(i).INTERVAL, [0, 0, 1]); %
         else
             continue;
@@ -47,9 +47,11 @@ for i = 1: length(samples)
 end
 
 L = legend(CURVES, LEGENDS);
-set(L, 'FontName', 'Book Antiqua', 'FontSize', 14);
-set(L, 'Location', 'northwest');
+set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
+set(L, 'Location', 'southwest');
 set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
 axis([1, inf, 0, inf]);
+set(gca, 'FontSize', 16);
+set(gca, 'FontName', 'Book Antiqua');
 drawnow;
