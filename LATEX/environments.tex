@@ -1,7 +1,7 @@
-\documentclass{article}
+% \documentclass{article}
 % \usepackage{geometry}
 % \geometry{left=3cm,right=3cm,top=2cm,bottom=2cm}
-% \usepackage{neurips_2019}
+\usepackage[preprint]{neurips_2019}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{amsfonts}
@@ -25,7 +25,7 @@
 \usepackage{lettrine}
 \usepackage{pxfonts}
 \usepackage{epstopdf}
-\usepackage{url}
+\usepackage{hyperref, url}
 \def\UrlBreaks{\do\/\do-}
 
 \DeclareMathOperator*{\minimize}{minimize}
@@ -45,10 +45,13 @@
 \newcommand\scriptS{\mathcal{S}}
 \newcommand\scriptO{\mathcal{O}}
 \newcommand\scriptA{\mathcal{A}}
+\newcommand\scriptX{\mathcal{X}}
 
+\newtheorem*{theorem*}{Theorem}
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{fact}{Fact}[section]
 \newtheorem{definition}{Definition}[section]
+\newtheorem*{proposition*}{Proposition}
 \newtheorem{proposition}{Proposition}[section]
 \newtheorem{corollary}{Corollary}[section]
 \newtheorem{lemma}{Lemma}[section]

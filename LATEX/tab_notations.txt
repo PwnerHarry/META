@@ -1,5 +1,6 @@
 \begin{table}[htbp]
 \begin{adjustwidth}{-1in}{-1in}
+\small
   \centering
   \caption{Notations}
     \begin{tabular}{cm{1.1\textwidth}}
@@ -8,23 +9,23 @@
     Notation & Meaning \\
     \midrule
     $\bm{x}_{t}$     & Feature vector for the state $S_t$ met at time-step $t$. \\
-    $R_{t+1}$ & Reward for transitioning into $S_{t+1}$ from $S_{t}$. \\
-    $G_t$ & Sampled return of the state $S_t$ met at time-step $t$. \\
-    $J(G_t)$  & Estimated expectation of $G_t$ for $S_{t}$, also recognized as the value estimate $J_\pi(S_t)$ or $J(S_t)$.\\
-    $j(G_t)$  & True expectation of $G_t$ for $S_{t}$, also recognized as $j(S_t)$ or $\doubleE[G_t]$.\\
-    $V(G_t)$  & Estimated variance of $G_t$ for $S_{t}$, also recognized as the variance estimate $V_\pi(S_t)$ or $V(S_t)$.\\
-    $v(G_t)$  & True variance of $G_t$ for $S_{t}$, also recognized as $v(S_t)$ or $Var[G_t]$. \\
+    % $R_{t+1}$ & Reward for transitioning into $S_{t+1}$ from $S_{t}$. \\
+    % $G_t$ & Sampled return of the state $S_t$ met at time-step $t$. \\
+    $V(G_t)$  & Estimated expectation of $G_t$ for $S_{t}$, also recognized as the value estimate $V_\pi(S_t)$ or $V(S_t)$.\\
+    $v(G_t)$  & True expectation of $G_t$ for $S_{t}$, also recognized as the true value $v_\pi(S_t)$, $v(S_t)$ or $\doubleE[G_t]$.\\
+    % $V(G_t)$  & Estimated variance of $G_t$ for $S_{t}$, also recognized as the variance estimate $V_\pi(S_t)$ or $V(S_t)$.\\
+    % $v(G_t)$  & True variance of $G_t$ for $S_{t}$, also recognized as $v(S_t)$ or $Var[G_t]$. \\
     $\lambda_{(t)}$ & State dependent $\lambda$ value for the state $S_t$ or state feature $\bm{x}_t$. \\
     $\Lambda$ & Enumeration vector of all the state dependent $\lambda$'s for all states. \\
     $G_t^\Lambda$ & Sampled generalized $\Lambda$-return of the state $S_t$ met at time-step $t$. \\
-    $J(G_t^\Lambda)$  & Estimated expectation of $G_t^\Lambda$ for $S_{t}$. \\
-    $j(G_t^\Lambda)$  & True expectation of $G_t^\Lambda$ for $S_{t}$, also $\doubleE[G_t^\Lambda]$. \\
-    $V(G_t^\Lambda)$  & Estimated variance of $G_t^\Lambda$ for $S_{t}$. \\
-    $v(G_t^\Lambda)$  & True variance of $G_t^\Lambda$ for $S_{t}$, also $Var[G_t^\Lambda]$. \\
-    $J(\bm{x}_{t}, \bm{w})$  & Value estimate for the state with feature $\bm{x}_{t}$, using the weights $\bm{w}$. Applies when function approximation is used. \\
+    % $V(G_t^\Lambda)$  & Estimated expectation of $G_t^\Lambda$ for $S_{t}$. \\
+    % $v(G_t^\Lambda)$  & True expectation of $G_t^\Lambda$ for $S_{t}$, also $\doubleE[G_t^\Lambda]$. \\
+    % $V(G_t^\Lambda)$  & Estimated variance of $G_t^\Lambda$ for $S_{t}$. \\
+    % $v(G_t^\Lambda)$  & True variance of $G_t^\Lambda$ for $S_{t}$, also $Var[G_t^\Lambda]$. \\
+    $V(\bm{x}_{t}, \bm{w})$  & Value estimate for the state with feature $\bm{x}_{t}$, using the weights $\bm{w}$. \\
     $\rho_t$    & Importance sampling ratio for the action taken at time-step $t$.\\
     $\gamma_t$  & Discount factor for rewards after meeting the state $S_t$ at time-step $t$.\\
-    $d_\pi(s)$ & The frequency (percentage) of experiencing state $s$ among all states, rolling out policy $\pi$ infinitely in the environment. Depends on the starting state distribution $d(s_0)$, which is policy independent. \\ 
+    $d_\pi(s)$ & The frequency of experiencing state $s$ among all states, rolling out policy $\pi$ infinitely in the environment. Depends on the starting state distribution $d(s_0)$, which is policy independent. \\ 
 
     \bottomrule
     \bottomrule
