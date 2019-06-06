@@ -4,7 +4,7 @@ Implementation of the paper "Faster and More Accurate Trace-based Policy Evaluat
 
 The "ringworld" tests use our implemented version of the environment.
 
-This repository also contains our reproduced $\lambda$-greedy algorithm [2]. 
+This repository also contains our reproduced $\lambda$-greedy algorithm [2], with some additional tools or scripts to draw the figures showed in the paper [1].
 
 ## References
 [1] [Zhao, et al., Faster and More Accurate Trace-based Policy Evaluation via Overall Target Error Meta-Optimization, 2019](https://arxiv.org/abs/1904.11439)
