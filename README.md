@@ -1,10 +1,20 @@
 # MTA
 
-Implementation of the paper "Faster and More Accurate Trace-based Policy Evaluation via Overall Target Error Meta-Optimization"
+Implementation of the paper "Faster and More Accurate Trace-based Policy Evaluation via Overall Target Error Meta-Optimization" [1].
+
+The "ringworld" tests use our implemented version of the environment.
+
+This repository also contains our reproduced $\lambda$-greedy algorithm [2]. 
+
+## References
+[1] [Zhao, et al., Faster and More Accurate Trace-based Policy Evaluation via Overall Target Error Meta-Optimization, 2019](https://arxiv.org/abs/1904.11439)
+
+[2] [White and White, A greedy approach to adapting the trace parameter for temporal difference learning, 2016](https://arxiv.org/abs/1607.00446)
 
 ## Requirements
 
-  * Python 3.6+ and all the dependent modules: only CPU required
+  * Python 3.6+
+  * Dependent python modules
 
 ## Cite
 
