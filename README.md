@@ -9,7 +9,7 @@ This repository also contains our reproduced $\lambda$-greedy algorithm [2], wit
 ## References
 [1] [Zhao, et al., Faster and More Accurate Trace-based Policy Evaluation via Overall Target Error Meta-Optimization, 2019](https://arxiv.org/abs/1904.11439)
 
-[2] [White and White, A greedy approach to adapting the trace parameter for temporal difference learning, 2016](https://arxiv.org/abs/1607.00446)
+[2] [White and White, A Greedy Approach to Adapting the Trace Parameter for Temporal Difference Learning, 2016](https://arxiv.org/abs/1607.00446)
 
 ## Requirements
 
