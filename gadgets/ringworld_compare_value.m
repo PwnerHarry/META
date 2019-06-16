@@ -1,12 +1,12 @@
-% LOAD BASELINE RESULTS FIRST
-% THEN LOAD THE MTA RESULTS
+% MANUALLY LOAD THE RESULTS FIRST
 
-expectation_list = ["error_value_togtd_0", ...
-    "error_value_togtd_20000", ...
-    "error_value_togtd_40000", ...
-    "error_value_togtd_60000", ...
-    "error_value_togtd_80000", ...
-    "error_value_togtd_100000", ...
+expectation_list = [ ...
+    "error_value_togtd_0", ...
+    "error_value_togtd_20", ...
+    "error_value_togtd_40", ...
+    "error_value_togtd_60", ...
+    "error_value_togtd_80", ...
+    "error_value_togtd_100", ...
     "error_value_greedy", ...
     "error_value_mta"];
 LineColors = [linspecer(numel(expectation_list) - 2); [1, 0, 0]; [0, 0, 1];];
@@ -18,24 +18,14 @@ MIN = inf;
 BANDWIDTH = 0.5;
 
 for result_index = 1: numel(expectation_list)
-    if result_index == numel(expectation_list)
-        result_name  = expectation_list(result_index);
-        X = get_statistics2(results, num_points, true);
-        MEAN = error_value_mta_mean(X);
-        MIN = min(min(MEAN), MIN);
-        INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-error_value_mta_std(X); error_value_mta_std(X)];
-        INTERVAL(INTERVAL <= 0) = eps;
-    else
-        result_name  = expectation_list(result_index);
-        try
-            eval(sprintf('results = %s;', result_name))
-        catch ME
-            continue;
-        end
-        eval(sprintf('results = %s;', result_name))
-        [X, MEAN, INTERVAL] = get_statistics(results, num_points, true);
-        MIN = min(min(MEAN), MIN);
-    end
+    result_name  = expectation_list(result_index);
+    eval(sprintf('results_mean = %s_mean;', result_name));
+    eval(sprintf('results_std = %s_std;', result_name));
+    X = get_statistics2(results_mean, num_points, true);
+    MEAN = results_mean(X);
+    MIN = min(min(MEAN), MIN);
+    INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-results_std(X); results_std(X)];
+    INTERVAL(INTERVAL <= 0) = eps;
     [CURVE, ~] = band_drawer(X, MEAN, INTERVAL, LineColors(result_index, :)); %X, MEAN, INTERVAL, COLOR
     CURVES = [CURVES, CURVE];
     if strcmp(result_name, "error_value_mta")

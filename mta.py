@@ -4,7 +4,7 @@ from methods import *
 from true_online_GTD import TRUE_ONLINE_GTD_LEARNER
 from VARIABLE_LAMBDA import LAMBDA
 
-def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder = None, learner_type = 'togtd', gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05, kappa = 0.01):
+def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05, kappa = 0.01):
     value_trace = np.zeros((episodes, 1))
     value_trace[:] = np.nan
     if learner_type == 'togtd':
@@ -16,8 +16,7 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder = None, learn
         x_curr = encoder(o_curr)
         log_rho_accu = 0 # use log accumulation of importance sampling ratio to increase stability
         MC_exp_learner.refresh(); L_exp_learner.refresh(); L_var_learner.refresh(); value_learner.refresh()
-        if evaluate is not None:
-            value_trace[episode, 0] = evaluate(value_learner.w_curr, 'expectation')
+        value_trace[episode, 0] = evaluate(value_learner.w_curr, 'expectation')
         while not done:
             action = decide(o_curr, behavior)
             rho_curr = importance_sampling_ratio(target, behavior, o_curr, action)

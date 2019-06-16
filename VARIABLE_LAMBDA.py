@@ -7,12 +7,16 @@ class LAMBDA():# state-based parametric lambda
             self.w = initial_value
         elif approximator == 'linear':
             self.w = initial_value.reshape(-1)
+        elif approximator == 'tabular':
+            self.w = initial_value.reshape(-1)
         elif approximator == 'NN':
             pass # Neural Network approximator to be implemented using PyTorch
 
     def value(self, x):
         if self.approximator == 'constant':
             l = self.w
+        elif self.approximator == 'tabular':
+            l = self.w[x]
         elif self.approximator == 'linear':
             l = np.dot(x.reshape(-1), self.w)
         elif self.approximator == 'NN':

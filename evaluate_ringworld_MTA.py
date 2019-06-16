@@ -10,12 +10,11 @@ parser = argparse.ArgumentParser(description='')
 parser.add_argument('--alpha', type=float, default=0.05, help='')
 parser.add_argument('--beta', type=float, default=0.05, help='')
 parser.add_argument('--kappa', type=float, default=0.01, help='')
-parser.add_argument('--episodes', type=int, default=100000, help='')
-parser.add_argument('--runtimes', type=int, default=16, help='')
+parser.add_argument('--episodes', type=int, default=10000, help='')
+parser.add_argument('--runtimes', type=int, default=8, help='')
 parser.add_argument('--N', type=int, default=11, help='')
-parser.add_argument('--target', type=float, default=0.4, help='')
-parser.add_argument('--behavior', type=float, default=0.5, help='')
-parser.add_argument('--comparison', type=int, default=0, help='')
+parser.add_argument('--target', type=float, default=0.05, help='')
+parser.add_argument('--behavior', type=float, default=0.05, help='')
 args = parser.parse_args()
 
 # experiment Preparation
@@ -32,15 +31,6 @@ things_to_save = {}
 error_value_mta = eval_MTA(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, kappa=kappa, gamma=gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluate=evaluate)
 things_to_save['error_value_mta_mean'], things_to_save['error_value_mta_std'] = np.nanmean(error_value_mta, axis=0), np.nanstd(error_value_mta, axis=0)
 
-if args.comparison:
-    BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
-    for baseline_lambda in BASELINE_LAMBDAS:
-        Lambda = LAMBDA(env, baseline_lambda, approximator = 'constant')
-        results = eval_togtd(env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluate=evaluate)
-        exec("things_to_save[\'error_value_togtd_%g\'] = results.copy()" % (baseline_lambda * 1e5))
-    error_value_greedy, lambda_greedy, error_var_greedy = eval_greedy(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluate=evaluate)
-    things_to_save['error_value_greedy'], things_to_save['lambda_greedy'], things_to_save['error_var_greedy'] = error_value_greedy, lambda_greedy, error_var_greedy
-
-filename = 'ringworld_N_%s_behavior_%g_target_%g_episodes_%g_kappa_%g' % (N, behavior_policy[0, 0], target_policy[0, 0], episodes, kappa)
+filename = 'ringworld_MTA_N_%s_behavior_%g_target_%g_episodes_%g_kappa_%g' % (N, behavior_policy[0, 0], target_policy[0, 0], episodes, kappa)
 scipy.io.savemat(filename, things_to_save)
 pass
