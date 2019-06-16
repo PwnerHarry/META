@@ -5,8 +5,7 @@ from true_online_GTD import TRUE_ONLINE_GTD_LEARNER
 from VARIABLE_LAMBDA import LAMBDA
 
 def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05, kappa = 0.01):
-    value_trace = np.zeros((episodes, 1))
-    value_trace[:] = np.nan
+    value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     if learner_type == 'togtd':
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TRUE_ONLINE_GTD_LEARNER(env), TRUE_ONLINE_GTD_LEARNER(env), TRUE_ONLINE_GTD_LEARNER(env), TRUE_ONLINE_GTD_LEARNER(env)
     else:

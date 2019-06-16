@@ -10,8 +10,7 @@ def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_t
     else:
         pass # NN not implemented
     variance_learner.w_prev, variance_learner.w_curr = np.zeros(env.observation_space.n), np.zeros(env.observation_space.n)
-    value_trace = np.zeros((episodes, 1))
-    value_trace[:] = np.nan
+    value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     for episode in range(episodes):
         o_curr, done = env.reset(), False
         x_curr = encoder(o_curr)

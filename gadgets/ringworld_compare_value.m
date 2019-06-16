@@ -19,8 +19,12 @@ BANDWIDTH = 0.5;
 
 for result_index = 1: numel(expectation_list)
     result_name  = expectation_list(result_index);
-    eval(sprintf('results_mean = %s_mean;', result_name));
-    eval(sprintf('results_std = %s_std;', result_name));
+    try
+        eval(sprintf('results_mean = %s_mean;', result_name));
+        eval(sprintf('results_std = %s_std;', result_name));
+    catch ME
+        continue;
+    end
     X = get_statistics2(results_mean, num_points, true);
     MEAN = results_mean(X);
     MIN = min(min(MEAN), MIN);
