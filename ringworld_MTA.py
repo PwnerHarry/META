@@ -1,7 +1,7 @@
 from utils import *
 from methods import *
 from greedy import *
-from MTA import *
+from mta import *
 import numpy as np
 import numpy.matlib as npm
 import warnings, argparse, scipy.io
@@ -35,10 +35,10 @@ things_to_save['error_value_mta_mean'], things_to_save['error_value_mta_std'] = 
 if args.comparison:
     BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
-        Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = baseline_lambda * np.ones(N))
-        results = eval_togtd(env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluation = evaluation)
+        Lambda = LAMBDA(env, baseline_lambda, approximator = 'constant')
+        results = eval_togtd(env, true_expectation, stationary_dist, behavior_policy, target_policy, Lambda, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluate=evaluate)
         exec("things_to_save[\'error_value_togtd_%g\'] = results.copy()" % (baseline_lambda * 1e5))
-    error_value_greedy, lambda_greedy, error_var_greedy = eval_greedy(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluation = evaluation)
+    error_value_greedy, lambda_greedy, error_var_greedy = eval_greedy(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluate=evaluate)
     things_to_save['error_value_greedy'], things_to_save['lambda_greedy'], things_to_save['error_var_greedy'] = error_value_greedy, lambda_greedy, error_var_greedy
 
 filename = 'ringworld_N_%s_behavior_%g_target_%g_episodes_%g_kappa_%g' % (N, behavior_policy[0, 0], target_policy[0, 0], episodes, kappa)

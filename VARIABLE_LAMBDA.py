@@ -4,7 +4,7 @@ class LAMBDA():# state-based parametric lambda
         self.n = env.observation_space.n
         self.approximator = approximator
         if approximator == 'constant':
-            self.w = initial_value.reshape(-1)
+            self.w = initial_value
         elif approximator == 'linear':
             self.w = initial_value.reshape(-1)
         elif approximator == 'NN':
