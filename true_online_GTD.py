@@ -2,21 +2,6 @@ import numpy as np
 from joblib import Parallel, delayed
 from utils import onehot, decide, importance_sampling_ratio, mse
 
-def eval_togtd_per_run(env, truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluation):
-    print('running %d of %d for togtd' % (runtime + 1, runtimes))
-    value_trace = true_online_gtd(env, episodes, target, behavior, Lambda, gamma = gamma, alpha = alpha, beta = beta, evaluation = evaluation)
-    if evaluation is not None:
-        return value_trace.T
-    else:
-        result = np.zeros((1, episodes))
-        for j in range(len(value_trace)):
-            result[0, j] = mse(value_trace[j], truth, stat_dist)
-        return result
-
-def eval_togtd(env, truth, stat_dist, behavior, target, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, runtimes=20, episodes=100000, evaluation=None):
-    results = Parallel(n_jobs = -1)(delayed(eval_togtd_per_run)(env, truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluation) for runtime in range(runtimes))
-    results = np.concatenate(results, axis=0)
-    return results
 
 class TRUE_ONLINE_GTD_LEARNER():
     def __init__(self, env):
@@ -57,7 +42,7 @@ class TRUE_ONLINE_GTD_LEARNER():
         h_next = h_curr + rho_curr * delta_curr * e_h_curr - beta_curr * np.dot(x_curr, h_curr) * x_curr
         return w_next, e_curr, e_grad_curr, e_h_curr, h_next
 
-def true_online_gtd(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, diagnose = False, evaluation = None):
+def true_online_gtd(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, diagnose = False, evaluate = None):
     """
     episodes:   number of episodes
     target:     target policy matrix (|S|*|A|)
@@ -68,7 +53,7 @@ def true_online_gtd(env, episodes, target, behavior, Lambda, gamma = lambda x: 0
     beta:       learning rate for the auxiliary vector for off-policy
     """
     learner = TRUE_ONLINE_GTD_LEARNER(env)
-    if evaluation is not None:
+    if evaluate is not None:
         value_trace = np.zeros((episodes, 1)); value_trace[:] = np.nan
     else:
         value_trace = []
@@ -76,8 +61,8 @@ def true_online_gtd(env, episodes, target, behavior, Lambda, gamma = lambda x: 0
         s_curr, done = env.reset(), False
         x_curr = onehot(s_curr, env.observation_space.n)
         learner.refresh()
-        if evaluation is not None:
-            value_trace[epi, 0] = evaluation(learner.w_curr, 'expectation')
+        if evaluate is not None:
+            value_trace[epi, 0] = evaluate(learner.w_curr, 'expectation')
         else:
             value_trace.append(np.copy(learner.w_curr))
         while not done:
@@ -91,3 +76,19 @@ def true_online_gtd(env, episodes, target, behavior, Lambda, gamma = lambda x: 0
             learner.next()
             x_curr = x_next
     return value_trace
+
+def eval_togtd_per_run(env, truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate):
+    print('running %d of %d for togtd' % (runtime + 1, runtimes))
+    value_trace = true_online_gtd(env, episodes, target, behavior, Lambda, gamma = gamma, alpha = alpha, beta = beta, evaluate = evaluate)
+    if evaluate is not None:
+        return value_trace.T
+    else:
+        result = np.zeros((1, episodes))
+        for j in range(len(value_trace)):
+            result[0, j] = mse(value_trace[j], truth, stat_dist)
+        return result
+
+def eval_togtd(env, truth, stat_dist, behavior, target, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, runtimes=20, episodes=100000, evaluate=None):
+    results = Parallel(n_jobs = -1)(delayed(eval_togtd_per_run)(env, truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate) for runtime in range(runtimes))
+    results = np.concatenate(results, axis=0)
+    return results

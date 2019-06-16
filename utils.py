@@ -2,6 +2,7 @@ import gym, numpy as np
 from matplotlib import pyplot as plt
 from RingWorld import RingWorldEnv
 from joblib import Parallel, delayed
+from VARIABLE_LAMBDA import LAMBDA
 
 def mse(x, target, weight):
     diff = target - x.reshape(np.shape(target))
@@ -85,52 +86,4 @@ class GTD_LEARNER():
     def refresh(self):
         self.e_grad_curr, self.e_grad_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
         self.rho_prev = 1
-
-class LAMBDA():
-    def __init__(self, env, lambda_type = 'constant', initial_value = 1):
-        self.n = env.observation_space.n
-        self.type = lambda_type
-        if self.type == 'constant':
-            self.w = initial_value
-        else:
-            if type(initial_value) is np.array or type(initial_value) is np.ndarray:
-                self.w = initial_value.reshape(-1)
-            else:
-                self.w = np.ones(self.n)
-    
-    def value(self, x):
-        if self.type == 'constant':
-            if type(self.w) is float:
-                l = self.w
-            elif (type(self.w) is np.ndarray or type(self.w) is np.array) and np.size(self.w) > 1:
-                l = np.dot(self.w, x.reshape(-1))
-        else:
-            l = np.dot(x.reshape(-1), self.w) # self.sigmoid(np.dot(x.reshape(-1), self.w))
-        if l > 1:
-            print('lambda value greater than 1')
-            return 1
-        elif l < 0:
-            print('lambda value less than 0')
-            return 0
-        return l
-
-    def gradient(self, x):
-        return x.reshape(-1)# self.sigmoid(np.dot(x.reshape(-1), self.w), derivative=True) * x.reshape(-1)
-
-    def gradient_descent(self, x, step_length):
-        gradient = self.gradient(x)
-        value_after = np.dot(x.reshape(-1), (self.w - step_length * gradient))
-        if value_after > 1:
-            pass # print('overflow of lambda rejected')
-        elif value_after < 0:
-            pass # print('underflow of lambda rejected')
-        else:
-            self.w -= step_length * gradient
-
-    @staticmethod
-    def sigmoid(x, derivative=False):
-        sigm = 1. / (1. + np.exp(-x))
-        if derivative:
-            return sigm * (1. - sigm)
-        return sigm
 pass
