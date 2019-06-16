@@ -19,7 +19,7 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
         while not done:
             action = decide(o_curr, behavior)
             rho_curr = importance_sampling_ratio(target, behavior, o_curr, action)
-            log_rho_accu = log_rho_accu + np.log(target[o_curr, action]) - np.log(behavior[o_curr, action])
+            log_rho_accu += np.log(target[o_curr, action]) - np.log(behavior[o_curr, action])
             o_next, R_next, done, _ = env.step(action)
             x_next = encoder(o_next)
             # learn expectation of MC-return!
@@ -35,11 +35,12 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
             gamma_bar_next = (Lambda.value(x_next) * gamma(x_next)) ** 2
             L_var_learner.learn(r_bar_next, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, alpha, beta)
             # SGD on meta-objective
-            if np.exp(log_rho_accu) > 1e6: break # too much, not trustworthy
+            rho_acc = np.exp(log_rho_accu)
+            if rho_acc > 1e6: break # too much, not trustworthy
             v_next = np.dot(x_next, value_learner.w_curr)
             var_L_next, exp_L_next, exp_MC_next = np.dot(x_next, L_var_learner.w_curr), np.dot(x_next, L_exp_learner.w_curr), np.dot(x_next, MC_exp_learner.w_curr)
             coefficient = gamma(x_next) ** 2 * Lambda.value(x_next) * ((v_next - exp_L_next) ** 2 + var_L_next) + v_next * (exp_L_next + exp_MC_next) - v_next ** 2 - exp_L_next * exp_MC_next
-            Lambda.gradient_descent(x_next, kappa * np.exp(log_rho_accu) * coefficient)
+            Lambda.gradient_descent(x_next, kappa * rho_acc * coefficient)
             # learn value
             value_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)
             MC_exp_learner.next(); L_exp_learner.next(); L_var_learner.next(); value_learner.next()
@@ -57,12 +58,4 @@ def eval_MTA(env, expectation, variance, stat_dist, behavior, target, kappa, gam
         LAMBDAS.append(LAMBDA(env, np.ones(env.observation_space.n), approximator = 'linear'))
     results = Parallel(n_jobs = -1)(delayed(eval_MTA_per_run)(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, LAMBDAS[runtime], alpha, beta, evaluate, lambda s: onehot(s, env.observation_space.n), 'togtd') for runtime in range(runtimes))
     value_traces = [entry[0] for entry in results]
-    if evaluate is None:
-        error_value = np.zeros((runtimes, episodes))
-        for runtime in range(runtimes):
-            w_trace = value_traces[runtime]
-            for j in range(len(w_trace)):
-                error_value[runtime, j] = mse(w_trace[j], expectation, stat_dist)
-        return error_value
-    else:#
-        return np.concatenate(value_traces, axis = 1).T
+    return np.concatenate(value_traces, axis = 1).T
