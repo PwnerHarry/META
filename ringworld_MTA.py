@@ -1,9 +1,7 @@
-import matplotlib as mpl
-mpl.use('Agg')
 from utils import *
 from methods import *
 from greedy import *
-from mta import *
+from MTA import *
 import numpy as np
 import numpy.matlib as npm
 import warnings, argparse, scipy.io
@@ -13,10 +11,11 @@ parser.add_argument('--alpha', type=float, default=0.05, help='')
 parser.add_argument('--beta', type=float, default=0.05, help='')
 parser.add_argument('--kappa', type=float, default=0.01, help='')
 parser.add_argument('--episodes', type=int, default=100000, help='')
-parser.add_argument('--runtimes', type=int, default=160, help='')
+parser.add_argument('--runtimes', type=int, default=16, help='')
 parser.add_argument('--N', type=int, default=11, help='')
 parser.add_argument('--target', type=float, default=0.4, help='')
 parser.add_argument('--behavior', type=float, default=0.5, help='')
+parser.add_argument('--comparison', type=int, default=0, help='')
 args = parser.parse_args()
 
 # experiment Preparation
@@ -27,13 +26,13 @@ behavior_policy = npm.repmat(np.array([args.behavior, 1 - args.behavior]).reshap
 
 # get ground truth expectation, variance and stationary distribution
 true_expectation, true_variance, stationary_dist = iterative_policy_evaluation(env, target_policy, gamma=gamma)
-evaluation = lambda estimate, stat_type: evaluate_estimate(estimate, true_expectation, true_variance, stationary_dist, stat_type)
+evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, true_expectation, true_variance, stationary_dist, stat_type)
 things_to_save = {}
 
-error_value_mta, lambda_mta, error_var_mta = eval_MTA(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, kappa = kappa, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes)
-things_to_save['error_value_mta'], things_to_save['lambda_mta'], things_to_save['error_var_mta'] = error_value_mta, lambda_mta, error_var_mta
+error_value_mta = eval_MTA(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, kappa=kappa, gamma=gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluate=evaluate)
+things_to_save['error_value_mta_mean'], things_to_save['error_value_mta_std'] = np.nanmean(error_value_mta, axis=0), np.nanstd(error_value_mta, axis=0)
 
-if args.kappa == 0.01:
+if args.comparison:
     BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
         Lambda = LAMBDA(env, lambda_type = 'constant', initial_value = baseline_lambda * np.ones(N))
