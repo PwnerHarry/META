@@ -2,12 +2,16 @@ import gym, numpy as np
 from utils import *
 from methods import *
 from true_online_GTD import TRUE_ONLINE_GTD_LEARNER
+from true_online_TD import TRUE_ONLINE_TD_LEARNER
 from VARIABLE_LAMBDA import LAMBDA
 
 def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05, kappa = 0.01):
+    # TODO: interface for true online TD to be implemented!
     value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     if learner_type == 'togtd':
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TRUE_ONLINE_GTD_LEARNER(env), TRUE_ONLINE_GTD_LEARNER(env), TRUE_ONLINE_GTD_LEARNER(env), TRUE_ONLINE_GTD_LEARNER(env)
+    elif learner_type == 'totd':
+        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TRUE_ONLINE_TD_LEARNER(env), TRUE_ONLINE_TD_LEARNER(env), TRUE_ONLINE_TD_LEARNER(env), TRUE_ONLINE_TD_LEARNER(env)
     else:
         pass # not implemented, should try TD
     for episode in range(episodes):
@@ -22,18 +26,23 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
             log_rho_accu += np.log(target[o_curr, action]) - np.log(behavior[o_curr, action])
             o_next, R_next, done, _ = env.step(action)
             x_next = encoder(o_next)
-            # learn expectation of MC-return!
-            MC_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha, beta)
-            # learn expectation of \Lambda-return!
-            L_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, 1.1 * alpha, 1.1 * beta)
-            # learn variance of \Lambda-return!
+            if learner_type == 'togtd':
+                MC_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha, beta)
+                L_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, 1.1 * alpha, 1.1 * beta)
+            elif learner_type == 'totd':
+                # (R_next, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr)
+                MC_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha)
+                L_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, 1.1 * alpha)
             delta_curr = R_next + gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
             try:
                 r_bar_next = delta_curr ** 2
             except RuntimeWarning:
                 pass
             gamma_bar_next = (Lambda.value(x_next) * gamma(x_next)) ** 2
-            L_var_learner.learn(r_bar_next, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, alpha, beta)
+            if learner_type == 'togtd':
+                L_var_learner.learn(r_bar_next, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, alpha, beta)
+            elif learner_type == 'totd':
+                L_var_learner.learn(r_bar_next, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, alpha)
             # SGD on meta-objective
             rho_acc = np.exp(log_rho_accu)
             if rho_acc > 1e6: break # too much, not trustworthy
@@ -42,7 +51,10 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
             coefficient = gamma(x_next) ** 2 * Lambda.value(x_next) * ((v_next - exp_L_next) ** 2 + var_L_next) + v_next * (exp_L_next + exp_MC_next) - v_next ** 2 - exp_L_next * exp_MC_next
             Lambda.gradient_descent(x_next, kappa * rho_acc * coefficient)
             # learn value
-            value_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)
+            if learner_type == 'togtd':
+                value_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)
+            elif learner_type == 'totd':
+                value_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha)
             MC_exp_learner.next(); L_exp_learner.next(); L_var_learner.next(); value_learner.next()
             o_curr, x_curr = o_next, x_next
     return value_trace
@@ -52,10 +64,10 @@ def eval_MTA_per_run(env, runtime, runtimes, episodes, target, behavior, kappa, 
     value_trace = MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma = gamma, alpha = alpha, beta = beta, kappa = kappa)
     return (value_trace, None)
 
-def eval_MTA(env, expectation, variance, stat_dist, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate):
+def eval_MTA(env, expectation, variance, stat_dist, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, learner_type='togtd'):
     LAMBDAS = []
     for runtime in range(runtimes):
         LAMBDAS.append(LAMBDA(env, np.ones(env.observation_space.n), approximator = 'linear'))
-    results = Parallel(n_jobs = -1)(delayed(eval_MTA_per_run)(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, LAMBDAS[runtime], alpha, beta, evaluate, lambda s: onehot(s, env.observation_space.n), 'togtd') for runtime in range(runtimes))
+    results = Parallel(n_jobs = -1)(delayed(eval_MTA_per_run)(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, LAMBDAS[runtime], alpha, beta, evaluate, lambda s: onehot(s, env.observation_space.n), learner_type) for runtime in range(runtimes))
     value_traces = [entry[0] for entry in results]
     return np.concatenate(value_traces, axis = 1).T
