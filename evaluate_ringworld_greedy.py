@@ -14,6 +14,7 @@ parser.add_argument('--runtimes', type=int, default=8, help='')
 parser.add_argument('--N', type=int, default=11, help='')
 parser.add_argument('--target', type=float, default=0.05, help='')
 parser.add_argument('--behavior', type=float, default=0.05, help='')
+parser.add_argument('--learner_type', type=str, default='totd', help='')
 args = parser.parse_args()
 
 # experiment Preparation
@@ -27,9 +28,9 @@ true_expectation, true_variance, stationary_dist = iterative_policy_evaluation(e
 evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, true_expectation, true_variance, stationary_dist, stat_type)
 things_to_save = {}
 
-error_value_greedy = eval_greedy(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluate=evaluate)
+error_value_greedy = eval_greedy(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluate=evaluate, learner_type=args.learner_type)
 things_to_save['error_value_greedy_mean'], things_to_save['error_value_greedy_std'] = np.nanmean(error_value_greedy, axis=0), np.nanstd(error_value_greedy, axis=0)
 
-filename = 'ringworld_greedy_N_%s_behavior_%g_target_%g_episodes_%g' % (N, behavior_policy[0, 0], target_policy[0, 0], episodes)
+filename = 'ringworld_%s_TD_greedy_N_%d_behavior_%g_target_%g_episodes_%g' % (args.learner_type, N, behavior_policy[0, 0], target_policy[0, 0], episodes)
 scipy.io.savemat(filename, things_to_save)
 pass
