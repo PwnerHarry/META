@@ -29,7 +29,7 @@ true_expectation, true_variance, stationary_dist = iterative_policy_evaluation(e
 evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, true_expectation, true_variance, stationary_dist, stat_type)
 things_to_save = {}
 
-error_value_mta = eval_MTA(env, true_expectation, true_variance, stationary_dist, behavior_policy, target_policy, kappa=kappa, gamma=gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluate=evaluate, learner_type=args.learner_type)
+error_value_mta = eval_MTA(env, behavior_policy, target_policy, kappa=kappa, gamma=gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluate=evaluate, learner_type=args.learner_type)
 things_to_save['error_value_mta_mean'], things_to_save['error_value_mta_std'] = np.nanmean(error_value_mta, axis=0), np.nanstd(error_value_mta, axis=0)
 
 filename = 'ringworld_%s_MTA_N_%d_behavior_%g_target_%g_episodes_%g_kappa_%g' % (args.learner_type, N, behavior_policy[0, 0], target_policy[0, 0], episodes, kappa)

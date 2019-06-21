@@ -54,10 +54,10 @@ def eval_greedy_per_run(env, runtime, runtimes, episodes, target, behavior, enco
     value_trace = greedy(env, episodes, target, behavior, evaluate=evaluate, Lambda=Lambda, encoder=encoder,gamma=gamma, alpha=alpha, beta=beta, learner_type=learner_type)
     return (value_trace, None)
 
-def eval_greedy(env, expectation, variance, stat_dist, behavior, target, evaluate, gamma, alpha, beta, runtimes, episodes, learner_type='togtd'):
+def eval_greedy(env, behavior, target, evaluate, gamma, alpha, beta, runtimes, episodes, learner_type='togtd'):
     LAMBDAS = []
     for runtime in range(runtimes):
-        LAMBDAS.append(LAMBDA(env, approximator = 'tabular', initial_value = np.ones(env.observation_space.n)))
+        LAMBDAS.append(LAMBDA(env, approximator='tabular', initial_value = np.ones(env.observation_space.n)))
     results = Parallel(n_jobs = -1)(delayed(eval_greedy_per_run)(env, runtime, runtimes, episodes, target, behavior, lambda x: onehot(x, env.observation_space.n), gamma, LAMBDAS[runtime], alpha, beta, evaluate, learner_type = learner_type) for runtime in range(runtimes))
     value_traces = [entry[0] for entry in results]
     return np.concatenate(value_traces, axis = 1).T

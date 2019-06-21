@@ -64,7 +64,7 @@ def eval_MTA_per_run(env, runtime, runtimes, episodes, target, behavior, kappa, 
     value_trace = MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma = gamma, alpha = alpha, beta = beta, kappa = kappa)
     return (value_trace, None)
 
-def eval_MTA(env, expectation, variance, stat_dist, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, learner_type='togtd'):
+def eval_MTA(env, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, learner_type='togtd'):
     LAMBDAS = []
     for runtime in range(runtimes):
         LAMBDAS.append(LAMBDA(env, np.ones(env.observation_space.n), approximator = 'linear'))
