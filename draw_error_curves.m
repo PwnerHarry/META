@@ -1,6 +1,12 @@
 % MANUALLY LOAD THE RESULTS FIRST
 
 expectation_list = [ ...
+    "error_value_totd_0", ...
+    "error_value_totd_20", ...
+    "error_value_totd_40", ...
+    "error_value_totd_60", ...
+    "error_value_totd_80", ...
+    "error_value_totd_100", ...
     "error_value_togtd_0", ...
     "error_value_togtd_20", ...
     "error_value_togtd_40", ...
@@ -36,16 +42,28 @@ for result_index = 1: numel(expectation_list)
         LEGEND = "MTA";
     elseif strcmp(result_name, "error_value_togtd_0")
         LEGEND = "GTD(0)";
-    elseif strcmp(result_name, "error_value_togtd_20000")
+    elseif strcmp(result_name, "error_value_togtd_20")
         LEGEND = "GTD(0.2)";
-    elseif strcmp(result_name, "error_value_togtd_40000")
+    elseif strcmp(result_name, "error_value_togtd_40")
         LEGEND = "GTD(0.4)";
-    elseif strcmp(result_name, "error_value_togtd_60000")
+    elseif strcmp(result_name, "error_value_togtd_60")
         LEGEND = "GTD(0.6)";
-    elseif strcmp(result_name, "error_value_togtd_80000")
+    elseif strcmp(result_name, "error_value_togtd_80")
         LEGEND = "GTD(0.8)";
-    elseif strcmp(result_name, "error_value_togtd_100000")
+    elseif strcmp(result_name, "error_value_togtd_100")
         LEGEND = "GTD(1)";
+    elseif strcmp(result_name, "error_value_totd_0")
+        LEGEND = "TD(0)";
+    elseif strcmp(result_name, "error_value_totd_20")
+        LEGEND = "TD(0.2)";
+    elseif strcmp(result_name, "error_value_totd_40")
+        LEGEND = "TD(0.4)";
+    elseif strcmp(result_name, "error_value_totd_60")
+        LEGEND = "TD(0.6)";
+    elseif strcmp(result_name, "error_value_totd_80")
+        LEGEND = "TD(0.8)";
+    elseif strcmp(result_name, "error_value_totd_100")
+        LEGEND = "TD(1)";
     elseif strcmp(result_name, "error_value_greedy")
         LEGEND = "greedy";
     end

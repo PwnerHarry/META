@@ -42,7 +42,7 @@ class TRUE_ONLINE_GTD_LEARNER():
         h_next = h_curr + rho_curr * delta_curr * e_h_curr - beta_curr * np.dot(x_curr, h_curr) * x_curr
         return w_next, e_curr, e_grad_curr, e_h_curr, h_next
 
-def true_online_gtd(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, diagnose = False, evaluate = None):
+def true_online_gtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05):
     """
     episodes:   number of episodes
     target:     target policy matrix (|S|*|A|)
@@ -53,42 +53,28 @@ def true_online_gtd(env, episodes, target, behavior, Lambda, gamma = lambda x: 0
     beta:       learning rate for the auxiliary vector for off-policy
     """
     learner = TRUE_ONLINE_GTD_LEARNER(env)
-    if evaluate is not None:
-        value_trace = np.zeros((episodes, 1)); value_trace[:] = np.nan
-    else:
-        value_trace = []
-    for epi in range(episodes):
-        s_curr, done = env.reset(), False
-        x_curr = onehot(s_curr, env.observation_space.n)
+    value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
+    for episode in range(episodes):
+        o_curr, done = env.reset(), False
+        x_curr = encoder(o_curr)
         learner.refresh()
-        if evaluate is not None:
-            value_trace[epi, 0] = evaluate(learner.w_curr, 'expectation')
-        else:
-            value_trace.append(np.copy(learner.w_curr))
+        value_trace[episode, 0] = evaluate(learner.w_curr, 'expectation')
         while not done:
-            action = decide(s_curr, behavior)
-            rho_curr = importance_sampling_ratio(target, behavior, s_curr, action)
-            s_next, r_next, done, _ = env.step(action)
-            x_next = onehot(s_next, env.observation_space.n)
-            if diagnose:
-                print('rho_curr: %.2e, lambda_curr: %.2e, lambda_next: %.2e' % (rho_curr, Lambda.value(x_curr), Lambda.value(x_next)))
+            action = decide(o_curr, behavior)
+            rho_curr = importance_sampling_ratio(target, behavior, o_curr, action)
+            o_next, r_next, done, _ = env.step(action)
+            x_next = encoder(o_next)
             learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)
             learner.next()
             x_curr = x_next
     return value_trace
 
-def eval_togtd_per_run(env, truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate):
+def eval_togtd_per_run(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate, encoder):
     print('running %d of %d for togtd' % (runtime + 1, runtimes))
-    value_trace = true_online_gtd(env, episodes, target, behavior, Lambda, gamma = gamma, alpha = alpha, beta = beta, evaluate = evaluate)
-    if evaluate is not None:
-        return value_trace.T
-    else:
-        result = np.zeros((1, episodes))
-        for j in range(len(value_trace)):
-            result[0, j] = mse(value_trace[j], truth, stat_dist)
-        return result
+    value_trace = true_online_gtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=gamma, alpha=alpha, beta=beta)
+    return value_trace.T
 
-def eval_togtd(env, truth, stat_dist, behavior, target, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, runtimes=20, episodes=100000, evaluate=None):
-    results = Parallel(n_jobs = -1)(delayed(eval_togtd_per_run)(env, truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate) for runtime in range(runtimes))
+def eval_togtd(env, behavior, target, Lambda, gamma, alpha, beta, runtimes, episodes, evaluate):
+    results = Parallel(n_jobs = -1)(delayed(eval_togtd_per_run)(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate, lambda s: onehot(s, env.observation_space.n)) for runtime in range(runtimes))
     results = np.concatenate(results, axis=0)
     return results
