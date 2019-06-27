@@ -1,4 +1,6 @@
 % MANUALLY LOAD THE RESULTS FIRST
+cd(fileparts(mfilename('fullpath')));
+addpath(genpath(cd));
 
 expectation_list = [ ...
     "error_value_totd_0", ...
@@ -55,13 +57,13 @@ for result_index = 1: numel(expectation_list)
     elseif strcmp(result_name, "error_value_totd_0")
         LEGEND = "TD(0)";
     elseif strcmp(result_name, "error_value_totd_20")
-        LEGEND = "TD(0.2)";
+        LEGEND = "TD(.2)";
     elseif strcmp(result_name, "error_value_totd_40")
-        LEGEND = "TD(0.4)";
+        LEGEND = "TD(.4)";
     elseif strcmp(result_name, "error_value_totd_60")
-        LEGEND = "TD(0.6)";
+        LEGEND = "TD(.6)";
     elseif strcmp(result_name, "error_value_totd_80")
-        LEGEND = "TD(0.8)";
+        LEGEND = "TD(.8)";
     elseif strcmp(result_name, "error_value_totd_100")
         LEGEND = "TD(1)";
     elseif strcmp(result_name, "error_value_greedy")
@@ -72,7 +74,7 @@ end
 
 L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
-set(L, 'Location', 'southwest');
+% set(L, 'Location', 'southwest');
 set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
 axis([1, inf, MIN, inf]);
