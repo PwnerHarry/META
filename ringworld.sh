@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-bengioy
-#SBATCH --cpus-per-task=48
+#SBATCH --cpus-per-task=40
 #SBATCH --mem=64G
-#SBATCH --time=24:0:0
+#SBATCH --time=12:0:0
 
 module load python/3.7 scipy-stack
 source ~/ENV/bin/activate
