@@ -37,8 +37,8 @@ for baseline_lambda in BASELINE_LAMBDAS:
         results = eval_totd(env, behavior_policy, target_policy, Lambda, gamma=gamma, alpha=alpha, runtimes=runtimes, episodes=episodes, evaluate=evaluate)
     elif args.learner_type == 'togtd':
         results = eval_togtd(env, behavior_policy, target_policy, Lambda, gamma=gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluate=evaluate)
-    exec("things_to_save[\'error_value_%g_mean\'] = np.nanmean(results, axis=0)" % (args.learner_type, baseline_lambda * 100)) # no dots in variable names for MATLAB
-    exec("things_to_save[\'error_value_%g_std\'] = np.nanstd(results, axis=0)" % (args.learner_type, baseline_lambda * 100))
+    exec("things_to_save[\'error_value_%s_%g_mean\'] = np.nanmean(results, axis=0)" % (args.learner_type, baseline_lambda * 100)) # no dots in variable names for MATLAB
+    exec("things_to_save[\'error_value_%s_%g_std\'] = np.nanstd(results, axis=0)" % (args.learner_type, baseline_lambda * 100))
 
 filename = 'ringworld_%s_baselines_N_%d_behavior_%g_target_%g_episodes_%g' % (args.learner_type, N, behavior_policy[0, 0], target_policy[0, 0], episodes)
 scipy.io.savemat(filename, things_to_save)
