@@ -4,10 +4,11 @@ from utils import onehot, decide, importance_sampling_ratio, mse
 
 
 class TRUE_ONLINE_GTD_LEARNER():
-    def __init__(self, env):
+    def __init__(self, env, D):
         self.observation_space, self.action_space = env.observation_space, env.action_space
-        self.w_curr, self.w_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
-        self.h_curr, self.h_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
+        self.observation_space.D = D # dimension after encoding
+        self.w_curr, self.w_prev = np.zeros(self.observation_space.D), np.zeros(self.observation_space.D)
+        self.h_curr, self.h_prev = np.zeros(self.observation_space.D), np.zeros(self.observation_space.D)
         self.refresh()
 
     def learn(self, R_next, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr, beta_curr):
@@ -27,9 +28,9 @@ class TRUE_ONLINE_GTD_LEARNER():
         del self.w_next, self.e_curr, self.e_grad_curr, self.e_h_curr, self.h_next, self.rho_curr
 
     def refresh(self):
-        self.e_curr, self.e_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
-        self.e_grad_curr, self.e_grad_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
-        self.e_h_curr, self.e_h_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
+        self.e_curr, self.e_prev = np.zeros(self.observation_space.D), np.zeros(self.observation_space.D)
+        self.e_grad_curr, self.e_grad_prev = np.zeros(self.observation_space.D), np.zeros(self.observation_space.D)
+        self.e_h_curr, self.e_h_prev = np.zeros(self.observation_space.D), np.zeros(self.observation_space.D)
         self.rho_prev = 1
 
     @staticmethod
@@ -52,7 +53,8 @@ def true_online_gtd(env, episodes, target, behavior, evaluate, Lambda, encoder, 
     alpha:      learning rate for the weight vector of the values
     beta:       learning rate for the auxiliary vector for off-policy
     """
-    learner = TRUE_ONLINE_GTD_LEARNER(env)
+    D = encoder(0).size
+    learner = TRUE_ONLINE_GTD_LEARNER(env, D)
     value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     for episode in range(episodes):
         o_curr, done = env.reset(), False
@@ -74,7 +76,7 @@ def eval_togtd_per_run(env, runtime, runtimes, episodes, target, behavior, gamma
     value_trace = true_online_gtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=gamma, alpha=alpha, beta=beta)
     return value_trace.T
 
-def eval_togtd(env, behavior, target, Lambda, gamma, alpha, beta, runtimes, episodes, evaluate):
-    results = Parallel(n_jobs = -1)(delayed(eval_togtd_per_run)(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate, lambda s: onehot(s, env.observation_space.n)) for runtime in range(runtimes))
+def eval_togtd(env, behavior, target, Lambda, gamma, alpha, beta, runtimes, episodes, evaluate, encoder):
+    results = Parallel(n_jobs = -1)(delayed(eval_togtd_per_run)(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate, encoder) for runtime in range(runtimes))
     results = np.concatenate(results, axis=0)
     return results

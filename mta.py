@@ -6,12 +6,12 @@ from true_online_TD import TRUE_ONLINE_TD_LEARNER
 from VARIABLE_LAMBDA import LAMBDA
 
 def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05, kappa = 0.01):
-    # TODO: interface for true online TD to be implemented!
+    D = encoder(0).size
     value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     if learner_type == 'togtd':
-        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TRUE_ONLINE_GTD_LEARNER(env), TRUE_ONLINE_GTD_LEARNER(env), TRUE_ONLINE_GTD_LEARNER(env), TRUE_ONLINE_GTD_LEARNER(env)
+        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D)
     elif learner_type == 'totd':
-        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TRUE_ONLINE_TD_LEARNER(env), TRUE_ONLINE_TD_LEARNER(env), TRUE_ONLINE_TD_LEARNER(env), TRUE_ONLINE_TD_LEARNER(env)
+        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D)
     else:
         pass # not implemented, should try TD
     for episode in range(episodes):
@@ -64,10 +64,11 @@ def eval_MTA_per_run(env, runtime, runtimes, episodes, target, behavior, kappa, 
     value_trace = MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma = gamma, alpha = alpha, beta = beta, kappa = kappa)
     return (value_trace, None)
 
-def eval_MTA(env, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, learner_type='togtd'):
+def eval_MTA(env, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, encoder, learner_type='togtd'):
+    D = encoder(0).size
     LAMBDAS = []
     for runtime in range(runtimes):
-        LAMBDAS.append(LAMBDA(env, np.ones(env.observation_space.n), approximator = 'linear'))
-    results = Parallel(n_jobs = -1)(delayed(eval_MTA_per_run)(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, LAMBDAS[runtime], alpha, beta, evaluate, lambda s: onehot(s, env.observation_space.n), learner_type) for runtime in range(runtimes))
+        LAMBDAS.append(LAMBDA(env, np.ones(D) * D / env.observation_space.n, approximator = 'linear'))
+    results = Parallel(n_jobs = -1)(delayed(eval_MTA_per_run)(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, LAMBDAS[runtime], alpha, beta, evaluate, encoder, learner_type) for runtime in range(runtimes))
     value_traces = [entry[0] for entry in results]
     return np.concatenate(value_traces, axis = 1).T

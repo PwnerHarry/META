@@ -5,14 +5,14 @@ from true_online_GTD import TRUE_ONLINE_GTD_LEARNER
 from true_online_TD import TRUE_ONLINE_TD_LEARNER
 
 def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05):
-    N = env.observation_space.n
+    D = encoder(0).size
     if learner_type == 'togtd':
-        first_moment_learner, variance_learner, value_learner = TRUE_ONLINE_GTD_LEARNER(env), TRUE_ONLINE_GTD_LEARNER(env), TRUE_ONLINE_GTD_LEARNER(env)
+        first_moment_learner, variance_learner, value_learner = TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D)
     elif learner_type == 'totd':
-        first_moment_learner, variance_learner, value_learner = TRUE_ONLINE_TD_LEARNER(env), TRUE_ONLINE_TD_LEARNER(env), TRUE_ONLINE_TD_LEARNER(env)
+        first_moment_learner, variance_learner, value_learner = TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D)
     else:
         pass # NN not implemented
-    variance_learner.w_prev, variance_learner.w_curr = np.zeros(env.observation_space.n), np.zeros(env.observation_space.n)
+    variance_learner.w_prev, variance_learner.w_curr = np.zeros(D), np.zeros(D)
     value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     for episode in range(episodes):
         o_curr, done = env.reset(), False
@@ -54,10 +54,10 @@ def eval_greedy_per_run(env, runtime, runtimes, episodes, target, behavior, enco
     value_trace = greedy(env, episodes, target, behavior, evaluate=evaluate, Lambda=Lambda, encoder=encoder,gamma=gamma, alpha=alpha, beta=beta, learner_type=learner_type)
     return (value_trace, None)
 
-def eval_greedy(env, behavior, target, evaluate, gamma, alpha, beta, runtimes, episodes, learner_type='togtd'):
+def eval_greedy(env, behavior, target, evaluate, gamma, alpha, beta, runtimes, episodes, encoder, learner_type='togtd'):
     LAMBDAS = []
     for runtime in range(runtimes):
         LAMBDAS.append(LAMBDA(env, approximator='tabular', initial_value = np.ones(env.observation_space.n)))
-    results = Parallel(n_jobs = -1)(delayed(eval_greedy_per_run)(env, runtime, runtimes, episodes, target, behavior, lambda x: onehot(x, env.observation_space.n), gamma, LAMBDAS[runtime], alpha, beta, evaluate, learner_type = learner_type) for runtime in range(runtimes))
+    results = Parallel(n_jobs = -1)(delayed(eval_greedy_per_run)(env, runtime, runtimes, episodes, target, behavior, encoder, gamma, LAMBDAS[runtime], alpha, beta, evaluate, learner_type = learner_type) for runtime in range(runtimes))
     value_traces = [entry[0] for entry in results]
     return np.concatenate(value_traces, axis = 1).T
