@@ -2,7 +2,6 @@ import numpy as np
 import warnings, argparse, scipy.io, numpy.matlib, gym
 from joblib import Parallel, delayed
 from utils import *
-from methods import *
 from greedy import *
 from mta import *
 from MC import *

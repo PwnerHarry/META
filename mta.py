@@ -1,6 +1,5 @@
 import gym, numpy as np
 from utils import *
-from methods import *
 from true_online_GTD import TRUE_ONLINE_GTD_LEARNER
 from true_online_TD import TRUE_ONLINE_TD_LEARNER
 from VARIABLE_LAMBDA import LAMBDA
