@@ -5,9 +5,10 @@ from utils import onehot, decide, importance_sampling_ratio, mse
 # TODO: this file hasn't been tested. Also, I am concerned about $\lambda^{(t+1)}$ being unused!
 
 class TRUE_ONLINE_TD_LEARNER():
-    def __init__(self, env):
+    def __init__(self, env, D):
         self.observation_space, self.action_space = env.observation_space, env.action_space
-        self.w_curr, self.w_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
+        self.observation_space.D = D # dimension after encoding
+        self.w_curr, self.w_prev = np.zeros(self.observation_space.D), np.zeros(self.observation_space.D)
         self.refresh()
 
     def learn(self, R_next, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr):
@@ -26,7 +27,7 @@ class TRUE_ONLINE_TD_LEARNER():
         del self.w_next, self.e_curr, self.rho_curr
 
     def refresh(self):
-        self.e_curr, self.e_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
+        self.e_curr, self.e_prev = np.zeros(self.observation_space.D), np.zeros(self.observation_space.D)
         self.rho_prev = 1
 
     @staticmethod
@@ -46,7 +47,8 @@ def true_online_td(env, episodes, target, behavior, evaluate, Lambda, encoder, g
     gamma:      anonymous function determining each lambda for each feature (or state or observation)
     alpha:      learning rate for the weight vector of the values
     """
-    learner = TRUE_ONLINE_TD_LEARNER(env)
+    D = encoder(0).size
+    learner = TRUE_ONLINE_TD_LEARNER(env, D)
     value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     for episode in range(episodes):
         o_curr, done = env.reset(), False
@@ -68,7 +70,7 @@ def eval_totd_per_run(env, runtime, runtimes, episodes, target, behavior, gamma,
     value_trace = true_online_td(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=gamma, alpha=alpha)
     return value_trace.T
 
-def eval_totd(env, behavior, target, Lambda, gamma, alpha, runtimes, episodes, evaluate):
-    results = Parallel(n_jobs = -1)(delayed(eval_totd_per_run)(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, evaluate, lambda s: onehot(s, env.observation_space.n)) for runtime in range(runtimes))
+def eval_totd(env, behavior, target, Lambda, gamma, alpha, runtimes, episodes, evaluate, encoder):
+    results = Parallel(n_jobs = -1)(delayed(eval_totd_per_run)(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, evaluate, encoder) for runtime in range(runtimes))
     results = np.concatenate(results, axis=0)
     return results

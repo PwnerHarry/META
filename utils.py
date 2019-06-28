@@ -4,8 +4,8 @@ from RingWorld import RingWorldEnv
 from joblib import Parallel, delayed
 from VARIABLE_LAMBDA import LAMBDA
 
-def mse(x, target, weight):
-    diff = target - x.reshape(np.shape(target))
+def mse(estimate, target, weight):
+    diff = target - estimate.reshape(np.shape(target))
     return np.linalg.norm(np.multiply(diff, weight.reshape(np.shape(target))), 2) ** 2
 
 def eval_method_with_variance_per_run(method, env, truth, var_truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta):
@@ -18,7 +18,10 @@ def eval_method_with_variance_per_run(method, env, truth, var_truth, stat_dist, 
         var_result[0, j] = mse(var_trace[j], var_truth, stat_dist)
     return (result, var_result)
 
-def evaluate_estimate(estimate, expectation, variance, distribution, stat_type):
+def evaluate_estimate(weight, expectation, variance, distribution, stat_type, encoder):
+    estimate = np.zeros(expectation.size)
+    for i in range(estimate.size):
+        estimate[i] = np.dot(encoder(i), weight)# limited to the linear case, to be extended
     if stat_type == 'expectation':
         return mse(estimate, expectation, distribution)
     elif stat_type == 'variance':
@@ -44,46 +47,45 @@ def decide(state_id, policy_matrix):
     action_id = np.random.choice(range(len(dist)), p = dist)
     return action_id
 
+# ENCODING METHODS
 def onehot(observation, N):
     x = np.zeros(N)
-    x[observation] = 1.0
+    x[observation] = 1
     return x
 
-def init_ring_world(N, p = [0.05, 0.95], seed=None):
-    env = RingWorldEnv(N)
-    np.random.seed(seed)
-    env.seed(seed)
-    target_policy = np.matlib.repmat(np.array([0.05, 0.95]).reshape(1, -1), env.observation_space.n, 1)
-    behavior_policy = np.matlib.repmat(np.array([0.25, 0.75]).reshape(1, -1), env.observation_space.n, 1)
-    return env, target_policy, behavior_policy
+def index2plane(s, n):
+    feature = np.zeros(2 * n)
+    feature[s // n] = 1; feature[n + s % n] = 1
+    return feature
 
-def gtd_step(r_next, gamma_next, gamma_curr, x_next, x_curr, w_curr, lambda_next, lambda_curr, rho_curr, e_prev, h_curr, alpha_curr, alpha_h_curr):
-    delta_curr = r_next + gamma_next * np.dot(x_next, w_curr) - np.dot(x_curr, w_curr)
-    e_curr = rho_curr * (gamma_curr * lambda_curr * e_prev + x_curr)
-    w_next = w_curr + alpha_curr * (delta_curr * e_curr - gamma_next * (1 - lambda_next) * np.dot(h_curr, e_curr) * x_next)
-    h_next = h_curr + alpha_h_curr * (delta_curr * e_curr - np.dot(x_curr, h_curr) * x_curr)
-    return w_next, e_curr, h_next
 
-class GTD_LEARNER():
-    def __init__(self, env):
-        self.observation_space, self.action_space = env.observation_space, env.action_space
-        self.w_curr, self.w_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
-        self.h_curr, self.h_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
-        self.refresh()
+# def gtd_step(r_next, gamma_next, gamma_curr, x_next, x_curr, w_curr, lambda_next, lambda_curr, rho_curr, e_prev, h_curr, alpha_curr, alpha_h_curr):
+#     delta_curr = r_next + gamma_next * np.dot(x_next, w_curr) - np.dot(x_curr, w_curr)
+#     e_curr = rho_curr * (gamma_curr * lambda_curr * e_prev + x_curr)
+#     w_next = w_curr + alpha_curr * (delta_curr * e_curr - gamma_next * (1 - lambda_next) * np.dot(h_curr, e_curr) * x_next)
+#     h_next = h_curr + alpha_h_curr * (delta_curr * e_curr - np.dot(x_curr, h_curr) * x_curr)
+#     return w_next, e_curr, h_next
 
-    def learn(self, R_next, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr, beta_curr):
-        self.rho_curr = rho_curr
-        self.w_next, self.e_grad_curr, self.h_next = gtd_step(R_next, gamma_next, gamma_curr, x_next, x_curr, self.w_curr, lambda_next, lambda_curr, rho_curr, self.e_grad_prev, self.h_curr, alpha_curr, beta_curr)
-        pass
+# class GTD_LEARNER():
+#     def __init__(self, env):
+#         self.observation_space, self.action_space = env.observation_space, env.action_space
+#         self.w_curr, self.w_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
+#         self.h_curr, self.h_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
+#         self.refresh()
+
+#     def learn(self, R_next, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr, beta_curr):
+#         self.rho_curr = rho_curr
+#         self.w_next, self.e_grad_curr, self.h_next = gtd_step(R_next, gamma_next, gamma_curr, x_next, x_curr, self.w_curr, lambda_next, lambda_curr, rho_curr, self.e_grad_prev, self.h_curr, alpha_curr, beta_curr)
+#         pass
         
-    def next(self):
-        self.w_curr, self.w_prev = np.copy(self.w_next), np.copy(self.w_curr)
-        self.e_grad_prev = np.copy(self.e_grad_curr)
-        self.h_curr, self.h_prev = np.copy(self.h_next), np.copy(self.h_curr)
-        self.rho_prev = np.copy(self.rho_curr)
-        del self.w_next, self.e_grad_curr, self.h_next, self.rho_curr
+#     def next(self):
+#         self.w_curr, self.w_prev = np.copy(self.w_next), np.copy(self.w_curr)
+#         self.e_grad_prev = np.copy(self.e_grad_curr)
+#         self.h_curr, self.h_prev = np.copy(self.h_next), np.copy(self.h_curr)
+#         self.rho_prev = np.copy(self.rho_curr)
+#         del self.w_next, self.e_grad_curr, self.h_next, self.rho_curr
 
-    def refresh(self):
-        self.e_grad_curr, self.e_grad_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
-        self.rho_prev = 1
+#     def refresh(self):
+#         self.e_grad_curr, self.e_grad_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
+#         self.rho_prev = 1
 pass

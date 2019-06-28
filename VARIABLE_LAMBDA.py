@@ -22,10 +22,10 @@ class LAMBDA():# state-based parametric lambda
         elif self.approximator == 'NN':
             pass # not implemented
         if l > 1:
-            print('lambda value greater than 1, truncated to 1')
+            # print('lambda value greater than 1, truncated to 1')
             return 1
         elif l < 0:
-            print('lambda value less than 0, truncated to 0')
+            # print('lambda value less than 0, truncated to 0')
             return 0
         return l
 
@@ -42,3 +42,4 @@ class LAMBDA():# state-based parametric lambda
             pass # underflow of lambda rejected
         else:
             self.w -= step_length * gradient
+        self.w -= step_length * gradient

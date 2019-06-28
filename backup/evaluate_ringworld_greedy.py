@@ -31,6 +31,6 @@ things_to_save = {}
 error_value_greedy = eval_greedy(env, behavior_policy, target_policy, gamma = gamma, alpha=alpha, beta=beta, runtimes=runtimes, episodes=episodes, evaluate=evaluate, learner_type=args.learner_type)
 things_to_save['error_value_greedy_mean'], things_to_save['error_value_greedy_std'] = np.nanmean(error_value_greedy, axis=0), np.nanstd(error_value_greedy, axis=0)
 
-filename = 'ringworld_%s_TD_greedy_N_%d_behavior_%g_target_%g_episodes_%g' % (args.learner_type, N, behavior_policy[0, 0], target_policy[0, 0], episodes)
+filename = 'ringworld_%s_greedy_N_%d_behavior_%g_target_%g_episodes_%g' % (args.learner_type, N, behavior_policy[0, 0], target_policy[0, 0], episodes)
 scipy.io.savemat(filename, things_to_save)
 pass
