@@ -2,7 +2,6 @@ import numpy as np
 import numpy.matlib as npm
 import warnings, argparse, scipy.io
 from utils import *
-from methods import *
 from greedy import *
 from mta import *
 from true_online_GTD import *
