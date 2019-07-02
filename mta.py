@@ -1,6 +1,5 @@
 import gym, numpy as np
 from utils import *
-from methods import *
 from true_online_GTD import TRUE_ONLINE_GTD_LEARNER
 from true_online_TD import TRUE_ONLINE_TD_LEARNER
 from VARIABLE_LAMBDA import LAMBDA
@@ -12,8 +11,6 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D)
     elif learner_type == 'totd':
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D)
-    else:
-        pass # not implemented, should try TD
     for episode in range(episodes):
         o_curr, done = env.reset(), False
         x_curr = encoder(o_curr)
@@ -30,14 +27,13 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
                 MC_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha, beta)
                 L_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, 1.1 * alpha, 1.1 * beta)
             elif learner_type == 'totd':
-                # (R_next, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr)
                 MC_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha)
                 L_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, 1.1 * alpha)
             delta_curr = R_next + gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
-            try:
-                r_bar_next = delta_curr ** 2
-            except RuntimeWarning:
-                pass
+            # try:
+            r_bar_next = delta_curr ** 2
+            # except RuntimeWarning:
+            #     pass
             gamma_bar_next = (Lambda.value(x_next) * gamma(x_next)) ** 2
             if learner_type == 'togtd':
                 L_var_learner.learn(r_bar_next, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, alpha, beta)
@@ -45,7 +41,7 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
                 L_var_learner.learn(r_bar_next, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, alpha)
             # SGD on meta-objective
             rho_acc = np.exp(log_rho_accu)
-            if rho_acc > 1e6: break # too much, not trustworthy
+            # if rho_acc > 1e6: break # too much, not trustworthy
             v_next = np.dot(x_next, value_learner.w_curr)
             var_L_next, exp_L_next, exp_MC_next = np.dot(x_next, L_var_learner.w_curr), np.dot(x_next, L_exp_learner.w_curr), np.dot(x_next, MC_exp_learner.w_curr)
             coefficient = gamma(x_next) ** 2 * Lambda.value(x_next) * ((v_next - exp_L_next) ** 2 + var_L_next) + v_next * (exp_L_next + exp_MC_next) - v_next ** 2 - exp_L_next * exp_MC_next

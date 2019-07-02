@@ -45,13 +45,13 @@ for result_index = 1: numel(expectation_list)
     elseif strcmp(result_name, "error_value_togtd_0")
         LEGEND = "GTD(0)";
     elseif strcmp(result_name, "error_value_togtd_20")
-        LEGEND = "GTD(0.2)";
+        LEGEND = "GTD(.2)";
     elseif strcmp(result_name, "error_value_togtd_40")
-        LEGEND = "GTD(0.4)";
+        LEGEND = "GTD(.4)";
     elseif strcmp(result_name, "error_value_togtd_60")
-        LEGEND = "GTD(0.6)";
+        LEGEND = "GTD(.6)";
     elseif strcmp(result_name, "error_value_togtd_80")
-        LEGEND = "GTD(0.8)";
+        LEGEND = "GTD(.8)";
     elseif strcmp(result_name, "error_value_togtd_100")
         LEGEND = "GTD(1)";
     elseif strcmp(result_name, "error_value_totd_0")

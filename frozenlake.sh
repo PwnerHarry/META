@@ -1,10 +1,11 @@
 #!/bin/bash
 #SBATCH --account=def-bengioy
-#SBATCH --cpus-per-task=48
-#SBATCH --mem=64G
-#SBATCH --time=24:00:00
+#SBATCH --cpus-per-task=40
+#SBATCH --mem=32G
+#SBATCH --time=12:00:00
 
 module load python/3.7 scipy-stack
 source ~/ENV/bin/activate
 
-python frozenlake_MTA.py --N 4 --off_policy 1 --episodes 1000000 --runtimes 240
+python evaluate_frozenlake.py --off_policy 1 --episodes 1000000 --runtimes 40 --alpha 0.1 --beta 0.1 --kappa 0.01
+python evaluate_frozenlake.py --off_policy 0 --episodes 1000000 --runtimes 40 --alpha 0.1 --beta 0.1 --kappa 0.01

@@ -1,8 +1,48 @@
-import gym, numpy as np
+import gym, gym.utils.seeding, numpy as np
 from matplotlib import pyplot as plt
-from RingWorld import RingWorldEnv
 from joblib import Parallel, delayed
 from VARIABLE_LAMBDA import LAMBDA
+
+class RingWorldEnv(gym.Env):
+    def __init__(self, N):
+        self.action_space = gym.spaces.Discrete(2)
+        self.observation_space = gym.spaces.Discrete(N)
+        self.seed()
+        P = {}
+        for s in range(self.observation_space.n):
+            small_dict = {}
+            for a in [0, 1]:
+                increment = -1 if a == 0 else 1
+                if s == 0 or s == self.observation_space.n - 1:
+                    entry = [(1.0, s, 0, True)]
+                elif s + increment == self.observation_space.n - 1:
+                    entry = [(1.0, self.observation_space.n - 1, 1, True)]
+                elif s + increment == 0:
+                    entry = [(1.0, 0, -1, True)]
+                else:
+                    entry = [(1.0, s + increment, 0, False)]
+                small_dict[a] = entry
+            P[s] = small_dict
+        self.unwrapped.P = P
+        self.unwrapped.reward_range = (-1, 1)
+
+    def seed(self, seed=None):
+        self.np_random, seed = gym.utils.seeding.np_random(seed)
+        return [seed]
+    
+    def step(self, action):
+        increment = -1 if action == 0 else 1
+        self.state = (self.state + increment) % self.observation_space.n
+        if self.state == 0:
+            return self.state, -1, True, {}
+        elif self.state == self.observation_space.n - 1:
+            return self.state, 1, True, {}
+        return self.state, 0, False, {}
+
+    def reset(self):
+        self.state = int(self.observation_space.n / 2)
+        self.episode_time = 0
+        return self.state
 
 def mse(estimate, target, weight):
     diff = target - estimate.reshape(np.shape(target))
@@ -58,7 +98,6 @@ def index2plane(s, n):
     feature[s // n] = 1; feature[n + s % n] = 1
     return feature
 
-
 # def gtd_step(r_next, gamma_next, gamma_curr, x_next, x_curr, w_curr, lambda_next, lambda_curr, rho_curr, e_prev, h_curr, alpha_curr, alpha_h_curr):
 #     delta_curr = r_next + gamma_next * np.dot(x_next, w_curr) - np.dot(x_curr, w_curr)
 #     e_curr = rho_curr * (gamma_curr * lambda_curr * e_prev + x_curr)
@@ -88,4 +127,141 @@ def index2plane(s, n):
 #     def refresh(self):
 #         self.e_grad_curr, self.e_grad_prev = np.zeros(self.observation_space.n), np.zeros(self.observation_space.n)
 #         self.rho_prev = 1
+
+def dynamic_programming(env, policy, gamma = lambda x: 0.95):
+    TABLE = env.unwrapped.P # (s, (a, (p, s', reward, done)), ..., )
+    # p(s, a, s') and r(s, a)
+    P, R = np.zeros((env.observation_space.n, env.action_space.n, env.observation_space.n)), np.zeros((env.observation_space.n, env.action_space.n))
+    # terminal states
+    terminal_states = []
+    for s in range(env.observation_space.n)[1: -1]:
+        for a in range(env.action_space.n):
+            RELATED = TABLE[s][a]
+            for entry in RELATED:
+                if entry[-1] == True:
+                    terminal_states.append(entry[1])
+    for s in terminal_states:
+        for a in range(env.action_space.n):
+            P[s, a, s], R[s, a] = 1, 0
+    # non-terminal states
+    for s in list(set(range(env.observation_space.n)) - set(terminal_states)):
+        for a in range(env.action_space.n):
+            RELATED = TABLE[s][a]
+            for entry in RELATED:
+                R[s, a] += entry[0] * entry[2]
+                P[s, a, entry[1]] = entry[0]
+    r_pi = np.zeros((env.observation_space.n, 1))
+    P_pi = np.zeros((env.observation_space.n, env.observation_space.n))
+    for s in range(env.observation_space.n):
+        r_pi[s] = np.dot(policy[s, :], R[s, :])
+        for s_prime in range(env.observation_space.n):
+            P_pi[s, s_prime] = np.dot(policy[s, :], P[s, :, s_prime])
+    if not islambda(gamma):
+        gamma = lambda x: gamma
+    # for generalized \Gamma setting, one gamma for one state (or observation or feature)
+    GAMMA = np.zeros((env.observation_space.n, env.observation_space.n))
+    for i in range(env.observation_space.n):
+        GAMMA[i, i] = gamma(i)
+
+    expectation = np.linalg.solve(np.eye(env.observation_space.n) - np.matmul(P_pi, GAMMA), r_pi)
+    return expectation, P_pi
+
+def iterative_policy_evaluation(env, policy, gamma = lambda x: 0.95, start_dist = None):
+    if not start_dist:
+        # For legacy reasons, if start dist is not specified always start in the middle state.
+        start_dist = np.zeros(env.observation_space.n)
+        start_dist[int(env.observation_space.n / 2)] = 1.0
+
+    TABLE = env.unwrapped.P # (s, (a, (p, s', reward, done)), ..., )
+    # p(s, a, s') and r(s, a, s')
+    P = np.zeros((env.observation_space.n, env.action_space.n, env.observation_space.n))
+    R = np.zeros((env.observation_space.n, env.action_space.n, env.observation_space.n))
+    # terminal states
+    terminal_states = []
+    for s in range(env.observation_space.n)[1: -1]:
+        for a in range(env.action_space.n):
+            RELATED = TABLE[s][a]
+            for entry in RELATED:
+                if entry[-1] == True:
+                    terminal_states.append(entry[1])
+    for s in terminal_states:
+        for a in range(env.action_space.n):
+            P[s, a, s] = 1
+    # non-terminal states
+    for s in list(set(range(env.observation_space.n)) - set(terminal_states)):
+        for a in range(env.action_space.n):
+            RELATED = TABLE[s][a]
+            for entry in RELATED:
+                R[s, a, entry[1]] = entry[2]
+                P[s, a, entry[1]] = entry[0]
+    
+    theta = 1e-10
+    delta = theta
+    j = np.zeros(env.observation_space.n)
+    while delta >= theta:
+        delta = 0.0
+        for s in range(env.observation_space.n):
+            old_value = j[s]
+            new_value = 0.0
+            for s_prime in range(env.observation_space.n):
+                for a in range(env.action_space.n):
+                    new_value += policy[s, a] * P[s, a, s_prime] * (R[s, a, s_prime] + gamma(s_prime) * j[s_prime])
+            delta = max(delta, np.abs(new_value - old_value))
+            j[s] = new_value
+    
+    theta = 1e-10
+    delta = theta
+    v = np.zeros(env.observation_space.n)
+    while delta >= theta:
+        delta = 0.0
+        for s in range(env.observation_space.n):
+            old_value = v[s]
+            r_hat = 0.0
+            r = 0.0
+            j_hat = 0.0
+            v_hat = 0.0
+            # new_value = - j[s] ** 2
+            for s_prime in range(env.observation_space.n):
+                for a in range(env.action_space.n):
+                    tp = policy[s, a] * P[s, a, s_prime]
+                    # new_value += tp * ((R[s, a, s_prime] + gamma(s_prime) * j[s_prime]) ** 2 + (gamma(s_prime) ** 2) * v[s_prime])
+                    r_hat += tp * (R[s, a, s_prime] ** 2)
+                    j_hat += tp * (R[s, a, s_prime] * gamma(s_prime) * j[s_prime])
+                    v_hat += tp * (gamma(s_prime) ** 2) * v[s_prime]
+            new_value = r_hat + 2 * j_hat + v_hat
+            delta = max(delta, np.abs(new_value - old_value))
+            v[s] = new_value
+
+    P_pi = np.zeros((env.observation_space.n, env.observation_space.n))
+    for s in range(env.observation_space.n):
+        for s_prime in range(env.observation_space.n):
+            P_pi[s, s_prime] = np.dot(policy[s, :], P[s, :, s_prime])
+
+    return j, (v - np.square(j)), state_distribution(P_pi, start_dist)
+
+def state_distribution(P, start_dist):
+    """
+    P:          stochastic matrix of transition
+    start_dist: distribution of the starting state
+    """
+    n = np.shape(P)[0]
+    state_dist = np.zeros((1, n))
+    absorb_states = []
+    for i in range(n):
+        if P[i, i] == 1:
+            absorb_states.append(i)
+    start_dist = start_dist.reshape((1, n))
+    state_dist += start_dist
+    state_dist[0, absorb_states] = 0
+    next_dict = np.sum(np.matmul(start_dist, P), axis = 0).reshape((1, n))
+    next_dict_norm = np.linalg.norm(next_dict.reshape(-1), 1)
+    while next_dict_norm > 1e-14:
+        state_dist += next_dict
+        next_dict[0, absorb_states] = 0
+        next_dict = np.sum(np.matmul(next_dict, P), axis = 0).reshape((1, n))
+        next_dict_norm = np.linalg.norm(next_dict.reshape(-1), 1)
+    state_dist = state_dist.reshape(-1)
+    state_dist = state_dist / np.sum(state_dist)
+    return state_dist
+
 pass
