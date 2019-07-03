@@ -1,14 +1,14 @@
 import gym, numpy as np
 from utils import *
-from true_online_GTD import TRUE_ONLINE_GTD_LEARNER
-from true_online_TD import TRUE_ONLINE_TD_LEARNER
+from TOGTD import *
+from TOTD import *
 
 def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05):
     D = encoder(0).size
     if learner_type == 'togtd':
-        first_moment_learner, variance_learner, value_learner = TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D)
+        first_moment_learner, variance_learner, value_learner = TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D)
     elif learner_type == 'totd':
-        first_moment_learner, variance_learner, value_learner = TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D)
+        first_moment_learner, variance_learner, value_learner = TOTD_LEARNER(env, D), TOTD_LEARNER(env, D), TOTD_LEARNER(env, D)
     else:
         pass # NN not implemented
     variance_learner.w_prev, variance_learner.w_curr = np.zeros(D), np.zeros(D)

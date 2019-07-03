@@ -1,15 +1,15 @@
 import gym, numpy as np
 from utils import *
-from true_online_GTD import TRUE_ONLINE_GTD_LEARNER
-from true_online_TD import TRUE_ONLINE_TD_LEARNER
+from TOGTD import *
+from TOTD import *
 
 def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05, kappa = 0.01):
     D = encoder(0).size
     value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     if learner_type == 'togtd':
-        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D)
+        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D)
     elif learner_type == 'totd':
-        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D)
+        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TOTD_LEARNER(env, D), TOTD_LEARNER(env, D), TOTD_LEARNER(env, D), TOTD_LEARNER(env, D)
     for episode in range(episodes):
         o_curr, done = env.reset(), False
         x_curr = encoder(o_curr)

@@ -4,8 +4,8 @@ import gym, numpy as np
 from utils import *
 from greedy import *
 from mta import *
-from true_online_GTD import *
-from true_online_TD import *
+from TOGTD import *
+from TOTD import *
 
 def actor_critic(env, episodes, target, behavior, evaluate, encoder, critic_type, gamma = lambda x: 0.95, alpha=0.05, beta=0.05):
     if critic_type == 'togtd':

@@ -1,8 +1,8 @@
 import argparse, warnings, scipy.io, numpy as np, numpy.matlib as npm
 from greedy import *
 from mta import *
-from true_online_GTD import *
-from true_online_TD import *
+from TOGTD import *
+from TOTD import *
 from utils import *
 
 parser = argparse.ArgumentParser(description='')

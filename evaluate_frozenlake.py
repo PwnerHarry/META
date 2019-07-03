@@ -4,8 +4,8 @@ from utils import *
 from greedy import *
 from mta import *
 from MC import *
-from true_online_TD import *
-from true_online_GTD import *
+from TOTD import *
+from TOGTD import *
 
 
 parser = argparse.ArgumentParser(description='')

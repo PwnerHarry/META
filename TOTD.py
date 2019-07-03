@@ -1,10 +1,10 @@
 import numpy as np
 from joblib import Parallel, delayed
-from utils import onehot, decide, importance_sampling_ratio, mse
+from utils import *
 
 # TODO: this file hasn't been tested. Also, I am concerned about $\lambda^{(t+1)}$ being unused!
 
-class TRUE_ONLINE_TD_LEARNER():
+class TOTD_LEARNER():
     def __init__(self, env, D):
         self.observation_space, self.action_space = env.observation_space, env.action_space
         self.observation_space.D = D # dimension after encoding
@@ -48,7 +48,7 @@ def true_online_td(env, episodes, target, behavior, evaluate, Lambda, encoder, g
     alpha:      learning rate for the weight vector of the values
     """
     D = encoder(0).size
-    learner = TRUE_ONLINE_TD_LEARNER(env, D)
+    learner = TOTD_LEARNER(env, D)
     value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     for episode in range(episodes):
         o_curr, done = env.reset(), False

@@ -1,6 +1,5 @@
 % MANUALLY LOAD THE RESULTS FIRST
-cd(fileparts(mfilename('fullpath')));
-addpath(genpath(cd));
+cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 
 expectation_list = [ ...
     "error_value_totd_0", ...
@@ -74,7 +73,6 @@ end
 
 L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
-% set(L, 'Location', 'southwest');
 set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
 axis([1, inf, MIN, inf]);
