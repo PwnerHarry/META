@@ -1,0 +1,96 @@
+function ushaped(folder, pattern)
+% draw the u-shaped band, with x-axis as the learning rate alpha
+% specify the configuration with pattern, using regular expression
+% usage: "ushaped('ringworld', 'behavior\_0\.33\_target\_0\.25.*e\_1e\+06\_r\_40')"
+
+% get file list in which the files satisfy the filter
+dirOutput = dir(fullfile(folder, '*'));
+filenames = {dirOutput.name}';
+reduce_index = [];
+for i = 1: numel(filenames)
+    if isempty(regexp(filenames{i}, pattern, 'once'))
+        reduce_index = [reduce_index, i];
+    end
+end
+filenames(reduce_index) = [];
+
+% loading data files one by one
+METHOD_LIST = {'totd_0', 'totd_20', 'totd_40', 'totd_60', 'totd_80', 'totd_100', 'greedy', 'mta'};
+MEANS = inf(numel(METHOD_LIST), numel(filenames));
+STDS = inf(numel(METHOD_LIST), numel(filenames));
+ALPHAS = zeros(numel(filenames), 1);
+for index_filename = 1: numel(filenames)
+    filename = filenames{index_filename};
+    [startIndex, endIndex] = regexp(filename, 'a\_.*\_k');
+    alpha = str2double(filename(startIndex + 2: endIndex - 2));
+    ALPHAS(index_filename) = alpha;
+    loaded = load(fullfile(folder, filename));
+    for index_method = 1: numel(METHOD_LIST)
+        method = METHOD_LIST{index_method};
+        eval(sprintf('MEANS(%d, index_filename) = loaded.error_value_%s_mean(end);', index_method, method));
+        eval(sprintf('STDS(%d, index_filename) = loaded.error_value_%s_std(end);', index_method, method));
+    end
+end
+
+[ALPHAS, IA, IC] = unique(ALPHAS);
+I = IA;
+for index_unique = 1: numel(IA)
+    locations = (IC == index_unique);
+    MEAN = MEANS(locations, end);
+    [~, IMIN] = min(MEAN);
+    I(index_unique) = IA(IMIN);
+end
+ALPHAS = ALPHAS(I);
+MEANS = MEANS(:, I);
+STDS = STDS(:, I);
+
+[ALPHAS, I] = sort(ALPHAS, 'ascend');
+MEANS = MEANS(:, I);
+STDS = STDS(:, I);
+
+% draw
+BANDWIDTH = 0.5;
+LINECOLORS = [linspecer(numel(METHOD_LIST) - 2); [1, 0, 0]; [0, 0, 1];];
+CURVES = []; LEGENDS = {};
+for index_method = 1: numel(METHOD_LIST)
+    MEAN = MEANS(index_method, :); STD = STDS(index_method, :);
+    INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-STD; STD];
+    [CURVE, ~] = band_drawer(ALPHAS', MEAN, INTERVAL, LINECOLORS(index_method, :));
+    CURVES = [CURVES, CURVE];
+    method = METHOD_LIST{index_method};
+    if strcmp(method, "togtd_0")
+        LEGEND = "GTD(0)";
+    elseif strcmp(method, "togtd_20")
+        LEGEND = "GTD(.2)";
+    elseif strcmp(method, "togtd_40")
+        LEGEND = "GTD(.4)";
+    elseif strcmp(method, "togtd_60")
+        LEGEND = "GTD(.6)";
+    elseif strcmp(method, "togtd_80")
+        LEGEND = "GTD(.8)";
+    elseif strcmp(method, "togtd_100")
+        LEGEND = "GTD(1)";
+    elseif strcmp(method, "totd_0")
+        LEGEND = "TD(0)";
+    elseif strcmp(method, "totd_20")
+        LEGEND = "TD(.2)";
+    elseif strcmp(method, "totd_40")
+        LEGEND = "TD(.4)";
+    elseif strcmp(method, "totd_60")
+        LEGEND = "TD(.6)";
+    elseif strcmp(method, "totd_80")
+        LEGEND = "TD(.8)";
+    elseif strcmp(method, "totd_100")
+        LEGEND = "TD(1)";
+    elseif strcmp(method, "greedy")
+        LEGEND = "greedy";
+    elseif strcmp(method, "mta")
+        LEGEND = "MTA";
+    end
+    LEGENDS = [LEGENDS, LEGEND];
+end
+L = legend(CURVES, LEGENDS);
+set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
+set(gca, 'xscale', 'log');
+set(gca, 'yscale', 'log');
+end

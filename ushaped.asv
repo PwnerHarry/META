@@ -1,0 +1,54 @@
+function ushaped(folder, pattern)
+% draw the u-shaped band, with x-axis as the learning rate alpha
+% specify the configuration with pattern, using regular expression
+
+% get file list in which the files satisfy the filter
+dirOutput = dir(fullfile(folder, '*'));
+filenames = {dirOutput.name}';
+reduce_index = [];
+for i = 1: numel(filenames)
+    if isempty(regexp(filenames{i}, pattern, 'once'))
+        reduce_index = [reduce_index, i];
+    end
+end
+filenames(reduce_index) = [];
+
+% loading data files one by one
+METHOD_LIST = {'totd_0', 'totd_20', 'totd_40', 'totd_60', 'totd_80', 'totd_100', 'greedy', 'mta'};
+MEANS = zeros(numel(METHOD_LIST), numel(filenames));
+STDS = zeros(numel(METHOD_LIST), numel(filenames));
+ALPHAS = zeros(numel(filenames), 1);
+for index_filename = 1: numel(filenames)
+    filename = filenames{index_filename};
+    [startIndex, endIndex] = regexp(filename, 'a\_.*\_k');
+    alpha = str2double(filename(startIndex + 2: endIndex - 2));
+    ALPHAS(index_filename) = alpha;
+    loaded = load(fullfile(folder, filename));
+    for index_method = 1: numel(METHOD_LIST)
+        method = METHOD_LIST{index_method};
+        eval(sprintf('MEANS(%d, index_filename) = loaded.error_value_%s_mean(end);', index_method, method));
+        eval(sprintf('STDS(%d, index_filename) = loaded.error_value_%s_std(end);', index_method, method));
+    end
+end
+[ALPHAS, IA, IC] = unique(ALPHAS);
+I = IA;
+for index_unique = 1: numel(IA)
+    locations = find(IC == index_unique);
+    MEAN = 
+end
+[ALPHAS, I] = sort(ALPHAS, 'ascend');
+MEANS = MEANS(:, I);
+STDS = STDS(:, I);
+
+
+% draw
+BANDWIDTH = 0.5;
+LINECOLORS = [linspecer(numel(METHOD_LIST) - 2); [1, 0, 0]; [0, 0, 1];];
+for index_method = 1: numel(METHOD_LIST)
+    MEAN = MEANS(index_method, :); STD = STDS(index_method, :);
+    INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-STD; STD];
+    [CURVE, ~] = band_drawer(ALPHAS', MEAN, INTERVAL, LINECOLORS(index_method, :));
+end
+set(gca, 'xscale', 'log');
+set(gca, 'yscale', 'log');
+end
