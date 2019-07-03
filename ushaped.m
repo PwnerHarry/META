@@ -1,7 +1,10 @@
-function ushaped(folder, pattern)
+function ushaped(env, folder, pattern)
 % draw the u-shaped band, with x-axis as the learning rate alpha
 % specify the configuration with pattern, using regular expression
-% usage: "ushaped('ringworld', 'behavior\_0\.33\_target\_0\.25.*e\_1e\+06\_r\_40')"
+
+% usage:
+% ushaped('ringworld', 'ringworld/e_1e6_r_40', 'behavior\_0\.33\_target\_0\.25')
+% ushaped('frozenlake', 'frozenlake/e_1e6_r_40', 'behavior\_0\.25\_target\_0\.2')
 
 % get file list in which the files satisfy the filter
 dirOutput = dir(fullfile(folder, '*'));
@@ -15,16 +18,24 @@ end
 filenames(reduce_index) = [];
 
 % loading data files one by one
-METHOD_LIST = {'totd_0', 'totd_20', 'totd_40', 'totd_60', 'totd_80', 'totd_100', 'greedy', 'mta'};
+if strcmp(env, 'ringworld')
+	METHOD_LIST = {'totd_0', 'totd_20', 'totd_40', 'totd_60', 'totd_80', 'totd_100', 'greedy', 'mta'};
+elseif strcmp(env, 'frozenlake')
+    METHOD_LIST = {'togtd_0', 'togtd_20', 'togtd_40', 'togtd_60', 'togtd_80', 'togtd_100', 'greedy', 'mta'};
+end
 MEANS = nan(numel(METHOD_LIST), numel(filenames));
 STDS = nan(numel(METHOD_LIST), numel(filenames));
 ALPHAS = zeros(numel(filenames), 1);
 for index_filename = 1: numel(filenames)
     filename = filenames{index_filename};
-    [startIndex, endIndex] = regexp(filename, 'a\_.*\_k');
+    if strcmp(env, 'ringworld')
+    	[startIndex, endIndex] = regexp(filename, 'a\_.*\_k');
+    elseif strcmp(env, 'frozenlake')
+        [startIndex, endIndex] = regexp(filename, 'a\_.*\_b');
+    end
     alpha = str2double(filename(startIndex + 2: endIndex - 2));
     ALPHAS(index_filename) = alpha;
-    loaded = load(fullfile(folder, filename));
+    loaded = load(fullfile(folder, filename)); %#ok<NASGU>
     for index_method = 1: numel(METHOD_LIST)
         method = METHOD_LIST{index_method};
         eval(sprintf('MEANS(%d, index_filename) = loaded.error_value_%s_mean(end);', index_method, method));
@@ -37,7 +48,7 @@ NEW_MEANS = zeros(numel(METHOD_LIST), numel(IA));
 NEW_STDS = zeros(numel(METHOD_LIST), numel(IA));
 for index_unique = 1: numel(IA)
     locations = find(IC == index_unique);
-    MEAN_MTA = MEANS(locations, end);
+    MEAN_MTA = MEANS(end, locations);
     [~, IMIN] = min(MEAN_MTA);
     index_best = locations(IMIN);
     NEW_MEANS(end, index_unique) = MEANS(end, index_best);
