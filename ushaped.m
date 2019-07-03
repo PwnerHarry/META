@@ -16,8 +16,8 @@ filenames(reduce_index) = [];
 
 % loading data files one by one
 METHOD_LIST = {'totd_0', 'totd_20', 'totd_40', 'totd_60', 'totd_80', 'totd_100', 'greedy', 'mta'};
-MEANS = inf(numel(METHOD_LIST), numel(filenames));
-STDS = inf(numel(METHOD_LIST), numel(filenames));
+MEANS = nan(numel(METHOD_LIST), numel(filenames));
+STDS = nan(numel(METHOD_LIST), numel(filenames));
 ALPHAS = zeros(numel(filenames), 1);
 for index_filename = 1: numel(filenames)
     filename = filenames{index_filename};
@@ -33,16 +33,20 @@ for index_filename = 1: numel(filenames)
 end
 
 [ALPHAS, IA, IC] = unique(ALPHAS);
-I = IA;
+NEW_MEANS = zeros(numel(METHOD_LIST), numel(IA));
+NEW_STDS = zeros(numel(METHOD_LIST), numel(IA));
 for index_unique = 1: numel(IA)
-    locations = (IC == index_unique);
-    MEAN = MEANS(locations, end);
-    [~, IMIN] = min(MEAN);
-    I(index_unique) = IA(IMIN);
+    locations = find(IC == index_unique);
+    MEAN_MTA = MEANS(locations, end);
+    [~, IMIN] = min(MEAN_MTA);
+    index_best = locations(IMIN);
+    NEW_MEANS(end, index_unique) = MEANS(end, index_best);
+    NEW_STDS(end, index_unique) = STDS(end, index_best);
+    NEW_MEANS(1: end - 1, index_unique) = mean(MEANS(1: end - 1, locations), 2, 'omitnan');
+    NEW_STDS(1: end - 1, index_unique) = mean(STDS(1: end - 1, locations), 2, 'omitnan');
 end
-ALPHAS = ALPHAS(I);
-MEANS = MEANS(:, I);
-STDS = STDS(:, I);
+MEANS = NEW_MEANS;
+STDS = NEW_STDS;
 
 [ALPHAS, I] = sort(ALPHAS, 'ascend');
 MEANS = MEANS(:, I);
@@ -93,4 +97,5 @@ L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
+drawnow;
 end
