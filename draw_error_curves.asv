@@ -1,5 +1,4 @@
 % MANUALLY LOAD THE RESULTS FIRST
-sample_method = 'linear';
 cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 
 expectation_list = [ ...
@@ -26,11 +25,8 @@ for result_index = 1: numel(expectation_list)
     catch ME
         continue;
     end
-    if strcmp(sample_method, 'linear')
-        X = get_statistics2(results_mean, num_points, false);
-    elseif strcmp(sample_method, 'log')
-        X = get_statistics2(results_mean, num_points, true);
-    end
+    %X = get_statistics2(results_mean, num_points, true);
+    
     MEAN = results_mean(X);
     MIN = min(min(MEAN), MIN);
     INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-results_std(X); results_std(X)];
@@ -71,9 +67,7 @@ end
 
 L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
-if strcmp(sample_method, 'log')
-    set(gca, 'xscale', 'log');
-end
+set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
 axis([1, inf, MIN, inf]);
 set(gca, 'FontSize', 16);
