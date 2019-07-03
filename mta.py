@@ -2,7 +2,6 @@ import gym, numpy as np
 from utils import *
 from true_online_GTD import TRUE_ONLINE_GTD_LEARNER
 from true_online_TD import TRUE_ONLINE_TD_LEARNER
-from VARIABLE_LAMBDA import LAMBDA
 
 def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05, kappa = 0.01):
     D = encoder(0).size
