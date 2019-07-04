@@ -19,7 +19,7 @@ filenames(reduce_index) = [];
 
 % loading data files one by one
 if strcmp(env, 'ringworld')
-	METHOD_LIST = {'totd_0', 'totd_20', 'totd_40', 'totd_60', 'totd_80', 'totd_100', 'greedy', 'mta'};
+    METHOD_LIST = {'totd_0', 'totd_20', 'totd_40', 'totd_60', 'totd_80', 'totd_100', 'greedy', 'mta'};
 elseif strcmp(env, 'frozenlake')
     METHOD_LIST = {'togtd_0', 'togtd_20', 'togtd_40', 'togtd_60', 'togtd_80', 'togtd_100', 'greedy', 'mta'};
 end
@@ -29,7 +29,7 @@ ALPHAS = zeros(numel(filenames), 1);
 for index_filename = 1: numel(filenames)
     filename = filenames{index_filename};
     if strcmp(env, 'ringworld')
-    	[startIndex, endIndex] = regexp(filename, 'a\_.*\_k');
+        [startIndex, endIndex] = regexp(filename, 'a\_.*\_k');
     elseif strcmp(env, 'frozenlake')
         [startIndex, endIndex] = regexp(filename, 'a\_.*\_b');
     end
@@ -38,8 +38,11 @@ for index_filename = 1: numel(filenames)
     loaded = load(fullfile(folder, filename)); %#ok<NASGU>
     for index_method = 1: numel(METHOD_LIST)
         method = METHOD_LIST{index_method};
-        eval(sprintf('MEANS(%d, index_filename) = loaded.error_value_%s_mean(end);', index_method, method));
-        eval(sprintf('STDS(%d, index_filename) = loaded.error_value_%s_std(end);', index_method, method));
+        try
+            eval(sprintf('MEANS(%d, index_filename) = loaded.error_value_%s_mean(end);', index_method, method));
+            eval(sprintf('STDS(%d, index_filename) = loaded.error_value_%s_std(end);', index_method, method));
+        catch ME
+        end
     end
 end
 

@@ -7,7 +7,7 @@ from mta import *
 from TOGTD import *
 from TOTD import *
 
-def actor_critic(env, episodes, target, behavior, evaluate, encoder, critic_type, gamma = lambda x: 0.95, alpha=0.05, beta=0.05):
+def actor_critic(env, episodes, target, behavior, evaluate, encoder, critic_type, gamma=lambda x: 0.95, alpha=0.05, beta=0.05):
     # suppose we use exponential softmax on values
     theta, w = np.zeros(env.action_space.n), np.zeros(env.observation_space.n)
     e_theta, e_w = np.zeros(env.action_space.n), np.zeros(env.observation_space.n)
