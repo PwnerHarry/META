@@ -1,16 +1,15 @@
 import gym, numpy as np
 from utils import *
-from true_online_GTD import TRUE_ONLINE_GTD_LEARNER
-from true_online_TD import TRUE_ONLINE_TD_LEARNER
-from VARIABLE_LAMBDA import LAMBDA
+from TOGTD import *
+from TOTD import *
 
 def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05, kappa = 0.01):
     D = encoder(0).size
     value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     if learner_type == 'togtd':
-        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D)
+        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D)
     elif learner_type == 'totd':
-        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D)
+        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TOTD_LEARNER(env, D), TOTD_LEARNER(env, D), TOTD_LEARNER(env, D), TOTD_LEARNER(env, D)
     for episode in range(episodes):
         o_curr, done = env.reset(), False
         x_curr = encoder(o_curr)
@@ -29,7 +28,10 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
             elif learner_type == 'totd':
                 MC_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha)
                 L_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, 1.1 * alpha)
-            delta_curr = R_next + gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
+            if not done:
+                delta_curr = R_next + gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
+            else:
+                delta_curr = R_next - np.dot(x_curr, value_learner.w_curr)
             # try:
             r_bar_next = delta_curr ** 2
             # except RuntimeWarning:

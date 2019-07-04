@@ -1,6 +1,5 @@
 import numpy as np
-
-from utils import onehot, decide, importance_sampling_ratio, mse
+from utils import *
 
 class MC_LEARNER():
     def __init__(self, env):

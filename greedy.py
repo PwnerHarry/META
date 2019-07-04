@@ -1,14 +1,14 @@
 import gym, numpy as np
 from utils import *
-from true_online_GTD import TRUE_ONLINE_GTD_LEARNER
-from true_online_TD import TRUE_ONLINE_TD_LEARNER
+from TOGTD import *
+from TOTD import *
 
 def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05):
     D = encoder(0).size
     if learner_type == 'togtd':
-        first_moment_learner, variance_learner, value_learner = TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D), TRUE_ONLINE_GTD_LEARNER(env, D)
+        first_moment_learner, variance_learner, value_learner = TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D)
     elif learner_type == 'totd':
-        first_moment_learner, variance_learner, value_learner = TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D), TRUE_ONLINE_TD_LEARNER(env, D)
+        first_moment_learner, variance_learner, value_learner = TOTD_LEARNER(env, D), TOTD_LEARNER(env, D), TOTD_LEARNER(env, D)
     else:
         pass # NN not implemented
     variance_learner.w_prev, variance_learner.w_curr = np.zeros(D), np.zeros(D)
@@ -27,7 +27,10 @@ def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_t
                 first_moment_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha, beta)
             elif learner_type == 'totd':
                 first_moment_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha)
-            delta_curr = R_next + gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
+            if not done:
+                delta_curr = R_next + gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
+            else:
+                delta_curr = R_next - np.dot(x_curr, value_learner.w_curr)
             r_bar_next = delta_curr ** 2
             gamma_bar_next = (rho_curr * gamma(x_next)) ** 2
             if learner_type == 'togtd':

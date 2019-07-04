@@ -1,7 +1,51 @@
 import gym, gym.utils.seeding, numpy as np
 from matplotlib import pyplot as plt
 from joblib import Parallel, delayed
-from VARIABLE_LAMBDA import LAMBDA
+
+class LAMBDA():# state-based parametric lambda
+    def __init__(self, env, initial_value, approximator = 'constant'):
+        self.n = env.observation_space.n
+        self.approximator = approximator
+        if approximator == 'constant':
+            self.w = initial_value
+        elif approximator == 'linear':
+            self.w = initial_value.reshape(-1)
+        elif approximator == 'tabular':
+            self.w = initial_value.reshape(-1)
+        elif approximator == 'NN':
+            pass # Neural Network approximator to be implemented using PyTorch
+
+    def value(self, x):
+        if self.approximator == 'constant':
+            l = self.w
+        elif self.approximator == 'tabular':
+            l = self.w[x]
+        elif self.approximator == 'linear':
+            l = np.dot(x.reshape(-1), self.w)
+        elif self.approximator == 'NN':
+            pass # not implemented
+        if l > 1:
+            # print('lambda value greater than 1, truncated to 1')
+            return 1
+        elif l < 0:
+            # print('lambda value less than 0, truncated to 0')
+            return 0
+        return l
+
+    def gradient(self, x):
+        if self.approximator == 'linear':
+            return x.reshape(-1)
+
+    def gradient_descent(self, x, step_length):
+        gradient = self.gradient(x)
+        value_after = np.dot(x.reshape(-1), (self.w - step_length * gradient))
+        if value_after > 1:
+            pass # overflow of lambda rejected
+        elif value_after < 0:
+            pass # underflow of lambda rejected
+        else:
+            self.w -= step_length * gradient
+        self.w -= step_length * gradient
 
 class RingWorldEnv(gym.Env):
     def __init__(self, N):
@@ -58,14 +102,19 @@ def eval_method_with_variance_per_run(method, env, truth, var_truth, stat_dist, 
         var_result[0, j] = mse(var_trace[j], var_truth, stat_dist)
     return (result, var_result)
 
-def evaluate_estimate(weight, expectation, variance, distribution, stat_type, encoder):
-    estimate = np.zeros(expectation.size)
-    for i in range(estimate.size):
-        estimate[i] = np.dot(encoder(i), weight)# limited to the linear case, to be extended
+def evaluate_estimate(weight, expectation, variance, distribution, stat_type, state_set_matrix):
+    # place the state representations row by row in the state_set_matrix
+    estimate = np.dot(state_set_matrix, weight).reshape(-1)
     if stat_type == 'expectation':
         return mse(estimate, expectation, distribution)
     elif stat_type == 'variance':
         return mse(estimate, variance, distribution)
+
+def get_state_set_matrix(env, encoder):
+    state_set_matrix = np.zeros((env.observation_space.n, np.size(encoder(0))))
+    for s in range(env.observation_space.n):
+        state_set_matrix[s, :] = encoder(s).reshape(1, -1)
+    return state_set_matrix
 
 def eval_method_with_variance(method, env, truth, var_truth, stat_dist, behavior, target, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, runtimes=20, episodes=100000):
     results = Parallel(n_jobs = -1)(delayed(eval_method_with_variance_per_run)(method, env, truth, var_truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta) for runtime in range(runtimes))
