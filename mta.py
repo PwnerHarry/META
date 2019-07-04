@@ -28,7 +28,10 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
             elif learner_type == 'totd':
                 MC_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha)
                 L_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, 1.1 * alpha)
-            delta_curr = R_next + gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
+            if not done:
+                delta_curr = R_next + gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
+            else:
+                delta_curr = R_next - np.dot(x_curr, value_learner.w_curr)
             # try:
             r_bar_next = delta_curr ** 2
             # except RuntimeWarning:

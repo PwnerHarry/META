@@ -67,6 +67,8 @@ MEANS = MEANS(:, I);
 STDS = STDS(:, I);
 
 % draw
+cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
+figure;
 BANDWIDTH = 0.5;
 LINECOLORS = [linspecer(numel(METHOD_LIST) - 2); [1, 0, 0]; [0, 0, 1];];
 CURVES = []; LEGENDS = {};

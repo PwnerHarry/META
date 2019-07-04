@@ -102,14 +102,19 @@ def eval_method_with_variance_per_run(method, env, truth, var_truth, stat_dist, 
         var_result[0, j] = mse(var_trace[j], var_truth, stat_dist)
     return (result, var_result)
 
-def evaluate_estimate(weight, expectation, variance, distribution, stat_type, encoder):
-    estimate = np.zeros(expectation.size)
-    for i in range(estimate.size):
-        estimate[i] = np.dot(encoder(i), weight)# limited to the linear case, to be extended
+def evaluate_estimate(weight, expectation, variance, distribution, stat_type, state_set_matrix):
+    # place the state representations row by row in the state_set_matrix
+    estimate = np.dot(state_set_matrix, weight).reshape(-1)
     if stat_type == 'expectation':
         return mse(estimate, expectation, distribution)
     elif stat_type == 'variance':
         return mse(estimate, variance, distribution)
+
+def get_state_set_matrix(env, encoder):
+    state_set_matrix = np.zeros((env.observation_space.n, np.size(encoder(0))))
+    for s in range(env.observation_space.n):
+        state_set_matrix[s, :] = encoder(s).reshape(1, -1)
+    return state_set_matrix
 
 def eval_method_with_variance(method, env, truth, var_truth, stat_dist, behavior, target, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, runtimes=20, episodes=100000):
     results = Parallel(n_jobs = -1)(delayed(eval_method_with_variance_per_run)(method, env, truth, var_truth, stat_dist, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta) for runtime in range(runtimes))
