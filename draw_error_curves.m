@@ -1,5 +1,5 @@
 % MANUALLY LOAD THE RESULTS FIRST
-sample_method = 'linear';
+sample_method = 'log';
 cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 
 expectation_list = [ ...
