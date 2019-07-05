@@ -7,8 +7,8 @@ from utils import *
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--alpha', type=float, default=0.0001, help='')
-parser.add_argument('--beta', type=float, default=0.01, help='')
-parser.add_argument('--kappa', type=float, default=0.01, help='')
+parser.add_argument('--beta', type=float, default=0.01, help='does not mean anyting if using TOTD!')
+parser.add_argument('--kappa', type=float, default=0.5, help='')
 parser.add_argument('--gamma', type=float, default=0.95, help='')
 parser.add_argument('--episodes', type=int, default=10000, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
@@ -52,9 +52,9 @@ if args.evaluate_greedy:
 if args.evaluate_MTA:
     error_value_mta = eval_MTA(env, behavior_policy, target_policy, kappa=args.kappa, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder, learner_type=args.learner_type)
     things_to_save['error_value_mta_mean'], things_to_save['error_value_mta_std'] = np.nanmean(error_value_mta, axis=0), np.nanstd(error_value_mta, axis=0)
+
 time_finish = time.time()
 print('time elapsed: %gs' % (time_finish - time_start))
-
 # SAVE
 if args.learner_type == "togtd":
     filename = 'ringworld_%s_behavior_%g_target_%g_a_%g_b_%g_k_%g_e_%g_r_%d' % (args.learner_type, behavior_policy[0, 0], target_policy[0, 0], args.alpha, args.beta, args.kappa, args.episodes, args.runtimes)
