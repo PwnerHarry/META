@@ -65,5 +65,5 @@ print('time elapsed: %gs' % (time_finish - time_start))
 if args.off_policy:
     filename = 'frozenlake_off_a_%g_b_%g_k_%g_e_%g_r_%d' % (args.alpha, args.beta, args.kappa, args.episodes, args.runtimes)
 else:
-    filename = 'frozenlake_on_%g_a_%g_k_%g_e_%g_r_%d' % (args.alpha, args.kappa, args.episodes, args.runtimes)
+    filename = 'frozenlake_on_a_%g_k_%g_e_%g_r_%d' % (args.alpha, args.kappa, args.episodes, args.runtimes)
 scipy.io.savemat(filename, things_to_save)
