@@ -54,7 +54,6 @@ class LAMBDA():# state-based parametric lambda
             pass # underflow of lambda rejected
         else:
             self.w -= step_length * gradient
-        self.w -= step_length * gradient
 
 class RingWorldEnv(gym.Env):
     def __init__(self, N):
