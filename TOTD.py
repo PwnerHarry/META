@@ -38,7 +38,7 @@ class TOTD_LEARNER():
         w_next = w_curr + delta_curr * e_curr + alpha_curr * (np.dot(x_curr, w_prev) - np.dot(x_curr, w_curr)) * x_next
         return w_next, e_curr
 
-def true_online_td(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma = lambda x: 0.95, alpha = 0.05):
+def totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma = lambda x: 0.95, alpha = 0.05):
     """
     episodes:   number of episodes
     target:     target policy matrix (|S|*|A|)
@@ -48,29 +48,29 @@ def true_online_td(env, episodes, target, behavior, evaluate, Lambda, encoder, g
     alpha:      learning rate for the weight vector of the values
     """
     D = encoder(0).size
-    learner = TOTD_LEARNER(env, D)
+    value_learner = TOTD_LEARNER(env, D)
     value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     for episode in range(episodes):
         o_curr, done = env.reset(), False
         x_curr = encoder(o_curr)
-        learner.refresh()
-        value_trace[episode, 0] = evaluate(learner.w_curr, 'expectation')
+        value_learner.refresh()
+        value_trace[episode, 0] = evaluate(value_learner.w_curr, 'expectation')
         while not done:
             action = decide(o_curr, behavior)
             rho_curr = importance_sampling_ratio(target, behavior, o_curr, action)
             o_next, r_next, done, _ = env.step(action)
             x_next = encoder(o_next)
             if not done:
-                learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha)
+                value_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha)
             else:
-                learner.learn(r_next, 0, gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha)
-            learner.next()
+                value_learner.learn(r_next, 0, gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha)
+            value_learner.next()
             x_curr = x_next
     return value_trace
 
 def eval_totd_per_run(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, evaluate, encoder):
     print('running %d of %d for totd' % (runtime + 1, runtimes))
-    value_trace = true_online_td(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=gamma, alpha=alpha)
+    value_trace = totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=gamma, alpha=alpha)
     return value_trace.T
 
 def eval_totd(env, behavior, target, Lambda, gamma, alpha, runtimes, episodes, evaluate, encoder):

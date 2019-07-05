@@ -7,7 +7,7 @@ from utils import *
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--alpha', type=float, default=0.0001, help='')
-parser.add_argument('--beta', type=float, default=0.00001, help='')
+parser.add_argument('--beta', type=float, default=0.01, help='')
 parser.add_argument('--kappa', type=float, default=0.01, help='')
 parser.add_argument('--gamma', type=float, default=0.95, help='')
 parser.add_argument('--episodes', type=int, default=10000, help='')

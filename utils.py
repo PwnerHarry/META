@@ -2,6 +2,15 @@ import gym, gym.utils.seeding, numpy as np
 from matplotlib import pyplot as plt
 from joblib import Parallel, delayed
 
+def softmax(x):
+    # a numerically stable softmax!
+    exps = np.exp(x - np.max(x))
+    return exps / np.sum(exps)
+
+def jacobian_softmax(softmax):
+    s = softmax.reshape(-1, 1)
+    return np.diagflat(s) - np.matmul(s, s.T) # $J = I - \bm{s}\bm{s}^{T}$
+
 class LAMBDA():# state-based parametric lambda
     def __init__(self, env, initial_value, approximator = 'constant'):
         self.n = env.observation_space.n
