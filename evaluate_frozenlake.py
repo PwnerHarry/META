@@ -9,12 +9,12 @@ from TOGTD import *
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--N', type=int, default=4, help='')
-parser.add_argument('--alpha', type=float, default=0.0001, help='')
+parser.add_argument('--alpha', type=float, default=0.2, help='')
 parser.add_argument('--beta', type=float, default=0.5, help='')
 parser.add_argument('--gamma', type=float, default=0.95, help='')
 parser.add_argument('--kappa', type=float, default=0.1, help='')
-parser.add_argument('--episodes', type=int, default=10000, help='')
-parser.add_argument('--runtimes', type=int, default=8, help='')
+parser.add_argument('--episodes', type=int, default=100000, help='')
+parser.add_argument('--runtimes', type=int, default=40, help='')
 parser.add_argument('--off_policy', type=int, default=0, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
 parser.add_argument('--evaluate_baselines', type=int, default=1, help='')
@@ -42,10 +42,7 @@ if args.evaluate_baselines:
     BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
         Lambda = LAMBDA(env, baseline_lambda, approximator='constant')
-        # if args.learner_type == 'togtd':
         results = eval_togtd(env, behavior_policy, target_policy, Lambda, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder)
-        # elif args.learner_type == 'totd':
-        #     results = eval_totd(env, behavior_policy, target_policy, Lambda, gamma=gamma, alpha=args.alpha, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder)
         exec("things_to_save[\'error_value_%s_%g_mean\'] = np.nanmean(results, axis=0)" % (args.learner_type, baseline_lambda * 100)) # no dots in variable names for MATLAB
         exec("things_to_save[\'error_value_%s_%g_std\'] = np.nanstd(results, axis=0)" % (args.learner_type, baseline_lambda * 100))
 
