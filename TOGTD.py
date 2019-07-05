@@ -10,10 +10,10 @@ class TOGTD_LEARNER():
         self.h_curr, self.h_prev = np.zeros(self.observation_space.D), np.zeros(self.observation_space.D)
         self.refresh()
 
-    def learn(self, R_next, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr, beta_curr):
+    def learn(self, r_next, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr, beta_curr):
         self.rho_curr = rho_curr
         self.w_next, self.e_curr, self.e_grad_curr, self.e_h_curr, self.h_next = \
-            self.true_online_gtd_step(R_next, gamma_next, gamma_curr, x_next, x_curr, self.w_curr, self.w_prev,
+            self.true_online_gtd_step(r_next, gamma_next, gamma_curr, x_next, x_curr, self.w_curr, self.w_prev,
          lambda_next, lambda_curr, self.rho_curr, self.rho_prev,
          self.e_prev, self.e_grad_prev, self.e_h_prev, self.h_curr,
          alpha_curr, beta_curr)
@@ -33,16 +33,17 @@ class TOGTD_LEARNER():
         self.rho_prev = 1
 
     @staticmethod
-    def true_online_gtd_step(R_next, gamma_next, gamma_curr, x_next, x_curr, w_curr, w_prev, lambda_next, lambda_curr, rho_curr, rho_prev, e_prev, e_grad_prev, e_h_prev, h_curr, alpha_curr, beta_curr):
-        delta_curr = R_next + gamma_next * np.dot(x_next, w_curr) - np.dot(x_curr, w_curr)
-        e_curr = rho_curr * (gamma_curr * lambda_curr * e_prev + alpha_curr * (1 - rho_curr * gamma_curr * lambda_curr * np.dot(x_curr, e_prev)) * x_curr)
+    def true_online_gtd_step(r_next, gamma_next, gamma_curr, x_next, x_curr, w_curr, w_prev, lambda_next, lambda_curr, rho_curr, rho_prev, e_prev, e_grad_prev, e_h_prev, h_curr, alpha_curr, beta_curr):
+        # Off-policy TD($\lambda$) with a True Online Equivalence
+        delta_curr = r_next + gamma_next * np.dot(x_next.reshape(-1), w_curr.reshape(-1)) - np.dot(x_curr.reshape(-1), w_curr.reshape(-1))
+        e_curr = rho_curr * (gamma_curr * lambda_curr * e_prev + alpha_curr * (1 - rho_curr * gamma_curr * lambda_curr * np.dot(x_curr.reshape(-1), e_prev.reshape(-1))) * x_curr)
         e_grad_curr = rho_curr * (gamma_curr * lambda_curr * e_grad_prev + x_curr)
         e_h_curr = rho_prev * gamma_curr * lambda_curr * e_h_prev + beta_curr * (1 - rho_prev * gamma_curr * lambda_curr * np.dot(x_curr, e_h_prev)) * x_curr
-        w_next = w_curr + delta_curr * e_curr + (np.dot(w_curr, x_curr) - np.dot(w_prev, x_curr)) * (e_curr - alpha_curr * rho_curr * x_curr) - alpha_curr * gamma_next * (1 - lambda_next) * np.dot(h_curr, e_grad_curr) * x_next
+        w_next = w_curr + delta_curr * e_curr + (np.dot(w_curr.reshape(-1), x_curr.reshape(-1)) - np.dot(w_prev.reshape(-1), x_curr.reshape(-1))) * (e_curr - alpha_curr * rho_curr * x_curr) - alpha_curr * gamma_next * (1 - lambda_next) * np.dot(h_curr.reshape(-1), e_grad_curr.reshape(-1)) * x_next
         h_next = h_curr + rho_curr * delta_curr * e_h_curr - beta_curr * np.dot(x_curr, h_curr) * x_curr
         return w_next, e_curr, e_grad_curr, e_h_curr, h_next
 
-def togtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05):
+def togtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=lambda x: 0.95, alpha=0.05, beta=0.05):
     """
     episodes:   number of episodes
     target:     target policy matrix (|S|*|A|)

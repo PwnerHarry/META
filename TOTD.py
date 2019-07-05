@@ -11,10 +11,10 @@ class TOTD_LEARNER():
         self.w_curr, self.w_prev = np.zeros(self.observation_space.D), np.zeros(self.observation_space.D)
         self.refresh()
 
-    def learn(self, R_next, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr):
+    def learn(self, r_next, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr):
         self.rho_curr = rho_curr
         self.w_next, self.e_curr = \
-            self.true_online_td_step(R_next, gamma_next, gamma_curr, x_next, x_curr, self.w_curr, self.w_prev,
+            self.true_online_td_step(r_next, gamma_next, gamma_curr, x_next, x_curr, self.w_curr, self.w_prev,
          lambda_next, lambda_curr, self.rho_curr, self.rho_prev,
          self.e_prev,
          alpha_curr)
@@ -31,11 +31,14 @@ class TOTD_LEARNER():
         self.rho_prev = 1
 
     @staticmethod
-    def true_online_td_step(R_next, gamma_next, gamma_curr, x_next, x_curr, w_curr, w_prev, lambda_next, lambda_curr, rho_curr, rho_prev, e_prev, alpha_curr):
+    def true_online_td_step(r_next, gamma_next, gamma_curr, x_next, x_curr, w_curr, w_prev, lambda_next, lambda_curr, rho_curr, rho_prev, e_prev, alpha_curr):
         # TODO: double-check, rho_prev, lambda_next not used!
-        delta_curr = R_next + gamma_next * np.dot(x_next, w_curr) - np.dot(x_curr, w_curr)
-        e_curr = rho_curr * (gamma_curr * lambda_curr * e_prev + alpha_curr * (1 - rho_curr * gamma_curr * lambda_curr * np.dot(x_curr, e_prev)) * x_curr)
-        w_next = w_curr + delta_curr * e_curr + alpha_curr * (np.dot(x_curr, w_prev) - np.dot(x_curr, w_curr)) * x_next
+        # TODO: check the gamma index
+        # True Online Temporal-Difference Learning - Harm van Seijen et al.
+        delta_curr = r_next + gamma_next * np.dot(w_curr.reshape(-1), x_next) - np.dot(w_prev.reshape(-1), x_curr)
+        # TODO: check things about the second $\rho$
+        e_curr = rho_curr * (gamma_curr * lambda_curr * e_prev + alpha_curr * x_curr - alpha_curr * rho_curr * gamma_curr * lambda_curr * np.dot(x_curr, e_prev) * x_curr)
+        w_next = w_curr + delta_curr * e_curr - alpha_curr * (np.dot(w_curr.reshape(-1), x_curr.reshape(-1)) - np.dot(w_prev.reshape(-1), x_curr.reshape(-1))) * x_curr
         return w_next, e_curr
 
 def totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma = lambda x: 0.95, alpha = 0.05):
