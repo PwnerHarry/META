@@ -33,7 +33,6 @@ class TOTD_LEARNER():
     @staticmethod
     def true_online_td_step(r_next, gamma_next, gamma_curr, x_next, x_curr, w_curr, w_prev, lambda_next, lambda_curr, rho_curr, rho_prev, e_prev, alpha_curr):
         # TODO: double-check, rho_prev, lambda_next not used!
-        # TODO: check the gamma index
         # True Online Temporal-Difference Learning - Harm van Seijen et al.
         delta_curr = r_next + gamma_next * np.dot(w_curr.reshape(-1), x_next) - np.dot(w_prev.reshape(-1), x_curr)
         # TODO: check things about the second $\rho$
@@ -72,7 +71,7 @@ def totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma = lam
     return value_trace
 
 def eval_totd_per_run(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, evaluate, encoder):
-    print('running %d of %d for totd' % (runtime + 1, runtimes))
+    print('running %d of %d for totd(%g)' % (runtime + 1, runtimes, Lambda.value(encoder(0))))
     value_trace = totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=gamma, alpha=alpha)
     return value_trace.T
 
