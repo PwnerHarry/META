@@ -48,11 +48,7 @@ class LAMBDA():# state-based parametric lambda
     def gradient_descent(self, x, step_length):
         gradient = self.gradient(x)
         value_after = np.dot(x.reshape(-1), (self.w - step_length * gradient))
-        if value_after > 1:
-            pass # overflow of lambda rejected
-        elif value_after < 0:
-            pass # underflow of lambda rejected
-        else:
+        if value_after >= 0 and value_after <= 1:
             self.w -= step_length * gradient
 
 class RingWorldEnv(gym.Env):
