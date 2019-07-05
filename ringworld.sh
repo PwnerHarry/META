@@ -6,7 +6,7 @@
 
 ALPHA="0.0001"
 TARGET="0.05"
-BEHAVIOR="0.15"
+BEHAVIOR="0.05"
 
 
 module load python/3.7 scipy-stack
