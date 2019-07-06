@@ -30,6 +30,9 @@ for index_filename = 1: numel(filenames)
     filename = filenames{index_filename};
     if strcmp(env, 'ringworld')
         [startIndex, endIndex] = regexp(filename, 'a\_.*\_k');
+        if isempty(startIndex) && isempty(endIndex)
+            [startIndex, endIndex] = regexp(filename, 'a\_.*\_e');
+        end
     elseif strcmp(env, 'frozenlake')
         [startIndex, endIndex] = regexp(filename, 'a\_.*\_b');
     end
@@ -111,7 +114,7 @@ for index_method = 1: numel(METHOD_LIST)
 end
 L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
-% set(gca, 'xscale', 'log');
+set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
 drawnow;
 end
