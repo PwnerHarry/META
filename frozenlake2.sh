@@ -4,8 +4,8 @@
 #SBATCH --mem=32G
 #SBATCH --time=16:00:00
 
-ALPHA="0.001"
-BETA="0.001"
+ALPHA="0.0001"
+BETA="0.0001"
 
 module load python/3.7 scipy-stack
 source ~/ENV/bin/activate
