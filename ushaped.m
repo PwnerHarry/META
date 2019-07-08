@@ -72,7 +72,7 @@ STDS = STDS(:, I);
 % draw
 cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 figure;
-BANDWIDTH = 0.05;
+BANDWIDTH = 0.1;
 LINECOLORS = [linspecer(numel(METHOD_LIST) - 2); [1, 0, 0]; [0, 0, 1];];
 CURVES = []; LEGENDS = {};
 for index_method = 1: numel(METHOD_LIST)
