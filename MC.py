@@ -55,11 +55,11 @@ def MC(env, episodes, target, behavior, gamma=lambda x: 0.95):
         # Update expected G for every visit.
         G = 0.0
         for t in range(len(episode)-1, -1, -1):
-            gamma_val = gamma(state)
             state, action, reward = episode[t]
             rho = importance_sampling_ratio(target, behavior, state, action)
-            G = rho*(reward + gamma_val * G)
-            learner.backward_step(state, G)
+            G = rho * (reward + gamma(state) * G)
+            if G > 0:
+                learner.backward_step(state, G)
         if G > 0 and np.linalg.norm(learner.expected_return.reshape(-1) - old_expected_return.reshape(-1), np.inf) < 1e-10:
             break
     return learner.expected_return, learner.variance_of_return, learner.return_counts
