@@ -40,8 +40,8 @@ def MC(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 
 
     for epi in range(episodes):
         state, done = env.reset(), False
-        if epi % (episodes * 0.01) == 0:
-            print('episode: %d of %d (%.2f%%)' % (epi + 1, episodes, 100.0 * epi))
+        if epi % (episodes * 0.001) == 0 and episodes >= 1e7:
+            print('episode: %d of %d (%.1f%%)' % (epi, episodes, 100.0 * epi / episodes))
         # Get the (s, a, r) pairs for an entire episode.
         episode = []
         done = False

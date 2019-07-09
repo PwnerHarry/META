@@ -11,7 +11,7 @@ gamma = lambda x: 0.95
 target_policy = np.matlib.repmat(np.array([0.2, 0.3, 0.3, 0.2]).reshape(1, 4), env.observation_space.n, 1)
 
 # get ground truth expectation, variance and stationary distribution
-filename = 'frozen_lake_ground_truths_heuristic_1e8.npz'
+filename = 'frozen_lake_ground_truths_heuristic_2e8.npz'
 try:
     loaded = np.load(filename)
     true_expectation, true_variance, stationary_dist = loaded['true_expectation'], loaded['true_variance'], loaded['stationary_dist']
