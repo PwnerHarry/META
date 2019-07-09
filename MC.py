@@ -53,10 +53,13 @@ def MC(env, episodes, target, behavior, gamma=lambda x: 0.95):
         # variance_of_return_trace.append(np.copy(learner.variance_of_return))
         # Update expected G for every visit.
         G = 0.0
+        old_expected_return = np.copy(learner.expected_return)
         for t in range(len(episode)-1, -1, -1):
             gamma_val = gamma(state)
             state, action, reward = episode[t]
             rho = importance_sampling_ratio(target, behavior, state, action)
             G = rho*(reward + gamma_val * G)
             learner.backward_step(state, G)
+        if np.linalg.norm(learner.expected_return.reshape(-1) - old_expected_return.reshape(-1), np.inf) < 1e-10:
+            break
     return learner.expected_return, learner.variance_of_return, learner.return_counts
