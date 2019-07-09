@@ -24,20 +24,17 @@ class MC_LEARNER():
         self.variance_of_return[state] = self.return_square_sums[state] / self.return_counts[state]
 
 
-def MC(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, diagnose = False):
+def MC(env, episodes, target, behavior, Lambda, gamma=lambda x: 0.95):
     """
+    Numerically Stable MC with Support for Variable gamma and Off-policy Learning
     episodes:   number of episodes
     target:     target policy matrix (|S|*|A|)
     behavior:   behavior policy matrix (|S|*|A|)
-    Lambda:     LAMBDA object determining each lambda for each feature (or state or observation)
     gamma:      anonymous function determining each lambda for each feature (or state or observation)
-    alpha:      learning rate for the weight vector of the values
-    beta:       learning rate for the auxiliary vector for off-policy
     """
     learner = MC_LEARNER(env)
     expected_return_trace = []
     variance_of_return_trace = []
-
     for epi in range(episodes):
         state, done = env.reset(), False
         if epi % (episodes * 0.001) == 0 and episodes >= 1e7:
@@ -52,10 +49,8 @@ def MC(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 
                 learner.return_counts[next_state] += 1
             episode.append((state, action, reward))
             state = next_state
-
         expected_return_trace.append(np.copy(learner.expected_return))
         variance_of_return_trace.append(np.copy(learner.variance_of_return))
-
         # Update expected G for every visit.
         G = 0.0
         for t in range(len(episode)-1, -1, -1):
@@ -63,7 +58,5 @@ def MC(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 
             state, action, reward = episode[t]
             rho = importance_sampling_ratio(target, behavior, state, action)
             G = rho*(reward + gamma_val * G)
-
             learner.backward_step(state, G)
-
     return expected_return_trace, variance_of_return_trace, learner.return_counts
