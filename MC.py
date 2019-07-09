@@ -51,8 +51,6 @@ def MC(env, episodes, target, behavior, gamma=lambda x: 0.95):
             state = next_state
         # expected_return_trace.append(np.copy(learner.expected_return))
         # variance_of_return_trace.append(np.copy(learner.variance_of_return))
-        expected_return_trace = np.copy(learner.expected_return)
-        variance_of_return_trace = np.copy(learner.variance_of_return)
         # Update expected G for every visit.
         G = 0.0
         for t in range(len(episode)-1, -1, -1):
@@ -61,4 +59,4 @@ def MC(env, episodes, target, behavior, gamma=lambda x: 0.95):
             rho = importance_sampling_ratio(target, behavior, state, action)
             G = rho*(reward + gamma_val * G)
             learner.backward_step(state, G)
-    return expected_return_trace, variance_of_return_trace, learner.return_counts
+    return learner.expected_return, learner.variance_of_return, learner.return_counts
