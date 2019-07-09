@@ -37,6 +37,7 @@ def MC(env, episodes, target, behavior, gamma=lambda x: 0.95):
     # variance_of_return_trace = []
     for epi in range(episodes):
         state, done = env.reset(), False
+        old_expected_return = np.copy(learner.expected_return)
         if epi % (episodes * 0.001) == 0 and episodes >= 1e7:
             print('episode: %d of %d (%.1f%%)' % (epi, episodes, 100.0 * epi / episodes))
         # Get the (s, a, r) pairs for an entire episode.
@@ -53,7 +54,6 @@ def MC(env, episodes, target, behavior, gamma=lambda x: 0.95):
         # variance_of_return_trace.append(np.copy(learner.variance_of_return))
         # Update expected G for every visit.
         G = 0.0
-        old_expected_return = np.copy(learner.expected_return)
         for t in range(len(episode)-1, -1, -1):
             gamma_val = gamma(state)
             state, action, reward = episode[t]
