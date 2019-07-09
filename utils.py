@@ -219,7 +219,7 @@ def dynamic_programming(env, policy, gamma = lambda x: 0.95):
     expectation = np.linalg.solve(np.eye(env.observation_space.n) - np.matmul(P_pi, GAMMA), r_pi)
     return expectation, P_pi
 
-def iterative_policy_evaluation(env, policy, gamma = lambda x: 0.95, start_dist = None):
+def iterative_policy_evaluation(env, policy, gamma=lambda x: 0.95, start_dist=None):
     if not start_dist:
         # For legacy reasons, if start dist is not specified always start in the middle state.
         start_dist = np.zeros(env.observation_space.n)
@@ -262,7 +262,7 @@ def iterative_policy_evaluation(env, policy, gamma = lambda x: 0.95, start_dist 
             delta = max(delta, np.abs(new_value - old_value))
             j[s] = new_value
     
-    theta = 1e-10
+    theta = 1e-12
     delta = theta
     v = np.zeros(env.observation_space.n)
     while delta >= theta:

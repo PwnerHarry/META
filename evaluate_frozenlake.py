@@ -31,7 +31,11 @@ if args.off_policy == 0:
     behavior_policy = target_policy
 else:
     behavior_policy = np.matlib.repmat(np.array([0.25, 0.25, 0.25, 0.25]).reshape(1, 4), env.observation_space.n, 1)
-true_expectation, true_variance, stationary_dist = iterative_policy_evaluation(env, target_policy, gamma=gamma)
+DP_expectation, DP_variance, DP_stat_dist = iterative_policy_evaluation(env, target_policy, gamma=gamma)
+# filename = 'frozen_lake_ground_truths_heuristic_1e8.npz'
+# loaded = np.load(filename)
+# true_expectation, true_variance, stationary_dist = loaded['true_expectation'], loaded['true_variance'], loaded['stationary_dist']
+
 evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, true_expectation, true_variance, stationary_dist, stat_type, get_state_set_matrix(env, encoder))
 
 things_to_save = {}
