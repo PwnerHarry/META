@@ -38,9 +38,10 @@ def MC(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 
     expected_return_trace = []
     variance_of_return_trace = []
 
-    for _ in range(episodes):
+    for epi in range(episodes):
         state, done = env.reset(), False
-
+        if epi % (episodes * 0.01) == 0:
+            print('episode: %d of %d (%.2f%%)' % (epi + 1, episodes, 100.0 * epi))
         # Get the (s, a, r) pairs for an entire episode.
         episode = []
         done = False
