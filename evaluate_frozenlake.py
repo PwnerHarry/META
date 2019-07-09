@@ -32,7 +32,7 @@ if args.off_policy == 0:
 else:
     behavior_policy = np.matlib.repmat(np.array([0.25, 0.25, 0.25, 0.25]).reshape(1, 4), env.observation_space.n, 1)
 DP_expectation, DP_variance, DP_stat_dist = iterative_policy_evaluation(env, target_policy, gamma=gamma)
-filename = 'frozen_lake_ground_truths_heuristic_2e8.npz'
+filename = 'frozenlake_truths_heuristic_10000.npz'
 loaded = np.load(filename)
 MC_expectation, MC_variance, MC_stat_dist = loaded['true_expectation'], loaded['true_variance'], loaded['stationary_dist']
 
@@ -40,7 +40,7 @@ print('difference between expectations: %.2e' % (np.linalg.norm(DP_expectation.r
 print('difference between variances: %.2e' % (np.linalg.norm(DP_variance.reshape(-1) - MC_variance.reshape(-1), 2)))
 print('difference between stationary distributions: %.2e' % (np.linalg.norm(DP_stat_dist.reshape(-1) - MC_stat_dist.reshape(-1), 2)))
 
-evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, true_expectation, true_variance, stationary_dist, stat_type, get_state_set_matrix(env, encoder))
+evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, DP_expectation, DP_variance, DP_stat_dist, stat_type, get_state_set_matrix(env, encoder))
 
 things_to_save = {}
 

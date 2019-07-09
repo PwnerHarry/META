@@ -24,7 +24,7 @@ class MC_LEARNER():
         self.variance_of_return[state] = self.return_square_sums[state] / self.return_counts[state]
 
 
-def MC(env, episodes, target, behavior, Lambda, gamma=lambda x: 0.95):
+def MC(env, episodes, target, behavior, gamma=lambda x: 0.95):
     """
     Numerically Stable MC with Support for Variable gamma and Off-policy Learning
     episodes:   number of episodes
@@ -33,8 +33,8 @@ def MC(env, episodes, target, behavior, Lambda, gamma=lambda x: 0.95):
     gamma:      anonymous function determining each lambda for each feature (or state or observation)
     """
     learner = MC_LEARNER(env)
-    expected_return_trace = []
-    variance_of_return_trace = []
+    # expected_return_trace = []
+    # variance_of_return_trace = []
     for epi in range(episodes):
         state, done = env.reset(), False
         if epi % (episodes * 0.001) == 0 and episodes >= 1e7:
@@ -49,8 +49,10 @@ def MC(env, episodes, target, behavior, Lambda, gamma=lambda x: 0.95):
                 learner.return_counts[next_state] += 1
             episode.append((state, action, reward))
             state = next_state
-        expected_return_trace.append(np.copy(learner.expected_return))
-        variance_of_return_trace.append(np.copy(learner.variance_of_return))
+        # expected_return_trace.append(np.copy(learner.expected_return))
+        # variance_of_return_trace.append(np.copy(learner.variance_of_return))
+        expected_return_trace = np.copy(learner.expected_return)
+        variance_of_return_trace = np.copy(learner.variance_of_return)
         # Update expected G for every visit.
         G = 0.0
         for t in range(len(episode)-1, -1, -1):
