@@ -6,9 +6,7 @@ from true_online_GTD import *
 import numpy.matlib, os
 from frozen_lake import FrozenLakeEnv
 
-unit = 1
-env = FrozenLakeEnv(None, '4x4', True, unit)
-N = env.observation_space.n
+env = gym.make('FrozenLake-v0'); env.reset()
 
 runtimes = 10
 mc_episodes = int(1e7)
