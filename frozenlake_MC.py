@@ -5,7 +5,7 @@ import numpy.matlib
 
 env = gym.make('FrozenLake-v0'); env.reset()
 N = env.observation_space.n
-mc_episodes = int(1e4)
+mc_episodes = int(1e9)
 gamma = lambda x: 0.95
 
 target_policy = np.matlib.repmat(np.array([0.2, 0.3, 0.3, 0.2]).reshape(1, 4), env.observation_space.n, 1)
