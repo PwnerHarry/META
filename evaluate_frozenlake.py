@@ -9,10 +9,10 @@ from TOGTD import *
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--N', type=int, default=4, help='')
-parser.add_argument('--alpha', type=float, default=0.2, help='')
-parser.add_argument('--beta', type=float, default=0.5, help='')
+parser.add_argument('--alpha', type=float, default=0.001, help='')
+parser.add_argument('--beta', type=float, default=0.001, help='')
 parser.add_argument('--gamma', type=float, default=0.95, help='')
-parser.add_argument('--kappa', type=float, default=0.1, help='')
+parser.add_argument('--kappa', type=float, default=0.001, help='')
 parser.add_argument('--episodes', type=int, default=10000, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
 parser.add_argument('--off_policy', type=int, default=0, help='')
