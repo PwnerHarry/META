@@ -103,7 +103,7 @@ def AC(env, episodes, evaluate, encoder, critic_type='MTA', learner_type='togtd'
             # one-step of policy improvement of the actor (gradient descent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
             dsoftmax = jacobian_softmax(prob_behavior)[action, :]
             dlog = dsoftmax / prob_target[0, action]
-            grad_W = np.matmul(dlog.reshape(-1, 1), x_curr.reshape(1, -1))
+            grad_W = np.matmul(dlog.reshape(-1, 1), x_curr.reshape(1, -1)) / W # TODO: check if this gradient is correct!
             W += alpha_W * I * rho_curr * grad_W # TODO: make sure the correction of importance sampling ratio is correct
             
             # timestep++

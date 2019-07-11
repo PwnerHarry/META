@@ -26,7 +26,9 @@ env, gamma, encoder = RingWorldEnv(args.N), lambda x: args.gamma, lambda s: oneh
 target_policy, behavior_policy = npm.repmat(np.array([args.target, 1 - args.target]).reshape(1, -1), env.observation_space.n, 1), npm.repmat(np.array([args.behavior, 1 - args.behavior]).reshape(1, -1), env.observation_space.n, 1)
 
 # get ground truth expectation, variance and stationary distribution
-true_expectation, true_variance, stationary_dist = iterative_policy_evaluation(env, target_policy, gamma=gamma)
+start_dist = np.zeros(env.observation_space.n)
+start_dist[int(env.observation_space.n / 2)] = 1.0
+true_expectation, true_variance, stationary_dist = iterative_policy_evaluation(env, target_policy, gamma=gamma, start_dist=start_dist)
 evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, true_expectation, true_variance, stationary_dist, stat_type, get_state_set_matrix(env, encoder))
 things_to_save = {}
 

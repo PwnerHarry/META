@@ -28,14 +28,8 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
             elif learner_type == 'totd':
                 MC_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha)
                 L_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, min(1.0, 1.1 * alpha))
-            if not done:
-                delta_curr = R_next + gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
-            else:
-                delta_curr = R_next - np.dot(x_curr, value_learner.w_curr)
-            # try:
+            delta_curr = R_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
             r_bar_next = delta_curr ** 2
-            # except RuntimeWarning:
-            #     pass
             gamma_bar_next = (Lambda.value(x_next) * gamma(x_next)) ** 2
             if learner_type == 'togtd':
                 L_var_learner.learn(r_bar_next, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, alpha, beta)
@@ -43,11 +37,10 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
                 L_var_learner.learn(r_bar_next, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, alpha)
             # SGD on meta-objective
             rho_acc = np.exp(log_rho_accu)
-            # if rho_acc > 1e6: break # too much, not trustworthy
             v_next = np.dot(x_next, value_learner.w_curr)
             var_L_next, exp_L_next, exp_MC_next = np.dot(x_next, L_var_learner.w_curr), np.dot(x_next, L_exp_learner.w_curr), np.dot(x_next, MC_exp_learner.w_curr)
             coefficient = gamma(x_next) ** 2 * Lambda.value(x_next) * ((v_next - exp_L_next) ** 2 + var_L_next) + v_next * (exp_L_next + exp_MC_next) - v_next ** 2 - exp_L_next * exp_MC_next
-            Lambda.gradient_descent(x_next, kappa * rho_acc * coefficient)
+            Lambda.GD(x_next, kappa * rho_acc * coefficient)
             # learn value
             if learner_type == 'togtd':
                 value_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)

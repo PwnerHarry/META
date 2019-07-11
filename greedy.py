@@ -27,10 +27,7 @@ def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_t
                 MC_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha, beta)
             elif learner_type == 'totd':
                 MC_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha)
-            if not done:
-                delta_curr = R_next + gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
-            else:
-                delta_curr = R_next - np.dot(x_curr, value_learner.w_curr)
+            delta_curr = R_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
             r_bar_next = delta_curr ** 2
             gamma_bar_next = (rho_curr * gamma(x_next)) ** 2
             if learner_type == 'togtd':
