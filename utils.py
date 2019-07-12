@@ -43,9 +43,9 @@ class LAMBDA():# state-based parametric lambda
             return x.reshape(-1)
     def GD(self, x, step_length):
         gradient = self.gradient(x)
-        value_after = np.dot(x.reshape(-1), (self.w - step_length * gradient))
-        if value_after >= 0 and value_after <= 1:
-            self.w -= step_length * gradient
+        # value_after = np.dot(x.reshape(-1), (self.w - step_length * gradient))
+        # if value_after >= 0 and value_after <= 1:
+        self.w -= step_length * gradient
 
 # ENVIRONMENTS
 class RingWorldEnv(gym.Env):
