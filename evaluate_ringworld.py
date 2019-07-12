@@ -22,7 +22,7 @@ parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
 args = parser.parse_args()
 
 # experiment Preparation
-env, gamma, encoder = RingWorldEnv(args.N), lambda x: args.gamma, lambda s: onehot(s, env.observation_space.n)
+env, gamma, encoder = RingWorldEnv(args.N), lambda x: args.gamma, lambda s: tilecoding4x4(s)
 target_policy, behavior_policy = npm.repmat(np.array([args.target, 1 - args.target]).reshape(1, -1), env.observation_space.n, 1), npm.repmat(np.array([args.behavior, 1 - args.behavior]).reshape(1, -1), env.observation_space.n, 1)
 
 # get ground truth expectation, variance and stationary distribution

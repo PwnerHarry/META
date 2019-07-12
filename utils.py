@@ -128,8 +128,40 @@ def index2plane(s, n):
 
 def index2coord(s, n):
     feature = np.zeros(2)
-    feature[0], feature[1] = s // n, n + s % n
+    feature[0], feature[1] = s // n, s % n
     return feature
+
+def tilecoding4x4(s):
+    x, y = s // 4, s % 4
+    feature1 = np.zeros(2)
+    if x:
+        feature1[1] = 1
+    else:
+        feature1[0] = 1
+    feature2 = np.zeros(4)
+    if x <= 1 and y <= 2:
+        feature2[0] = 1
+    elif x <= 1 and y == 3:
+        feature2[1] = 1
+    elif x > 1 and y <= 2:
+        feature2[2] = 1
+    elif x > 1 and y == 3:
+        feature2[3] = 1
+    feature3 = np.zeros(4)
+    if x <= 2 and y <= 1:
+        feature3[0] = 1
+    elif x <= 2 and y > 1:
+        feature3[1] = 1
+    elif x == 3 and y <= 1:
+        feature3[2] = 1
+    elif x == 3 and y > 1:
+        feature3[3] = 1
+    feature4 = np.zeros(2)
+    if y:
+        feature4[1] = 1
+    else:
+        feature4[0] = 1
+    return np.concatenate((feature1, feature2, feature3, feature4), axis=0)
 
 # DYNAMIC PROGRAMMING METHODS
 def iterative_policy_evaluation(env, policy, gamma, start_dist):
