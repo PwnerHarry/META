@@ -4,6 +4,11 @@
 #SBATCH --mem=64G
 #SBATCH --time=24:0:0
 
+TARGET="0.35"
+BEHAVIOR="0.4"
+RUNTIMES="240"
+EPISODES="100000"
+
 if [ "$0" != "" ]; then
     ALPHA="0.05"
 else
@@ -11,11 +16,7 @@ else
 fi
 
 echo "alpha: $ALPHA"
-
-TARGET="0.35"
-BEHAVIOR="0.4"
-RUNTIMES="240"
-EPISODES="100000"
+sleep 3
 
 module load python/3.7 scipy-stack
 source ~/ENV/bin/activate
