@@ -10,9 +10,9 @@ RUNTIMES="240"
 EPISODES="100000"
 
 if [ "$0" != "" ]; then
-    ALPHA="0.05"
-else
     ALPHA=$0
+else
+    ALPHA="0.05"
 fi
 
 echo "alpha: $ALPHA"
