@@ -34,7 +34,7 @@ else:
 start_dist = np.zeros(env.observation_space.n); start_dist[0] = 1.0
 DP_expectation, DP_variance, DP_stat_dist = iterative_policy_evaluation(env, target, gamma=gamma, start_dist=start_dist)
 try:
-    filename = 'frozenlake_truths_heuristic_1e+09.npz'
+    filename = 'frozenlake_truths_heuristic_1e+07.npz'
     loaded = np.load(filename)
     MC_expectation, MC_variance, MC_stat_dist = loaded['true_expectation'], loaded['true_variance'], loaded['stationary_dist']
     print('difference between expectations: %.2e' % (np.linalg.norm(DP_expectation.reshape(-1) - MC_expectation.reshape(-1), 2)))
