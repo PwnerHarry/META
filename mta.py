@@ -17,10 +17,11 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
         log_rho_accu = 0 # use log accumulation of importance sampling ratio to increase stability
         MC_exp_learner.refresh(); L_exp_learner.refresh(); L_var_learner.refresh(); value_learner.refresh()
         value_trace[episode, 0] = evaluate(value_learner.w_curr, 'expectation')
+        print('err: %g, lambda(s_0)): %g' % (value_trace[episode, 0], Lambda.value(encoder(0))))
         while not done:
             action = decide(o_curr, behavior)
             rho_curr = importance_sampling_ratio(target, behavior, o_curr, action)
-            log_rho_accu += np.log(target[o_curr, action]) - np.log(behavior[o_curr, action])
+            log_rho_accu += np.log(rho_curr)
             o_next, r_next, done, _ = env.step(action)
             x_next = encoder(o_next)
             if learner_type == 'togtd':
@@ -52,14 +53,20 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
 
 def eval_MTA_per_run(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, Lambda, alpha, beta, evaluate, encoder, learner_type):
     print('running %d of %d for MTA' % (runtime + 1, runtimes))
-    value_trace = MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma = gamma, alpha = alpha, beta = beta, kappa = kappa)
+    value_trace = MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma=gamma, alpha=alpha, beta=beta, kappa=kappa)
     return (value_trace, None)
 
-def eval_MTA(env, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, encoder, learner_type='togtd'):
-    D = encoder(0).size
+def eval_MTA(env, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, encoder, learner_type='togtd', parametric_lambda=True):
+    if parametric_lambda:
+        initial_weights_lambda = np.linalg.lstsq(get_state_set_matrix(env, encoder), np.ones(env.observation_space.n), rcond=None)[0]
+    else:
+        initial_weights_lambda = np.ones(env.observation_space.n)
     LAMBDAS = []
     for runtime in range(runtimes):
-        LAMBDAS.append(LAMBDA(env, np.ones(D) * D / env.observation_space.n, approximator = 'linear'))
+        if parametric_lambda:
+            LAMBDAS.append(LAMBDA(env, initial_value=initial_weights_lambda, approximator='linear'))
+        else:
+            LAMBDAS.append(LAMBDA(env, initial_value=initial_weights_lambda, approximator='tabular', state_set_matrix=get_state_set_matrix(env, encoder)))
     results = Parallel(n_jobs = -1)(delayed(eval_MTA_per_run)(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, LAMBDAS[runtime], alpha, beta, evaluate, encoder, learner_type) for runtime in range(runtimes))
     value_traces = [entry[0] for entry in results]
     return np.concatenate(value_traces, axis = 1).T

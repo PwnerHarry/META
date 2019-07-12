@@ -19,8 +19,11 @@ def jacobian_softmax(softmax):
     s = softmax.reshape(-1, 1)
     return np.diagflat(s) - np.matmul(s, s.T) # $J = I - \bm{s}\bm{s}^{T}$
 
+def decode(X, x):
+    return np.where((X == tuple(x)).all(axis=1))[0]
+
 class LAMBDA():# state-based parametric lambda
-    def __init__(self, env, initial_value, approximator='constant'):
+    def __init__(self, env, initial_value, approximator='constant', state_set_matrix=None):
         self.n = env.observation_space.n
         self.approximator = approximator
         if self.approximator == 'constant':
@@ -29,23 +32,35 @@ class LAMBDA():# state-based parametric lambda
             self.w = initial_value.reshape(-1)
         elif self.approximator == 'tabular':
             self.w = initial_value.reshape(-1)
+            self.X = state_set_matrix
         elif self.approximator == 'NN':
             pass # Neural Network approximator to be implemented using PyTorch
     def value(self, x):
         if self.approximator == 'constant':
             return self.w
         elif self.approximator == 'tabular':
-            return self.w[x]
+            if type(x) is int:
+                return self.w[x]
+            else:
+                return self.w[decode(self.X, x)]
         elif self.approximator == 'linear':
             return min(1, max(0, np.dot(x.reshape(-1), self.w)))
     def gradient(self, x):
         if self.approximator == 'linear':
             return x.reshape(-1)
+        elif self.approximator == 'tabular':
+            if type(x) is int:
+                return onehot(x, np.size(self.w))
+            else:
+                return onehot(decode(self.X, x), np.size(self.w))
     def GD(self, x, step_length):
         gradient = self.gradient(x)
-        # value_after = np.dot(x.reshape(-1), (self.w - step_length * gradient))
-        # if value_after >= 0 and value_after <= 1:
-        self.w -= step_length * gradient
+        if self.approximator == 'linear':
+            value_after = np.dot(x.reshape(-1), (self.w - step_length * gradient))
+        elif self.approximator == 'tabular':
+            value_after = np.dot(gradient, self.w) - step_length
+        if value_after >= 0 and value_after <= 1:
+            self.w -= step_length * gradient
 
 # ENVIRONMENTS
 class RingWorldEnv(gym.Env):
