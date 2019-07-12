@@ -1,4 +1,4 @@
-function ushaped(env, folder, pattern)
+function u4alpha(env, folder, pattern)
 % draw the u-shaped band, with x-axis as the learning rate alpha
 % specify the configuration with pattern, using regular expression
 
