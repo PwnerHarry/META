@@ -126,6 +126,11 @@ def index2plane(s, n):
     feature[s // n] = 1; feature[n + s % n] = 1
     return feature
 
+def index2coord(s, n):
+    feature = np.zeros(2)
+    feature[0], feature[1] = s // n, n + s % n
+    return feature
+
 # DYNAMIC PROGRAMMING METHODS
 def iterative_policy_evaluation(env, policy, gamma, start_dist):
     TABLE = env.unwrapped.P # (s, (a, (p, s', reward, done)), ..., )

@@ -3,7 +3,7 @@ from utils import *
 from TOGTD import *
 from TOTD import *
 
-def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05, kappa = 0.01):
+def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type='togtd', gamma=lambda x: 0.95, alpha=0.05, beta=0.05, kappa=0.01):
     D = encoder(0).size
     value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     if learner_type == 'togtd':
