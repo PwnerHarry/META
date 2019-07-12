@@ -1,4 +1,4 @@
-function ushaped(env, folder, pattern)
+function u4alpha(env, folder, pattern)
 % draw the u-shaped band, with x-axis as the learning rate alpha
 % specify the configuration with pattern, using regular expression
 
@@ -30,6 +30,9 @@ for index_filename = 1: numel(filenames)
     filename = filenames{index_filename};
     if strcmp(env, 'ringworld')
         [startIndex, endIndex] = regexp(filename, 'a\_.*\_k');
+        if isempty(startIndex) && isempty(endIndex)
+            [startIndex, endIndex] = regexp(filename, 'a\_.*\_e');
+        end
     elseif strcmp(env, 'frozenlake')
         [startIndex, endIndex] = regexp(filename, 'a\_.*\_b');
     end
@@ -69,7 +72,7 @@ STDS = STDS(:, I);
 % draw
 cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 figure;
-BANDWIDTH = 0.5;
+BANDWIDTH = 0.1;
 LINECOLORS = [linspecer(numel(METHOD_LIST) - 2); [1, 0, 0]; [0, 0, 1];];
 CURVES = []; LEGENDS = {};
 for index_method = 1: numel(METHOD_LIST)

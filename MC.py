@@ -24,23 +24,22 @@ class MC_LEARNER():
         self.variance_of_return[state] = self.return_square_sums[state] / self.return_counts[state]
 
 
-def MC(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.0001, diagnose = False):
+def MC(env, episodes, target, behavior, gamma=lambda x: 0.95):
     """
+    Numerically Stable MC with Support for Variable gamma and Off-policy Learning
     episodes:   number of episodes
     target:     target policy matrix (|S|*|A|)
     behavior:   behavior policy matrix (|S|*|A|)
-    Lambda:     LAMBDA object determining each lambda for each feature (or state or observation)
     gamma:      anonymous function determining each lambda for each feature (or state or observation)
-    alpha:      learning rate for the weight vector of the values
-    beta:       learning rate for the auxiliary vector for off-policy
     """
     learner = MC_LEARNER(env)
-    expected_return_trace = []
-    variance_of_return_trace = []
-
-    for _ in range(episodes):
+    # expected_return_trace = []
+    # variance_of_return_trace = []
+    for epi in range(episodes):
         state, done = env.reset(), False
-
+        old_expected_return = np.copy(learner.expected_return)
+        if epi % (episodes * 0.001) == 0 and episodes >= 1e7:
+            print('episode: %d of %d (%.1f%%)' % (epi, episodes, 100.0 * epi / episodes))
         # Get the (s, a, r) pairs for an entire episode.
         episode = []
         done = False
@@ -51,18 +50,19 @@ def MC(env, episodes, target, behavior, Lambda, gamma = lambda x: 0.95, alpha = 
                 learner.return_counts[next_state] += 1
             episode.append((state, action, reward))
             state = next_state
-
-        expected_return_trace.append(np.copy(learner.expected_return))
-        variance_of_return_trace.append(np.copy(learner.variance_of_return))
-
+        # expected_return_trace.append(np.copy(learner.expected_return))
+        # variance_of_return_trace.append(np.copy(learner.variance_of_return))
         # Update expected G for every visit.
         G = 0.0
         for t in range(len(episode)-1, -1, -1):
-            gamma_val = gamma(state)
             state, action, reward = episode[t]
             rho = importance_sampling_ratio(target, behavior, state, action)
-            G = rho*(reward + gamma_val * G)
-
-            learner.backward_step(state, G)
-
-    return expected_return_trace, variance_of_return_trace, learner.return_counts
+            G = rho * (reward + gamma(state) * G)
+            if G > 0:
+                learner.backward_step(state, G)
+        if G > 0:
+            diff = np.linalg.norm(learner.expected_return.reshape(-1) - old_expected_return.reshape(-1), np.inf)
+            print('change in Chebyshev norm: %.2e' % diff)
+            if diff < 1e-10:
+                break
+    return learner.expected_return, learner.variance_of_return, learner.return_counts
