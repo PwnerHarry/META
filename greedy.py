@@ -6,11 +6,10 @@ from TOTD import *
 def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05):
     D = encoder(0).size
     if learner_type == 'togtd':
-        MC_exp_learner, MC_var_learner, value_learner = TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D)
+        LEARNER = TOGTD_LEARNER
     elif learner_type == 'totd':
-        MC_exp_learner, MC_var_learner, value_learner = TOTD_LEARNER(env, D), TOTD_LEARNER(env, D), TOTD_LEARNER(env, D)
-    else:
-        pass # NN not implemented
+        LEARNER = TOTD_LEARNER
+    MC_exp_learner, MC_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D)
     MC_var_learner.w_prev, MC_var_learner.w_curr = np.zeros(D), np.zeros(D)
     value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     for episode in range(episodes):
@@ -57,6 +56,6 @@ def eval_greedy(env, behavior, target, evaluate, gamma, alpha, beta, runtimes, e
     LAMBDAS = []
     for runtime in range(runtimes):
         LAMBDAS.append(LAMBDA(env, approximator='tabular', initial_value=np.ones(env.observation_space.n)))
-    results = Parallel(n_jobs = -1)(delayed(eval_greedy_per_run)(env, runtime, runtimes, episodes, target, behavior, encoder, gamma, LAMBDAS[runtime], alpha, beta, evaluate, learner_type = learner_type) for runtime in range(runtimes))
+    results = Parallel(n_jobs = -1)(delayed(eval_greedy_per_run)(env, runtime, runtimes, episodes, target, behavior, encoder, gamma, LAMBDAS[runtime], alpha, beta, evaluate, learner_type=learner_type) for runtime in range(runtimes))
     value_traces = [entry[0] for entry in results]
     return np.concatenate(value_traces, axis = 1).T

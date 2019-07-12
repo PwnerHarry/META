@@ -7,9 +7,10 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
     D = encoder(0).size
     value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
     if learner_type == 'togtd':
-        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D), TOGTD_LEARNER(env, D)
+        LEARNER = TOGTD_LEARNER
     elif learner_type == 'totd':
-        MC_exp_learner, L_exp_learner, L_var_learner, value_learner = TOTD_LEARNER(env, D), TOTD_LEARNER(env, D), TOTD_LEARNER(env, D), TOTD_LEARNER(env, D)
+        LEARNER = TOTD_LEARNER
+    MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D)
     for episode in range(episodes):
         o_curr, done = env.reset(), False
         x_curr = encoder(o_curr)
@@ -28,7 +29,8 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
             elif learner_type == 'totd':
                 MC_exp_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha)
                 L_exp_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, min(1.0, 1.1 * alpha))
-            delta_curr = r_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
+            v_next = np.dot(x_next, value_learner.w_curr)
+            delta_curr = r_next + float(not done) * gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
             r_bar_next = delta_curr ** 2
             gamma_bar_next = (Lambda.value(x_next) * gamma(x_next)) ** 2
             if learner_type == 'togtd':
@@ -36,7 +38,6 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
             elif learner_type == 'totd':
                 L_var_learner.learn(r_bar_next, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, alpha)
             # SGD on meta-objective
-            v_next = np.dot(x_next, value_learner.w_curr)
             VmE = v_next - np.dot(x_next, L_exp_learner.w_curr)
             coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + np.dot(x_next, L_var_learner.w_curr)) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))
             Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
