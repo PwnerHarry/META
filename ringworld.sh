@@ -10,6 +10,8 @@ else
     ALPHA=$0
 fi
 
+echo "alpha: $ALPHA"
+
 TARGET="0.35"
 BEHAVIOR="0.4"
 RUNTIMES="240"
