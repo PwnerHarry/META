@@ -50,19 +50,16 @@ def MC(env, episodes, target, behavior, gamma=lambda x: 0.95):
                 learner.return_counts[next_state] += 1
             episode.append((state, action, reward))
             state = next_state
-        # expected_return_trace.append(np.copy(learner.expected_return))
-        # variance_of_return_trace.append(np.copy(learner.variance_of_return))
         # Update expected G for every visit.
         G = 0.0
         for t in range(len(episode)-1, -1, -1):
             state, action, reward = episode[t]
             rho = importance_sampling_ratio(target, behavior, state, action)
             G = rho * (reward + gamma(state) * G)
-            if G > 0:
-                learner.backward_step(state, G)
+            learner.backward_step(state, G)
         if G > 0:
-            diff = np.linalg.norm(learner.expected_return.reshape(-1) - old_expected_return.reshape(-1), np.inf)
-            print('change in Chebyshev norm: %.2e' % diff)
-            if diff < 1e-10:
+            diff = np.linalg.norm(learner.expected_return.reshape(-1) - old_expected_return.reshape(-1), 1)
+            print('change in L1 norm: %.2e' % diff)
+            if diff < 1e-7:
                 break
     return learner.expected_return, learner.variance_of_return, learner.return_counts
