@@ -4,7 +4,12 @@
 #SBATCH --mem=64G
 #SBATCH --time=24:0:0
 
-ALPHA="0.05"
+if [ "$0" != "" ]; then
+    ALPHA="0.05"
+else
+    ALPHA=$0
+fi
+
 TARGET="0.35"
 BEHAVIOR="0.4"
 RUNTIMES="240"
