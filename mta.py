@@ -17,7 +17,7 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
         log_rho_accu = 0 # use log accumulation of importance sampling ratio to increase stability
         MC_exp_learner.refresh(); L_exp_learner.refresh(); L_var_learner.refresh(); value_learner.refresh()
         value_trace[episode, 0] = evaluate(value_learner.w_curr, 'expectation')
-        print('err: %g, lambda(s_0)): %g' % (value_trace[episode, 0], Lambda.value(encoder(0))))
+        # print('err: %g, lambda(s_0)): %g' % (value_trace[episode, 0], Lambda.value(encoder(0))))
         while not done:
             action = decide(o_curr, behavior)
             rho_curr = importance_sampling_ratio(target, behavior, o_curr, action)
