@@ -24,7 +24,7 @@ args = parser.parse_args()
 
 # Experiment Preparation
 env = gym.make('FrozenLake-v0')
-gamma, encoder = lambda x: args.gamma, lambda s: onehot(s, env.observation_space.n) #lambda s: index2plane(s, args.N)
+gamma, encoder = lambda x: args.gamma, lambda s: np.concatenate(onehot(s, env.observation_space.n), index2plane(s, args.N), axis=0)
 target = np.matlib.repmat(np.array([0.2, 0.3, 0.3, 0.2]).reshape(1, 4), env.observation_space.n, 1)
 if args.off_policy:
     behavior = np.matlib.repmat(np.array([0.25, 0.25, 0.25, 0.25]).reshape(1, 4), env.observation_space.n, 1)
