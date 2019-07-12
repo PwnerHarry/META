@@ -9,8 +9,8 @@ BEHAVIOR="0.4"
 RUNTIMES="240"
 EPISODES="100000"
 
-if [ "$0" != "" ]; then
-    ALPHA=$0
+if [ "$1" != "" ]; then
+    ALPHA=$1
 else
     ALPHA="0.05"
 fi
