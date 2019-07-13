@@ -2,7 +2,6 @@ import gym, warnings, numpy as np
 from utils import *
 from TOGTD import *
 from TOTD import *
-warnings.filterwarnings("error")
 
 def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type='togtd', gamma=lambda x: 0.95, alpha=0.05, beta=0.05, kappa=0.01):
     D = encoder(0).size
@@ -19,6 +18,7 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
         MC_exp_learner.refresh(); L_exp_learner.refresh(); L_var_learner.refresh(); value_learner.refresh()
         value_trace[episode, 0] = evaluate(value_learner.w_curr, 'expectation')
         # print('err: %g, lambda(s_0)): %g' % (value_trace[episode, 0], Lambda.value(encoder(0))))
+        warnings.filterwarnings("error")
         try:
             while not done:
                 action = decide(o_curr, behavior)
@@ -51,6 +51,7 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
                     value_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha)
                 MC_exp_learner.next(); L_exp_learner.next(); L_var_learner.next(); value_learner.next()
                 o_curr, x_curr = o_next, x_next
+            warnings.filterwarnings("default")
         except RuntimeWarning:
             print('RuntimeWarning captured, possibly due to numerical stability issues')
             break

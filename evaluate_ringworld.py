@@ -4,7 +4,6 @@ from mta import *
 from TOGTD import *
 from TOTD import *
 from utils import *
-warnings.filterwarnings("error")
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--alpha', type=float, default=0.2, help='')

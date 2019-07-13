@@ -2,7 +2,6 @@ import gym, warnings, numpy as np
 from utils import *
 from TOGTD import *
 from TOTD import *
-warnings.filterwarnings("error")
 
 def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type, gamma = lambda x: 0.95, alpha = 0.05, beta = 0.05):
     D = encoder(0).size
