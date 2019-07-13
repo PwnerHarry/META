@@ -57,9 +57,4 @@ def MC(env, episodes, target, behavior, gamma=lambda x: 0.95):
             rho = importance_sampling_ratio(target, behavior, state, action)
             G = rho * (reward + gamma(state) * G)
             learner.backward_step(state, G)
-        if G > 0:
-            diff = np.linalg.norm(learner.expected_return.reshape(-1) - old_expected_return.reshape(-1), 1)
-            print('change in L1 norm: %.2e' % diff)
-            if diff < 1e-7:
-                break
     return learner.expected_return, learner.variance_of_return, learner.return_counts
