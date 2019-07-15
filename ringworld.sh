@@ -54,8 +54,8 @@ python -m compileall ./
 python evaluate_ringworld.py --alpha $ALPHA --kappa 0 --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_MTA 0
 
 # COARSE SEARCH FOR KAPPA
-python evaluate_ringworld.py --alpha $ALPHA --kappa 0.00001 --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
-python evaluate_ringworld.py --alpha $ALPHA --kappa 0.0001 --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
-python evaluate_ringworld.py --alpha $ALPHA --kappa 0.001 --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
-python evaluate_ringworld.py --alpha $ALPHA --kappa 0.01 --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
-python evaluate_ringworld.py --alpha $ALPHA --kappa 0.1 --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
+python evaluate_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.0001 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
+python evaluate_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.001 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
+python evaluate_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.01 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
+python evaluate_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.1 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
+python evaluate_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 1 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0

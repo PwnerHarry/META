@@ -55,12 +55,12 @@ def togtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=lamb
     """
     D = encoder(0).size
     value_learner = TOGTD_LEARNER(env, D)
-    value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
+    value_trace = np.empty(episodes); value_trace[:] = np.nan
     for episode in range(episodes):
         o_curr, done = env.reset(), False
         x_curr = encoder(o_curr)
         value_learner.refresh()
-        value_trace[episode, 0] = evaluate(value_learner.w_curr, 'expectation')
+        value_trace[episode] = evaluate(value_learner.w_curr, 'expectation')
         while not done:
             action = decide(o_curr, behavior)
             rho_curr = importance_sampling_ratio(target, behavior, o_curr, action)
@@ -75,11 +75,10 @@ def togtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=lamb
     return value_trace
 
 def eval_togtd_per_run(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate, encoder):
-    print('running %d of %d for togtd(%g), alpha: %g, beta: %g' % (runtime + 1, runtimes, Lambda.value(encoder(0)), alpha, beta))
+    print('%d of %d for togtd(%g), alpha: %g, beta: %g' % (runtime + 1, runtimes, Lambda.value(encoder(0)), alpha, beta))
     value_trace = togtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=gamma, alpha=alpha, beta=beta)
-    return value_trace.T
+    return value_trace.reshape(1, -1)
 
 def eval_togtd(env, behavior, target, Lambda, gamma, alpha, beta, runtimes, episodes, evaluate, encoder):
-    results = Parallel(n_jobs = -1)(delayed(eval_togtd_per_run)(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate, encoder) for runtime in range(runtimes))
-    results = np.concatenate(results, axis=0)
-    return results
+    results = Parallel(n_jobs=-1)(delayed(eval_togtd_per_run)(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate, encoder) for runtime in range(runtimes))
+    return np.concatenate(results, axis=0)

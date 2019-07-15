@@ -40,7 +40,7 @@ class TOTD_LEARNER():
         w_next = w_curr + delta_curr * e_curr - alpha_curr * (np.dot(w_curr.reshape(-1), x_curr.reshape(-1)) - np.dot(w_prev.reshape(-1), x_curr.reshape(-1))) * x_curr
         return w_next, e_curr
 
-def totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma = lambda x: 0.95, alpha = 0.05):
+def totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=lambda x: 0.95, alpha=0.05):
     """
     episodes:   number of episodes
     target:     target policy matrix (|S|*|A|)
@@ -51,12 +51,12 @@ def totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma = lam
     """
     D = encoder(0).size
     value_learner = TOTD_LEARNER(env, D)
-    value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
+    value_trace = np.empty(episodes); value_trace[:] = np.nan
     for episode in range(episodes):
         o_curr, done = env.reset(), False
         x_curr = encoder(o_curr)
         value_learner.refresh()
-        value_trace[episode, 0] = evaluate(value_learner.w_curr, 'expectation')
+        value_trace[episode] = evaluate(value_learner.w_curr, 'expectation')
         while not done:
             action = decide(o_curr, behavior)
             rho_curr = importance_sampling_ratio(target, behavior, o_curr, action)
@@ -71,11 +71,10 @@ def totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma = lam
     return value_trace
 
 def eval_totd_per_run(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, evaluate, encoder):
-    print('running %d of %d for totd(%g), alpha: %g' % (runtime + 1, runtimes, Lambda.value(encoder(0)), alpha))
+    print('%d of %d for totd(%g), alpha: %g' % (runtime + 1, runtimes, Lambda.value(encoder(0)), alpha))
     value_trace = totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=gamma, alpha=alpha)
-    return value_trace.T
+    return value_trace.reshape(1, -1)
 
 def eval_totd(env, behavior, target, Lambda, gamma, alpha, runtimes, episodes, evaluate, encoder):
-    results = Parallel(n_jobs = -1)(delayed(eval_totd_per_run)(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, evaluate, encoder) for runtime in range(runtimes))
-    results = np.concatenate(results, axis=0)
-    return results
+    results = Parallel(n_jobs=-1)(delayed(eval_totd_per_run)(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, evaluate, encoder) for runtime in range(runtimes))
+    return np.concatenate(results, axis=0)

@@ -5,19 +5,16 @@ from TOTD import *
 
 def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type='togtd', gamma=lambda x: 0.95, alpha=0.05, beta=0.05, kappa=0.01):
     D = encoder(0).size
-    value_trace = np.empty((episodes, 1)); value_trace[:] = np.nan
-    if learner_type == 'togtd':
-        LEARNER = TOGTD_LEARNER
-    elif learner_type == 'totd':
-        LEARNER = TOTD_LEARNER
+    value_trace = np.empty(episodes); value_trace[:] = np.nan
+    if learner_type == 'totd':
+        LEARNER = TOTD_LEARNER; lr_dict = {'alpha_curr': alpha}; lr_larger_dict = {'alpha_curr': 1.1 * alpha}
+    elif learner_type == 'togtd':
+        LEARNER = TOGTD_LEARNER; lr_dict = {'alpha_curr': alpha, 'beta_curr': beta}; lr_larger_dict = {'alpha_curr': min(1.0, 1.1 * alpha), 'beta_curr': min(1.0, 1.1 * beta)}
     MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D)
     for episode in range(episodes):
-        o_curr, done = env.reset(), False
-        x_curr = encoder(o_curr)
-        log_rho_accu = 0 # use log accumulation of importance sampling ratio to increase stability
+        o_curr, done, log_rho_accu = env.reset(), False, 0; x_curr = encoder(o_curr)
         MC_exp_learner.refresh(); L_exp_learner.refresh(); L_var_learner.refresh(); value_learner.refresh()
-        value_trace[episode, 0] = evaluate(value_learner.w_curr, 'expectation')
-        # print('err: %g, lambda(s_0)): %g' % (value_trace[episode, 0], Lambda.value(encoder(0))))
+        value_trace[episode] = evaluate(value_learner.w_curr, 'expectation')
         warnings.filterwarnings("error")
         try:
             while not done:
@@ -26,29 +23,18 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
                 log_rho_accu += np.log(rho_curr)
                 o_next, r_next, done, _ = env.step(action)
                 x_next = encoder(o_next)
-                if learner_type == 'togtd':
-                    MC_exp_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha, beta)
-                    L_exp_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, min(1.0, 1.1 * alpha), min(1.0, 1.1 * beta))
-                elif learner_type == 'totd':
-                    MC_exp_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, alpha)
-                    L_exp_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, min(1.0, 1.1 * alpha))
+                MC_exp_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, **lr_dict)
+                L_exp_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_larger_dict)
                 v_next = np.dot(x_next, value_learner.w_curr)
                 delta_curr = r_next + float(not done) * gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
-                r_bar_next = delta_curr ** 2
                 gamma_bar_next = (Lambda.value(x_next) * gamma(x_next)) ** 2
-                if learner_type == 'togtd':
-                    L_var_learner.learn(r_bar_next, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, alpha, beta)
-                elif learner_type == 'totd':
-                    L_var_learner.learn(r_bar_next, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, alpha)
+                L_var_learner.learn(delta_curr ** 2, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, **lr_dict)
                 # SGD on meta-objective
                 VmE = v_next - np.dot(x_next, L_exp_learner.w_curr)
                 coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + np.dot(x_next, L_var_learner.w_curr)) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))
                 Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
                 # learn value
-                if learner_type == 'togtd':
-                    value_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)
-                elif learner_type == 'totd':
-                    value_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha)
+                value_learner.learn(r_next, float(not done) * gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_dict)
                 MC_exp_learner.next(); L_exp_learner.next(); L_var_learner.next(); value_learner.next()
                 o_curr, x_curr = o_next, x_next
             warnings.filterwarnings("default")
@@ -59,11 +45,11 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
 
 def eval_MTA_per_run(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, Lambda, alpha, beta, evaluate, encoder, learner_type):
     if learner_type == 'togtd':
-        print('running %d of %d for MTA, alpha: %g, beta: %g, kappa: %g' % (runtime + 1, runtimes, alpha, beta, kappa))
+        print('%d of %d for MTA, alpha: %g, beta: %g, kappa: %g' % (runtime + 1, runtimes, alpha, beta, kappa))
     elif learner_type == 'totd':
-        print('running %d of %d for MTA, alpha: %g, kappa: %g' % (runtime + 1, runtimes, alpha, kappa))
-    value_trace = MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma=gamma, alpha=alpha, beta=beta, kappa=kappa)
-    return (value_trace, None)
+        print('%d of %d for MTA, alpha: %g, kappa: %g' % (runtime + 1, runtimes, alpha, kappa))
+    value_trace = MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type='togtd', gamma=gamma, alpha=alpha, beta=beta, kappa=kappa)
+    return value_trace.reshape(1, -1)
 
 def eval_MTA(env, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, encoder, learner_type='togtd', parametric_lambda=True):
     if parametric_lambda:
@@ -76,6 +62,5 @@ def eval_MTA(env, behavior, target, kappa, gamma, alpha, beta, runtimes, episode
             LAMBDAS.append(LAMBDA(env, initial_value=initial_weights_lambda, approximator='linear'))
         else:
             LAMBDAS.append(LAMBDA(env, initial_value=initial_weights_lambda, approximator='tabular', state_set_matrix=get_state_set_matrix(env, encoder)))
-    results = Parallel(n_jobs = -1)(delayed(eval_MTA_per_run)(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, LAMBDAS[runtime], alpha, beta, evaluate, encoder, learner_type) for runtime in range(runtimes))
-    value_traces = [entry[0] for entry in results]
-    return np.concatenate(value_traces, axis = 1).T
+    results = Parallel(n_jobs=-1)(delayed(eval_MTA_per_run)(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, LAMBDAS[runtime], alpha, beta, evaluate, encoder, learner_type) for runtime in range(runtimes))
+    return np.concatenate(results, axis=0)
