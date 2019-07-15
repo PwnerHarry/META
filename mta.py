@@ -58,7 +58,7 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
     return value_trace
 
 def eval_MTA_per_run(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, Lambda, alpha, beta, evaluate, encoder, learner_type):
-    print('running %d of %d for MTA' % (runtime + 1, runtimes))
+    print('running %d of %d for MTA, alpha: %e, beta: %e' % (runtime + 1, runtimes, alpha, beta))
     value_trace = MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type = 'togtd', gamma=gamma, alpha=alpha, beta=beta, kappa=kappa)
     return (value_trace, None)
 

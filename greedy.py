@@ -48,7 +48,7 @@ def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_t
     return value_trace
 
 def eval_greedy_per_run(env, runtime, runtimes, episodes, target, behavior, encoder, gamma, Lambda, alpha, beta, evaluate, learner_type):
-    print('running %d of %d for greedy' % (runtime + 1, runtimes))
+    print('running %d of %d for greedy, alpha: %e, beta: %e' % (runtime + 1, runtimes, alpha, beta))
     value_trace = greedy(env, episodes, target, behavior, evaluate=evaluate, Lambda=Lambda, encoder=encoder,gamma=gamma, alpha=alpha, beta=beta, learner_type=learner_type)
     return (value_trace, None)
 
