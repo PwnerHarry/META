@@ -71,7 +71,7 @@ def totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma = lam
     return value_trace
 
 def eval_totd_per_run(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, evaluate, encoder):
-    print('running %d of %d for totd(%g), alpha: %e' % (runtime + 1, runtimes, Lambda.value(encoder(0)), alpha))
+    print('running %d of %d for totd(%g), alpha: %g' % (runtime + 1, runtimes, Lambda.value(encoder(0)), alpha))
     value_trace = totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=gamma, alpha=alpha)
     return value_trace.T
 

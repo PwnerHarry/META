@@ -75,7 +75,7 @@ def togtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=lamb
     return value_trace
 
 def eval_togtd_per_run(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate, encoder):
-    print('running %d of %d for togtd(%g), alpha: %e, beta: %e' % (runtime + 1, runtimes, Lambda.value(encoder(0)), alpha, beta))
+    print('running %d of %d for togtd(%g), alpha: %g, beta: %g' % (runtime + 1, runtimes, Lambda.value(encoder(0)), alpha, beta))
     value_trace = togtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=gamma, alpha=alpha, beta=beta)
     return value_trace.T
 
