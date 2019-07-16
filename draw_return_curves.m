@@ -31,34 +31,8 @@ for result_index = 1: numel(expectation_list)
     INTERVAL(INTERVAL <= 0) = eps;
     [CURVE, ~] = band_drawer(X, MEAN, INTERVAL, LineColors(result_index, :)); %X, MEAN, INTERVAL, COLOR
     CURVES = [CURVES, CURVE];
-    if strcmp(result_name, "error_value_mta")
-        LEGEND = "MTA";
-    elseif strcmp(result_name, "error_value_togtd_0")
-        LEGEND = "GTD(0)";
-    elseif strcmp(result_name, "error_value_togtd_20")
-        LEGEND = "GTD(.2)";
-    elseif strcmp(result_name, "error_value_togtd_40")
-        LEGEND = "GTD(.4)";
-    elseif strcmp(result_name, "error_value_togtd_60")
-        LEGEND = "GTD(.6)";
-    elseif strcmp(result_name, "error_value_togtd_80")
-        LEGEND = "GTD(.8)";
-    elseif strcmp(result_name, "error_value_togtd_100")
-        LEGEND = "GTD(1)";
-    elseif strcmp(result_name, "error_value_totd_0")
-        LEGEND = "TD(0)";
-    elseif strcmp(result_name, "error_value_totd_20")
-        LEGEND = "TD(.2)";
-    elseif strcmp(result_name, "error_value_totd_40")
-        LEGEND = "TD(.4)";
-    elseif strcmp(result_name, "error_value_totd_60")
-        LEGEND = "TD(.6)";
-    elseif strcmp(result_name, "error_value_totd_80")
-        LEGEND = "TD(.8)";
-    elseif strcmp(result_name, "error_value_totd_100")
-        LEGEND = "TD(1)";
-    elseif strcmp(result_name, "error_value_greedy")
-        LEGEND = "greedy";
+    if strcmp(result_name, "return")
+        LEGEND = "Actor-Critic";
     end
     LEGENDS = [LEGENDS, LEGEND];
 end

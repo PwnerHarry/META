@@ -8,13 +8,12 @@ from TOTD import *
 from TOGTD import *
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--N', type=int, default=4, help='')
-parser.add_argument('--alpha', type=float, default=0.001, help='')
-parser.add_argument('--beta', type=float, default=0.001, help='')
+parser.add_argument('--alpha', type=float, default=0.002, help='')
+parser.add_argument('--beta', type=float, default=0.0001, help='')
 parser.add_argument('--gamma', type=float, default=0.95, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
 parser.add_argument('--episodes', type=int, default=100000, help='')
-parser.add_argument('--runtimes', type=int, default=15, help='')
+parser.add_argument('--runtimes', type=int, default=7, help='')
 parser.add_argument('--off_policy', type=int, default=0, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
 parser.add_argument('--evaluate_baselines', type=int, default=1, help='')
@@ -33,17 +32,7 @@ else:
 
 start_dist = np.zeros(env.observation_space.n); start_dist[0] = 1.0
 DP_expectation, DP_variance, DP_stat_dist = iterative_policy_evaluation(env, target, gamma=gamma, start_dist=start_dist)
-try:
-    filename = 'frozenlake_truths_heuristic_1e+09.npz'
-    loaded = np.load(filename)
-    MC_expectation, MC_variance, MC_stat_dist = loaded['true_expectation'], loaded['true_variance'], loaded['stationary_dist']
-    print('difference between expectations: %.2e' % (np.linalg.norm(DP_expectation.reshape(-1) - MC_expectation.reshape(-1), 2)))
-    print('difference between variances: %.2e' % (np.linalg.norm(DP_variance.reshape(-1) - MC_variance.reshape(-1), 2)))
-    print('difference between stationary distributions: %.2e' % (np.linalg.norm(DP_stat_dist.reshape(-1) - MC_stat_dist.reshape(-1), 2)))
-    evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, MC_expectation, MC_variance, MC_stat_dist, stat_type, get_state_set_matrix(env, encoder))
-except FileNotFoundError:
-    print('MC simulation results not loaded!')
-    evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, DP_expectation, DP_variance, DP_stat_dist, stat_type, get_state_set_matrix(env, encoder))
+evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, DP_expectation, DP_variance, DP_stat_dist, stat_type, get_state_set_matrix(env, encoder))
 
 things_to_save = {}
 time_start = time.time()
