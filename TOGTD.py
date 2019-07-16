@@ -1,7 +1,7 @@
 import numpy as np
 from joblib import Parallel, delayed
 from utils import *
-from numba import jit, cuda
+from numba import jit
 
 class TOGTD_LEARNER():
     def __init__(self, env, D):
