@@ -5,11 +5,11 @@ from mta import *
 from TOGTD import *
 from TOTD import *
 
-def AC(env, episodes, evaluate, encoder, critic_type='MTA', learner_type='togtd', gamma=lambda x: 0.95, alpha=0.0001, beta=0.0001, alpha_W=0.0001, constant_lambda=1, kappa=0.001):
+def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA', learner_type='togtd', constant_lambda=1):
     # suppose we use exponential softmax on values
     D = encoder(0).size
-    value_trace = np.empty(episodes); value_trace[:] = np.nan
-    W = np.zeros((env.action_space.n, D)) # W is the $|A|\times|S|$ parameter matrix for policy
+    return_trace = np.empty(episodes); return_trace[:] = np.nan
+    W = 1e-6 * np.ones((env.action_space.n, D)) # W is the $|A|\times|S|$ parameter matrix for policy
     if learner_type == 'totd':
         LEARNER = TOTD_LEARNER; lr_dict = {'alpha_curr': alpha}; lr_larger_dict = {'alpha_curr': 1.1 * alpha}
     elif learner_type == 'togtd':
@@ -24,10 +24,9 @@ def AC(env, episodes, evaluate, encoder, critic_type='MTA', learner_type='togtd'
         Lambda = LAMBDA(env, initial_value=np.linalg.lstsq(get_state_set_matrix(env, encoder), np.ones(env.observation_space.n), rcond=None)[0], approximator='linear')
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
     for episode in range(episodes):
-        o_curr, done, log_rho_accu, I = env.reset(), False, 0, 1; x_curr = encoder(o_curr)
+        o_curr, done, log_rho_accu, return_cumulative, I = env.reset(), False, 0, 0, 1; x_curr = encoder(o_curr)
         for learner in learners:
             learner.refresh()
-        value_trace[episode] = evaluate(value_learner.w_curr, 'expectation') # Bookkeeping
         while not done:
             prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr)) # https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html
             action = np.random.choice(range(len(prob_behavior)), p=prob_behavior); rho_curr = prob_target[action] / prob_behavior[action]
@@ -58,21 +57,23 @@ def AC(env, episodes, evaluate, encoder, critic_type='MTA', learner_type='togtd'
             value_learner.learn(r_next, float(not done) * gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)
             # one-step of policy improvement of the actor (gradient descent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
             dsoftmax = jacobian_softmax(prob_behavior)[action, :]
-            dlog = dsoftmax / prob_target[0, action]
-            grad_W = np.matmul(dlog.reshape(-1, 1), x_curr.reshape(1, -1)) / W # TODO: check if this gradient is correct!
-            W += alpha_W * I * rho_curr * grad_W # TODO: make sure the correction of importance sampling ratio is correct
+            dlog = dsoftmax / prob_target[action]
+            grad_W = np.matmul(dlog.reshape(-1, 1), x_curr.reshape(1, -1)) / W # TODO: This gives divided by 0 at the first, check if this gradient is correct!
+            W += eta * I * rho_curr * grad_W # TODO: make sure the correction of importance sampling ratio is correct
             # timestep++
+            return_cumulative += I * r_next
             for learner in learners:
                 learner.next()
             o_curr, x_curr = o_next, x_next
             I *= gamma(x_next) # TODO: know how the gamma accumulation is implemented!
-    return value_trace
+        return_trace[episode] = return_cumulative # Bookkeeping
+    return return_trace
 
-def eval_AC_per_run(env, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, alpha_W, evaluate, encoder, constant_lambda, kappa):
+def eval_AC_per_run(env, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, constant_lambda, kappa):
     print('%d of %d for AC (%s, %s)' % (runtime + 1, runtimes, critic_type, learner_type))
-    value_trace = AC(env, episodes, evaluate, encoder, critic_type, learner_type, gamma=gamma, alpha=alpha, beta=beta, alpha_W=alpha_W, constant_lambda=constant_lambda, kappa=kappa)
-    return value_trace.reshape(1, -1)
+    return_trace = AC(env, episodes, encoder, gamma=gamma, alpha=alpha, beta=beta, eta=eta, kappa=kappa, critic_type=critic_type, learner_type=learner_type, constant_lambda=constant_lambda)
+    return return_trace.reshape(1, -1)
 
-def eval_AC(env, critic_type, learner_type, gamma, alpha, beta, alpha_W, runtimes, episodes, evaluate, encoder, constant_lambda=1, kappa=0.001):
-    results = Parallel(n_jobs=1)(delayed(eval_AC_per_run)(env, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, alpha_W, evaluate, encoder, constant_lambda, kappa) for runtime in range(runtimes))
+def eval_AC(env, critic_type, learner_type, gamma, alpha, beta, eta, runtimes, episodes, encoder, constant_lambda=1, kappa=0.001):
+    results = Parallel(n_jobs=-1)(delayed(eval_AC_per_run)(env, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, constant_lambda, kappa) for runtime in range(runtimes))
     return np.concatenate(results, axis=0)

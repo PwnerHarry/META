@@ -65,8 +65,8 @@ if args.evaluate_greedy:
 if args.evaluate_MTA:
     error_value_mta = eval_MTA(env, behavior, target, kappa=args.kappa, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder, learner_type=args.learner_type)
     things_to_save['error_value_mta_mean'], things_to_save['error_value_mta_std'] = np.nanmean(error_value_mta, axis=0), np.nanstd(error_value_mta, axis=0)
-time_finish = time.time()
 
+time_finish = time.time()
 print('time elapsed: %gs' % (time_finish - time_start))
 
 # SAVE
