@@ -10,7 +10,7 @@ def importance_sampling_ratio(target_policy, behavior_policy, s, a):
 
 def decide(state_id, policy_matrix):
     dist = policy_matrix[state_id, :]
-    action_id = np.random.choice(range(policy_matrix.shape[1]), p=dist)
+    action_id = np.random.choice(range(len(dist)), p=dist)
     return action_id
 
 @jit(nopython=True, cache=True)
