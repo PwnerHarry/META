@@ -110,11 +110,11 @@ def mse(estimate, target, weight):
 @jit(nopython=True, cache=True)
 def evaluate_estimate(weight, expectation, variance, distribution, stat_type, state_set_matrix):
     # place the state representations row by row in the state_set_matrix
-    estimate = np.dot(state_set_matrix, weight).reshape(-1)
+    estimate = np.dot(state_set_matrix, weight)
     if stat_type == 'expectation':
-        return mse(estimate, expectation, distribution)
+        return mse(estimate.reshape(-1), expectation.reshape(-1), distribution)
     elif stat_type == 'variance':
-        return mse(estimate, variance, distribution)
+        return mse(estimate.reshape(-1), variance.reshape(-1), distribution)
 
 def get_state_set_matrix(env, encoder):
     state_set_matrix = np.zeros((env.observation_space.n, np.size(encoder(0))))
