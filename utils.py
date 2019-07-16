@@ -1,24 +1,27 @@
 import gym, gym.utils.seeding, numpy as np
 from matplotlib import pyplot as plt
 from joblib import Parallel, delayed
+from numba import jit
 
 # MISC
+@jit(nopython=True, cache=True)
 def importance_sampling_ratio(target_policy, behavior_policy, s, a):
     return target_policy[s, a] / behavior_policy[s, a]
 
 def decide(state_id, policy_matrix):
-    dist = policy_matrix[state_id, :]
-    action_id = np.random.choice(range(len(dist)), p=dist)
-    return action_id
+    return np.random.choice(range(policy_matrix.shape[1]), p=policy_matrix[state_id, :])
 
+@jit(nopython=True, cache=True)
 def softmax(x): # a numerically stable softmax!
     exps = np.exp(x - np.max(x))
     return exps / np.sum(exps)
 
+@jit(nopython=True, cache=True)
 def jacobian_softmax(softmax):
     s = softmax.reshape(-1, 1)
     return np.diagflat(s) - np.matmul(s, s.T) # $J = I - \bm{s}\bm{s}^{T}$
 
+@jit(nopython=True, cache=True)
 def decode(X, x):
     return np.where((X == tuple(x)).all(axis=1))[0]
 
@@ -97,10 +100,12 @@ class RingWorldEnv(gym.Env):
         return self.state
 
 # EVALUATION METHODS
+@jit(nopython=True, cache=True)
 def mse(estimate, target, weight):
     diff = target - estimate.reshape(np.shape(target))
     return np.linalg.norm(np.multiply(diff, weight.reshape(np.shape(target))), 2) ** 2
 
+@jit(nopython=True, cache=True)
 def evaluate_estimate(weight, expectation, variance, distribution, stat_type, state_set_matrix):
     # place the state representations row by row in the state_set_matrix
     estimate = np.dot(state_set_matrix, weight).reshape(-1)
@@ -116,21 +121,25 @@ def get_state_set_matrix(env, encoder):
     return state_set_matrix
 
 # ENCODING METHODS
+@jit(nopython=True, cache=True)
 def onehot(observation, N):
     x = np.zeros(N)
     x[observation] = 1
     return x
 
+@jit(nopython=True, cache=True)
 def index2plane(s, n):
     feature = np.zeros(2 * n)
     feature[s // n] = 1; feature[n + s % n] = 1
     return feature
 
+@jit(nopython=True, cache=True)
 def index2coord(s, n):
     feature = np.zeros(2)
     feature[0], feature[1] = s // n, s % n
     return feature
 
+@jit(nopython=True, cache=True)
 def tilecoding4x4(s):
     x, y = s // 4, s % 4
     feature1 = np.zeros(2)
@@ -184,8 +193,7 @@ def iterative_policy_evaluation(env, policy, gamma, start_dist):
         for a in range(env.action_space.n):
             RELATED = TABLE[s][a]
             for entry in RELATED:
-                R[s, a, entry[1]] = entry[2]
-                P[s, a, entry[1]] = entry[0]
+                R[s, a, entry[1]], P[s, a, entry[1]] = entry[2], entry[0]
     theta = 1e-10
     delta = theta
     j = np.zeros(env.observation_space.n)

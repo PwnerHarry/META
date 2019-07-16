@@ -1,6 +1,7 @@
 import numpy as np
 from joblib import Parallel, delayed
 from utils import *
+from numba import jit
 
 # TODO: this file hasn't been tested. Also, I am concerned about $\lambda^{(t+1)}$ being unused!
 
@@ -23,7 +24,6 @@ class TOTD_LEARNER():
          lambda_next, lambda_curr, self.rho_curr, self.rho_prev,
          self.e_prev,
          alpha_curr)
-        pass
         
     def next(self):
         self.w_curr, self.w_prev = np.copy(self.w_next), np.copy(self.w_curr)
@@ -32,6 +32,7 @@ class TOTD_LEARNER():
         del self.w_next
 
     @staticmethod
+    @jit(nopython=True, cache=True)
     def true_online_td_step(r_next, gamma_next, gamma_curr, x_next, x_curr, w_curr, w_prev, lambda_next, lambda_curr, rho_curr, rho_prev, e_prev, alpha_curr):
         # TODO: double-check, rho_prev, lambda_next not used!
         # True Online Temporal-Difference Learning - Harm van Seijen et al.

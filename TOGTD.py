@@ -1,6 +1,7 @@
 import numpy as np
 from joblib import Parallel, delayed
 from utils import *
+from numba import jit, cuda
 
 class TOGTD_LEARNER():
     def __init__(self, env, D):
@@ -35,6 +36,7 @@ class TOGTD_LEARNER():
         del self.w_next, self.h_next
 
     @staticmethod
+    @jit(nopython=True, cache=True)
     def true_online_gtd_step(r_next, gamma_next, gamma_curr, x_next, x_curr, w_curr, w_prev, lambda_next, lambda_curr, rho_curr, rho_prev, e_prev, e_grad_prev, e_h_prev, h_curr, alpha_curr, beta_curr):
         # Off-policy TD($\lambda$) with a True Online Equivalence
         dot_w_curr_x_curr = np.dot(w_curr, x_curr)
