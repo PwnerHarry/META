@@ -1,5 +1,5 @@
 % MANUALLY LOAD THE RESULTS FIRST
-sample_method = 'log';
+sample_method = 'linear';
 cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 
 expectation_list = [ ...
@@ -42,7 +42,7 @@ set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 if strcmp(sample_method, 'log')
     set(gca, 'xscale', 'log');
 end
-set(gca, 'yscale', 'log');
+% set(gca, 'yscale', 'log');
 axis([1, inf, MIN, inf]);
 set(gca, 'FontSize', 16);
 set(gca, 'FontName', 'Book Antiqua');

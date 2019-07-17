@@ -70,6 +70,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
     return return_trace
 
 def eval_AC_per_run(env, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, constant_lambda, kappa):
+    np.random.seed(seed=runtime)
     print('%d of %d for AC (%s, %s)' % (runtime + 1, runtimes, critic_type, learner_type))
     return_trace = AC(env, episodes, encoder, gamma=gamma, alpha=alpha, beta=beta, eta=eta, kappa=kappa, critic_type=critic_type, learner_type=learner_type, constant_lambda=constant_lambda)
     return return_trace.reshape(1, -1)
