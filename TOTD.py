@@ -64,7 +64,7 @@ def totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=lambd
             rho_curr = importance_sampling_ratio(target, behavior, o_curr, action)
             o_next, r_next, done, _ = env.step(action)
             x_next = encoder(o_next)
-            value_learner.learn(r_next, float(not done) * gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha)
+            value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha)
             value_learner.next()
             x_curr = x_next
     return value_trace
