@@ -10,12 +10,12 @@ def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_t
     elif learner_type == 'totd':
         LEARNER = TOTD_LEARNER; lr_dict = {'alpha_curr': alpha}
     MC_exp_learner, MC_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D)
-    MC_var_learner.w_prev, MC_var_learner.w_curr = np.zeros(D), np.zeros(D)
+    learners = [MC_exp_learner, MC_var_learner, value_learner]
     value_trace = np.empty(episodes); value_trace[:] = np.nan
     for episode in range(episodes):
         o_curr, done = env.reset(), False
         x_curr = encoder(o_curr)
-        value_learner.refresh(); MC_exp_learner.refresh(); MC_var_learner.refresh()
+        for learner in learners: learner.refresh()
         value_trace[episode] = evaluate(value_learner.w_curr, 'expectation')
         while not done:
             action = decide(o_curr, behavior)
@@ -33,7 +33,7 @@ def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_t
             else:
                 Lambda.w[o_next] = 1
             value_learner.learn(R_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.w[o_next], Lambda.w[o_curr], rho_curr, **lr_dict)
-            MC_exp_learner.next(); MC_var_learner.next(); value_learner.next()
+            for learner in learners: learner.next()
             o_curr, x_curr = o_next, x_next
     return value_trace
 
