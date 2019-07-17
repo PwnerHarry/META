@@ -9,7 +9,7 @@ OFF_POLICY="1"
 RUNTIMES="240"
 EPISODES="100000"
 ALPHA="0.05"
-BETA="0.05"
+BETA="0"
 
 # PARSE ARGS
 while [ "$1" != "" ]; do

@@ -9,7 +9,7 @@ from TOGTD import *
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--alpha', type=float, default=0.002, help='')
-parser.add_argument('--beta', type=float, default=0.0001, help='')
+parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--gamma', type=float, default=0.95, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
 parser.add_argument('--episodes', type=int, default=100000, help='')
@@ -20,6 +20,9 @@ parser.add_argument('--evaluate_baselines', type=int, default=1, help='')
 parser.add_argument('--evaluate_greedy', type=int, default=1, help='')
 parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
 args = parser.parse_args()
+
+if args.beta == 0:
+    args.beta = 0.01 * args.alpha
 
 # Experiment Preparation
 env = gym.make('FrozenLake-v0')
