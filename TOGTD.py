@@ -20,10 +20,10 @@ class TOGTD_LEARNER():
         self.e_h_curr[:], self.e_h_prev[:] = 0.0, 0.0
         self.rho_prev = 1
 
-    def learn(self, r_next, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr, beta_curr):
+    def learn(self, r_next, done, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr, beta_curr):
         self.rho_curr = rho_curr
         self.w_next, self.e_curr, self.e_grad_curr, self.e_h_curr, self.h_next = \
-            self.true_online_gtd_step(r_next, gamma_next, gamma_curr, x_next, x_curr, self.w_curr, self.w_prev,
+            self.true_online_gtd_step(r_next, done, gamma_next, gamma_curr, x_next, x_curr, self.w_curr, self.w_prev,
          lambda_next, lambda_curr, self.rho_curr, self.rho_prev,
          self.e_prev, self.e_grad_prev, self.e_h_prev, self.h_curr,
          alpha_curr, beta_curr)
@@ -37,10 +37,10 @@ class TOGTD_LEARNER():
 
     @staticmethod
     @jit(nopython=True, cache=True)
-    def true_online_gtd_step(r_next, gamma_next, gamma_curr, x_next, x_curr, w_curr, w_prev, lambda_next, lambda_curr, rho_curr, rho_prev, e_prev, e_grad_prev, e_h_prev, h_curr, alpha_curr, beta_curr):
+    def true_online_gtd_step(r_next, done, gamma_next, gamma_curr, x_next, x_curr, w_curr, w_prev, lambda_next, lambda_curr, rho_curr, rho_prev, e_prev, e_grad_prev, e_h_prev, h_curr, alpha_curr, beta_curr):
         # Off-policy TD($\lambda$) with a True Online Equivalence
         dot_w_curr_x_curr = np.dot(w_curr, x_curr)
-        delta_curr = r_next + gamma_next * np.dot(w_curr, x_next) - dot_w_curr_x_curr
+        delta_curr = r_next + (not done) * gamma_next * np.dot(w_curr, x_next) - dot_w_curr_x_curr
         e_curr = rho_curr * (gamma_curr * lambda_curr * e_prev + alpha_curr * (1 - rho_curr * gamma_curr * lambda_curr * np.dot(x_curr, e_prev)) * x_curr)
         e_grad_curr = rho_curr * (gamma_curr * lambda_curr * e_grad_prev + x_curr)
         e_h_curr = rho_prev * gamma_curr * lambda_curr * e_h_prev + beta_curr * (1 - rho_prev * gamma_curr * lambda_curr * np.dot(x_curr, e_h_prev)) * x_curr
@@ -71,7 +71,7 @@ def togtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=lamb
             rho_curr = importance_sampling_ratio(target, behavior, o_curr, action)
             o_next, r_next, done, _ = env.step(action)
             x_next = encoder(o_next)
-            value_learner.learn(r_next, float(not done) * gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)
+            value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)
             value_learner.next()
             x_curr = x_next
     return value_trace

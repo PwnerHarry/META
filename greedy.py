@@ -22,17 +22,17 @@ def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_t
             rho_curr = importance_sampling_ratio(target, behavior, o_curr, action)
             o_next, R_next, done, _ = env.step(action)
             x_next = encoder(o_next)
-            MC_exp_learner.learn(R_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, **lr_dict)
+            MC_exp_learner.learn(R_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, **lr_dict)
             delta_curr = R_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
             gamma_bar_next = (rho_curr * gamma(x_next)) ** 2
-            MC_var_learner.learn(delta_curr ** 2, gamma_bar_next, 1, x_next, x_curr, 1, 1, 1, **lr_dict)
+            MC_var_learner.learn(delta_curr ** 2, done, gamma_bar_next, 1, x_next, x_curr, 1, 1, 1, **lr_dict)
             errsq = (np.dot(x_next, MC_exp_learner.w_next) - np.dot(x_next, value_learner.w_curr)) ** 2
             varg = max(0, np.dot(x_next, MC_var_learner.w_next))
             if errsq + varg > 0:
                 Lambda.w[o_next] = errsq / (errsq + varg)
             else:
                 Lambda.w[o_next] = 1
-            value_learner.learn(R_next, float(not done) * gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.w[o_next], Lambda.w[o_curr], rho_curr, **lr_dict)
+            value_learner.learn(R_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.w[o_next], Lambda.w[o_curr], rho_curr, **lr_dict)
             MC_exp_learner.next(); MC_var_learner.next(); value_learner.next()
             o_curr, x_curr = o_next, x_next
     return value_trace

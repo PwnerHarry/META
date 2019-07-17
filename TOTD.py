@@ -17,10 +17,10 @@ class TOTD_LEARNER():
         self.e_curr[:], self.e_prev[:] = 0.0, 0.0
         self.rho_prev = 1
 
-    def learn(self, r_next, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr):
+    def learn(self, r_next, done, gamma_next, gamma_curr, x_next, x_curr, lambda_next, lambda_curr, rho_curr, alpha_curr):
         self.rho_curr = rho_curr
         self.w_next, self.e_curr = \
-            self.true_online_td_step(r_next, gamma_next, gamma_curr, x_next, x_curr, self.w_curr, self.w_prev,
+            self.true_online_td_step(r_next, done, gamma_next, gamma_curr, x_next, x_curr, self.w_curr, self.w_prev,
          lambda_next, lambda_curr, self.rho_curr, self.rho_prev,
          self.e_prev,
          alpha_curr)
@@ -33,10 +33,10 @@ class TOTD_LEARNER():
 
     @staticmethod
     @jit(nopython=True, cache=True)
-    def true_online_td_step(r_next, gamma_next, gamma_curr, x_next, x_curr, w_curr, w_prev, lambda_next, lambda_curr, rho_curr, rho_prev, e_prev, alpha_curr):
+    def true_online_td_step(r_next, done, gamma_next, gamma_curr, x_next, x_curr, w_curr, w_prev, lambda_next, lambda_curr, rho_curr, rho_prev, e_prev, alpha_curr):
         # TODO: double-check, rho_prev, lambda_next not used!
         # True Online Temporal-Difference Learning - Harm van Seijen et al.
-        delta_curr = r_next + gamma_next * np.dot(w_curr, x_next) - np.dot(w_prev, x_curr)
+        delta_curr = r_next + (not done) * gamma_next * np.dot(w_curr, x_next) - np.dot(w_prev, x_curr)
         # TODO: check things about the second $\rho$
         e_curr = rho_curr * (gamma_curr * lambda_curr * e_prev + alpha_curr * x_curr - alpha_curr * rho_curr * gamma_curr * lambda_curr * np.dot(x_curr, e_prev) * x_curr)
         w_next = w_curr + delta_curr * e_curr - alpha_curr * (np.dot(w_curr, x_curr) - np.dot(w_prev, x_curr)) * x_curr
