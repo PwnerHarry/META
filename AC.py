@@ -9,7 +9,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
     # suppose we use exponential softmax on values
     D = encoder(0).size
     return_trace = np.empty(episodes); return_trace[:] = np.nan
-    W = 1e-6 * np.ones((env.action_space.n, D)) # W is the $|A|\times|S|$ parameter matrix for policy
+    W = np.ones((env.action_space.n, D)) # W is the $|A|\times|S|$ parameter matrix for policy
     if learner_type == 'totd':
         LEARNER = TOTD_LEARNER; lr_dict = {'alpha_curr': alpha}; lr_larger_dict = {'alpha_curr': 1.1 * alpha}
     elif learner_type == 'togtd':
@@ -31,7 +31,6 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr)) # https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html
             action = np.random.choice(range(len(prob_behavior)), p=prob_behavior); rho_curr = prob_target[action] / prob_behavior[action]
             o_next, r_next, done, _ = env.step(action); x_next = encoder(o_next)
-            # one-step of policy evaluation of the critic!
             if critic_type == 'greedy':
                 MC_exp_learner.learn(r_next, gamma(x_next), gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, **lr_dict)
                 delta_curr = r_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
@@ -54,7 +53,8 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                 VmE = v_next - np.dot(x_next, L_exp_learner.w_curr)
                 coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + np.dot(x_next, L_var_learner.w_curr)) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))
                 Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
-            value_learner.learn(r_next, float(not done) * gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha, beta)
+            # one-step of policy evaluation of the critic!
+            value_learner.learn(r_next, float(not done) * gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_dict)
             # one-step of policy improvement of the actor (gradient descent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
             dsoftmax = jacobian_softmax(prob_behavior)[action, :]
             dlog = dsoftmax / prob_target[action]

@@ -10,11 +10,11 @@ from TOGTD import *
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--N', type=int, default=4, help='')
 parser.add_argument('--alpha', type=float, default=0.01, help='')
-parser.add_argument('--beta', type=float, default=0.01, help='')
-parser.add_argument('--eta', type=float, default=0.001, help='')
+parser.add_argument('--beta', type=float, default=0, help='')
+parser.add_argument('--eta', type=float, default=0.01, help='')
 parser.add_argument('--gamma', type=float, default=0.95, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
-parser.add_argument('--episodes', type=int, default=1000000, help='')
+parser.add_argument('--episodes', type=int, default=100000, help='')
 parser.add_argument('--runtimes', type=int, default=7, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
 parser.add_argument('--critic_type', type=str, default='baseline', help='')
@@ -23,6 +23,8 @@ parser.add_argument('--evaluate_baselines', type=int, default=1, help='')
 parser.add_argument('--evaluate_greedy', type=int, default=1, help='')
 parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
 args = parser.parse_args()
+if args.beta == 0:
+    args.beta = 0.01 * args.alpha
 
 # Experiment Preparation
 env = gym.make('FrozenLake-v0')

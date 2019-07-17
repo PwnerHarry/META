@@ -2,7 +2,7 @@
 #SBATCH --account=def-bengioy
 #SBATCH --cpus-per-task=48
 #SBATCH --mem=8G
-#SBATCH --time=24:0:0
+#SBATCH --time=12:0:0
 
 # DEFAULT VALUES
 TARGET="0.35"
@@ -45,6 +45,8 @@ sleep 2
 
 # LOAD ENVIRONMENT
 module load python/3.7 scipy-stack
+module llvm
+module cuda/10.0
 source ~/ENV/bin/activate
 
 # COMPILE TO ACCELERATE
