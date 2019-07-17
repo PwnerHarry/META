@@ -11,10 +11,11 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
     elif learner_type == 'togtd':
         LEARNER = TOGTD_LEARNER; lr_dict = {'alpha_curr': alpha, 'beta_curr': beta}; lr_larger_dict = {'alpha_curr': min(1.0, 1.1 * alpha), 'beta_curr': min(1.0, 1.1 * beta)}
     MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D)
+    learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
     warnings.filterwarnings("error")
     for episode in range(episodes):
         o_curr, done, log_rho_accu = env.reset(), False, 0; x_curr = encoder(o_curr)
-        MC_exp_learner.refresh(); L_exp_learner.refresh(); L_var_learner.refresh(); value_learner.refresh()
+        for learner in learners: learner.refresh()
         value_trace[episode] = evaluate(value_learner.w_curr, 'expectation')
         try:
             while not done:
@@ -35,7 +36,7 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
                 Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
                 # learn value
                 value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_dict)
-                MC_exp_learner.next(); L_exp_learner.next(); L_var_learner.next(); value_learner.next()
+                for learner in learners: learner.next()
                 o_curr, x_curr = o_next, x_next
         except RuntimeWarning:
             print('RuntimeWarning captured, possibly due to numerical stability issues')
