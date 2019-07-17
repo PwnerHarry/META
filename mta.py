@@ -44,6 +44,7 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
     return value_trace
 
 def eval_MTA_per_run(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, Lambda, alpha, beta, evaluate, encoder, learner_type):
+    np.random.seed(seed=runtime)
     if learner_type == 'togtd':
         print('%d of %d for MTA, alpha: %g, beta: %g, kappa: %g' % (runtime + 1, runtimes, alpha, beta, kappa))
     elif learner_type == 'totd':

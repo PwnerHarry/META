@@ -9,9 +9,7 @@ def importance_sampling_ratio(target_policy, behavior_policy, s, a):
     return target_policy[s, a] / behavior_policy[s, a]
 
 def decide(state_id, policy_matrix):
-    dist = policy_matrix[state_id, :]
-    action_id = np.random.choice(range(len(dist)), p=dist)
-    return action_id
+    return np.random.choice(range(policy_matrix.shape[1]), p=policy_matrix[state_id, :])
 
 @jit(nopython=True, cache=True)
 def softmax(x): # a numerically stable softmax!
