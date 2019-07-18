@@ -100,11 +100,11 @@ class RingWorldEnv(gym.Env):
         return self.state
 
 # EVALUATION METHODS
-@jit(cache=True)
+@jit(nopython=True, cache=True)
 def mse(estimate, target, weight):
     return np.linalg.norm(np.multiply(estimate - target, weight), 2) ** 2
 
-@jit(cache=True)
+@jit(nopython=True, cache=True)
 def evaluate_estimate(weight, expectation, variance, distribution, stat_type, state_set_matrix):
     # place the state representations row by row in the state_set_matrix
     estimate = get_estimate(weight, state_set_matrix)
