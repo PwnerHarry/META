@@ -39,14 +39,15 @@ class LAMBDA():# state-based parametric lambda
             pass # Neural Network approximator to be implemented using PyTorch
     def value(self, x):
         if self.approximator == 'constant':
-            return self.w
+            v = self.w
         elif self.approximator == 'tabular':
             if type(x) is int:
-                return self.w[x]
+                v = self.w[x]
             else:
-                return self.w[decode(self.X, x)]
+                v = self.w[decode(self.X, x)]
         elif self.approximator == 'linear':
-            return min(1, max(0, np.dot(x.reshape(-1), self.w)))
+            v = np.dot(x.reshape(-1), self.w)
+        return min(1, max(0, v))
     def gradient(self, x):
         if self.approximator == 'linear':
             return x.reshape(-1)
