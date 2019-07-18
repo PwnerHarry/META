@@ -28,8 +28,8 @@ target_policy, behavior_policy = npm.repmat(np.array([args.target, 1 - args.targ
 # get ground truth expectation, variance and stationary distribution
 start_dist = np.zeros(env.observation_space.n)
 start_dist[int(env.observation_space.n / 2)] = 1.0
-true_expectation, true_variance, stationary_dist = iterative_policy_evaluation(env, target_policy, gamma=gamma, start_dist=start_dist)
-evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, true_expectation, true_variance, stationary_dist, stat_type, get_state_set_matrix(env, encoder))
+DP_expectation, DP_variance, DP_stat_dist = iterative_policy_evaluation(env, target_policy, gamma=gamma, start_dist=start_dist)
+evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, DP_expectation, DP_variance, DP_stat_dist, stat_type, get_state_set_matrix(env, encoder))
 things_to_save = {}
 
 time_start = time.time()
@@ -61,13 +61,13 @@ print('time elapsed: %gs' % (time_finish - time_start))
 # SAVE
 if args.evaluate_MTA:
     if args.learner_type == "togtd":
-        filename = 'ringworld_%s_behavior_%g_target_%g_a_%g_b_%g_k_%g_e_%g_r_%d' % (args.learner_type, behavior_policy[0, 0], target_policy[0, 0], args.alpha, args.beta, args.kappa, args.episodes, args.runtimes)
+        filename = 'ringworld_%s_behavior_%g_target_%g_a_%g_b_%g_k_%g_e_%g_r_%d.mat' % (args.learner_type, behavior_policy[0, 0], target_policy[0, 0], args.alpha, args.beta, args.kappa, args.episodes, args.runtimes)
     elif args.learner_type == "totd":
-        filename = 'ringworld_%s_behavior_%g_target_%g_a_%g_k_%g_e_%g_r_%d' % (args.learner_type, behavior_policy[0, 0], target_policy[0, 0], args.alpha, args.kappa, args.episodes, args.runtimes)
+        filename = 'ringworld_%s_behavior_%g_target_%g_a_%g_k_%g_e_%g_r_%d.mat' % (args.learner_type, behavior_policy[0, 0], target_policy[0, 0], args.alpha, args.kappa, args.episodes, args.runtimes)
 else:
     if args.learner_type == "togtd":
-        filename = 'ringworld_%s_behavior_%g_target_%g_a_%g_b_%g_e_%g_r_%d' % (args.learner_type, behavior_policy[0, 0], target_policy[0, 0], args.alpha, args.beta, args.episodes, args.runtimes)
+        filename = 'ringworld_%s_behavior_%g_target_%g_a_%g_b_%g_e_%g_r_%d.mat' % (args.learner_type, behavior_policy[0, 0], target_policy[0, 0], args.alpha, args.beta, args.episodes, args.runtimes)
     elif args.learner_type == "totd":
-        filename = 'ringworld_%s_behavior_%g_target_%g_a_%g_e_%g_r_%d' % (args.learner_type, behavior_policy[0, 0], target_policy[0, 0], args.alpha, args.episodes, args.runtimes)
+        filename = 'ringworld_%s_behavior_%g_target_%g_a_%g_e_%g_r_%d.mat' % (args.learner_type, behavior_policy[0, 0], target_policy[0, 0], args.alpha, args.episodes, args.runtimes)
 scipy.io.savemat(filename, things_to_save)
 pass
