@@ -19,7 +19,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
         Lambda = LAMBDA(env, constant_lambda, approximator='constant')
         value_learner = LEARNER(env, D); learners = [value_learner]
     elif critic_type == 'greedy':
-        Lambda = LAMBDA(env, approximator='tabular', initial_value=np.ones(env.observation_space.n))
+        Lambda = LAMBDA(env, approximator='tabular', initial_value=np.ones(env.observation_space.n), state_set_matrix=get_state_set_matrix(env, encoder))
         MC_exp_learner, MC_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, MC_var_learner, value_learner]
     elif critic_type == 'MTA':
         Lambda = LAMBDA(env, initial_value=np.linalg.lstsq(get_state_set_matrix(env, encoder), np.ones(env.observation_space.n), rcond=None)[0], approximator='linear')
@@ -31,7 +31,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
         while not done:
             prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr)) # https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html
             action = np.random.choice(range(len(prob_behavior)), p=prob_behavior); rho_curr = prob_target[action] / prob_behavior[action]
-            o_next, r_next, done, _ = env.step(action); x_next = encoder(o_next)
+            o_next, r_next, done, _ = env.step(action); x_next = encoder(o_next)        
             v_next = float(not done) * np.dot(x_next, value_learner.w_curr)
             delta_curr = r_next + gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
             if critic_type == 'greedy':
@@ -40,7 +40,12 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                 MC_var_learner.learn(delta_curr ** 2, done, gamma_bar_next, 1, x_next, x_curr, 1, 1, 1, **lr_dict)
                 errsq, varg = (np.dot(x_next, MC_exp_learner.w_next) - np.dot(x_next, value_learner.w_curr)) ** 2, max(0, np.dot(x_next, MC_var_learner.w_next))
                 if errsq + varg > 0:
-                    Lambda.w[o_next] = errsq / (errsq + varg)
+                    warnings.filterwarnings("error")
+                    try:
+                        Lambda.w[o_next] = errsq / (errsq + varg)
+                    except RuntimeWarning:
+                        Lambda.w[o_next] = 1
+                        warnings.filterwarnings("default")
                 else:
                     Lambda.w[o_next] = 1
             elif critic_type == 'MTA':
@@ -56,14 +61,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             # one-step of policy evaluation of the critic!
             value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_dict)
             # one-step of policy improvement of the actor (gradient descent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
-            W += eta * I * rho_curr * delta_curr * get_grad_W(W, prob_behavior, np.diagflat(prob_behavior), action, x_curr) # TODO: make sure the correction of importance sampling ratio is correct
-            
-            # tensor_W = Variable(torch.from_numpy(W).double(), requires_grad=True)
-            # prob_behavior = torch.nn.functional.softmax(torch.mm(tensor_W, torch.from_numpy(x_curr).double().reshape(D, 1)), dim=0) # https://discuss.pytorch.org/t/how-to-do-dot-product-of-two-tensors/3984
-            # ln_prob_action = torch.log(prob_behavior[action])
-            # ln_prob_action.backward(torch.ones(D).double())
-            # W += eta * I * rho_curr * delta_curr * tensor_W.grad.numpy()
-
+            W += eta * I * rho_curr * delta_curr * get_grad_W(W, prob_behavior, np.diagflat(prob_behavior), action, x_curr) # TODO: make sure the correction of importance sampling ratio is correct            
             # timestep++
             return_cumulative += I * r_next
             for learner in learners:
@@ -71,6 +69,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             o_curr, x_curr = o_next, x_next
             I *= gamma(x_next) # TODO: know how the gamma accumulation is implemented!
         return_trace[episode] = return_cumulative # Bookkeeping
+    warnings.filterwarnings("default")
     return return_trace
 
 def eval_AC_per_run(env, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, constant_lambda, kappa):
@@ -78,9 +77,9 @@ def eval_AC_per_run(env, runtime, runtimes, episodes, critic_type, learner_type,
     if critic_type == 'baseline':
         print('%d of %d for AC(%g, %s), alpha: %g, beta: %g, eta: %g' % (runtime + 1, runtimes, constant_lambda, learner_type, alpha, beta, eta))
     elif critic_type == 'greedy':
-        print('%d of %d for AC(greedy, %s), alpha: %g, beta: %g, eta: %g' % (runtime + 1, runtimes, critic_type, learner_type, alpha, beta, eta))
+        print('%d of %d for AC(greedy, %s), alpha: %g, beta: %g, eta: %g' % (runtime + 1, runtimes, learner_type, alpha, beta, eta))
     elif critic_type == 'MTA':
-        print('%d of %d for AC(MTA, %s), alpha: %g, beta: %g, eta: %g, kappa: %g' % (runtime + 1, runtimes, critic_type, learner_type, alpha, beta, eta, kappa))
+        print('%d of %d for AC(MTA, %s), alpha: %g, beta: %g, eta: %g, kappa: %g' % (runtime + 1, runtimes, learner_type, alpha, beta, eta, kappa))
     return_trace = AC(env, episodes, encoder, gamma=gamma, alpha=alpha, beta=beta, eta=eta, kappa=kappa, critic_type=critic_type, learner_type=learner_type, constant_lambda=constant_lambda)
     return return_trace.reshape(1, -1)
 

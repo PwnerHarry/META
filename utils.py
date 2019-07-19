@@ -23,7 +23,7 @@ def get_grad_W(W, prob_actions, DIAGFLAT, action, x):
     dlog = dsoftmax[action, :].reshape(-1, 1) / p[action]
     return dlog * x.reshape(1, -1) / W
 
-@jit(nopython=True, cache=True)
+@jit(cache=True)
 def decode(X, x):
     return np.where((X == tuple(x)).all(axis=1))[0]
 

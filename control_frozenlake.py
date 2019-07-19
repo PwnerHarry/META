@@ -15,7 +15,6 @@ parser.add_argument('--kappa', type=float, default=0.001, help='')
 parser.add_argument('--episodes', type=int, default=100000, help='')
 parser.add_argument('--runtimes', type=int, default=16, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
-parser.add_argument('--constant_lambda', type=float, default=1.0, help='')
 parser.add_argument('--evaluate_baselines', type=int, default=1, help='')
 parser.add_argument('--evaluate_greedy', type=int, default=1, help='')
 parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
@@ -35,17 +34,17 @@ if args.evaluate_baselines:
     BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
         results = eval_AC(env, critic_type='baseline', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, constant_lambda=baseline_lambda, kappa=args.kappa)
-        exec("things_to_save[\'return_%s_%g_mean\'] = np.nanmean(results, axis=0)" % (args.critic_type, baseline_lambda * 100)) # no dots in variable names for MATLAB
-        exec("things_to_save[\'return_%s_%g_std\'] = np.nanstd(results, axis=0)" % (args.critic_type, baseline_lambda * 100))
+        exec("things_to_save[\'return_baseline_%g_mean\'] = np.nanmean(results, axis=0)" % (baseline_lambda * 100)) # no dots in variable names for MATLAB
+        exec("things_to_save[\'return_baseline_%g_std\'] = np.nanstd(results, axis=0)" % (baseline_lambda * 100))
 
 # LAMBDA-GREEDY
 if args.evaluate_greedy:
-    results = eval_AC(env, critic_type='greedy', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, constant_lambda=baseline_lambda, kappa=args.kappa)
+    results = eval_AC(env, critic_type='greedy', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, constant_lambda=0, kappa=args.kappa)
     things_to_save['return_greedy_mean'], things_to_save['return_greedy_std'] = np.nanmean(results, axis=0), np.nanstd(results, axis=0)
 
 # MTA
 if args.evaluate_MTA:
-    results = eval_AC(env, critic_type='MTA', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, constant_lambda=baseline_lambda, kappa=args.kappa)
+    results = eval_AC(env, critic_type='MTA', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, constant_lambda=0, kappa=args.kappa)
     things_to_save['return_MTA_mean'], things_to_save['return_MTA_std'] = np.nanmean(results, axis=0), np.nanstd(results, axis=0)
 
 time_finish = time.time()
