@@ -18,6 +18,7 @@ end
 filenames(reduce_index) = [];
 
 % loading data files one by one
+smoothing_window = 1000;
 if strcmp(env, 'ringworld')
     METHOD_LIST = {'totd_0', 'totd_20', 'totd_40', 'totd_60', 'totd_80', 'totd_100', 'greedy', 'mta'};
 elseif strcmp(env, 'frozenlake')
@@ -35,8 +36,8 @@ for index_filename = 1: numel(filenames)
     for index_method = 1: numel(METHOD_LIST)
         method = METHOD_LIST{index_method};
         try
-            eval(sprintf('MEANS(%d, index_filename) = loaded.error_value_%s_mean(end);', index_method, method));
-            eval(sprintf('STDS(%d, index_filename) = loaded.error_value_%s_std(end);', index_method, method));
+            eval(sprintf('MEANS(%d, index_filename) = mean(loaded.error_value_%s_mean(end - %d: end));', index_method, method, smoothing_window));
+            eval(sprintf('STDS(%d, index_filename) = mean(loaded.error_value_%s_std(end - %d: end));', index_method, method, smoothing_window));
         catch ME
         end
     end
