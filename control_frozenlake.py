@@ -12,7 +12,7 @@ parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--eta', type=float, default=0.01, help='')
 parser.add_argument('--gamma', type=float, default=0.99, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
-parser.add_argument('--episodes', type=int, default=1000000, help='')
+parser.add_argument('--episodes', type=int, default=100000, help='')
 parser.add_argument('--runtimes', type=int, default=16, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
 parser.add_argument('--critic_type', type=str, default='baseline', help='')
@@ -35,13 +35,12 @@ returns = eval_AC(env, critic_type=args.critic_type, learner_type=args.learner_t
 things_to_save['return_mean'], things_to_save['return_std'] = np.nanmean(returns, axis=0), np.nanstd(returns, axis=0)
 
 # BASELINES
-# if args.evaluate_baselines:
-#     BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
-#     for baseline_lambda in BASELINE_LAMBDAS:
-#         Lambda = LAMBDA(env, baseline_lambda, approximator='constant')
-#         results = eval_togtd(env, behavior, target, Lambda, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder)
-#         exec("things_to_save[\'error_value_%s_%g_mean\'] = np.nanmean(results, axis=0)" % (args.learner_type, baseline_lambda * 100)) # no dots in variable names for MATLAB
-#         exec("things_to_save[\'error_value_%s_%g_std\'] = np.nanstd(results, axis=0)" % (args.learner_type, baseline_lambda * 100))
+if args.evaluate_baselines:
+    BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
+    for baseline_lambda in BASELINE_LAMBDAS:
+        results = eval_AC(env, critic_type=args.critic_type, learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, constant_lambda=baseline_lambda, kappa=args.kappa)
+        exec("things_to_save[\'return_%s_%g_mean\'] = np.nanmean(results, axis=0)" % (args.critic_type, baseline_lambda * 100)) # no dots in variable names for MATLAB
+        exec("things_to_save[\'return_%s_%g_std\'] = np.nanstd(results, axis=0)" % (args.critic_type, baseline_lambda * 100))
 
 # LAMBDA-GREEDY
 # if args.evaluate_greedy:

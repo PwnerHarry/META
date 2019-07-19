@@ -3,7 +3,9 @@ sample_method = 'linear';
 cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 
 expectation_list = [ ...
-    "return"];
+    "return_baseline_0", "return_baseline_20", "return_baseline_40", ...
+    "return_baseline_60", "return_baseline_80", "return_baseline_100", ...
+    "return_greedy", "return_mta"];
 LineColors = [linspecer(numel(expectation_list) - 2); [1, 0, 0]; [0, 0, 1];];
 num_points = 201;
 
@@ -39,8 +41,22 @@ for result_index = 1: numel(expectation_list)
     INTERVAL(INTERVAL <= 0) = eps;
     [CURVE, ~] = band_drawer(X, MEAN, INTERVAL, LineColors(result_index, :)); %X, MEAN, INTERVAL, COLOR
     CURVES = [CURVES, CURVE];
-    if strcmp(result_name, "return")
-        LEGEND = "Actor-Critic";
+    if strcmp(result_name, "return_mta")
+        LEGEND = "MTA";
+    elseif strcmp(result_name, "return_baseline_0")
+        LEGEND = "GTD(0)";
+    elseif strcmp(result_name, "return_baseline_20")
+        LEGEND = "GTD(.2)";
+    elseif strcmp(result_name, "return_baseline_40")
+        LEGEND = "GTD(.4)";
+    elseif strcmp(result_name, "return_baseline_60")
+        LEGEND = "GTD(.6)";
+    elseif strcmp(result_name, "return_baseline_80")
+        LEGEND = "GTD(.8)";
+    elseif strcmp(result_name, "return_baseline_100")
+        LEGEND = "GTD(1)";
+    elseif strcmp(result_name, "return_greedy")
+        LEGEND = "greedy";
     end
     LEGENDS = [LEGENDS, LEGEND];
 end
