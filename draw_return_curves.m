@@ -5,7 +5,7 @@ cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 expectation_list = [ ...
     "return"];
 LineColors = [linspecer(numel(expectation_list) - 2); [1, 0, 0]; [0, 0, 1];];
-num_points = 201;
+num_points = 1001;
 
 CURVES = []; LEGENDS = {};
 figure();
