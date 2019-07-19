@@ -32,9 +32,10 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr)) # https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html
             action = np.random.choice(range(len(prob_behavior)), p=prob_behavior); rho_curr = prob_target[action] / prob_behavior[action]
             o_next, r_next, done, _ = env.step(action); x_next = encoder(o_next)
+            v_next = float(not done) * np.dot(x_next, value_learner.w_curr)
+            delta_curr = r_next + gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
             if critic_type == 'greedy':
                 MC_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, **lr_dict)
-                delta_curr = r_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_curr) - np.dot(x_curr, value_learner.w_curr)
                 gamma_bar_next = (rho_curr * gamma(x_next)) ** 2
                 MC_var_learner.learn(delta_curr ** 2, done, gamma_bar_next, 1, x_next, x_curr, 1, 1, 1, **lr_dict)
                 errsq, varg = (np.dot(x_next, MC_exp_learner.w_next) - np.dot(x_next, value_learner.w_curr)) ** 2, max(0, np.dot(x_next, MC_var_learner.w_next))
@@ -46,8 +47,6 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                 log_rho_accu += np.log(prob_target[action]) - np.log(prob_behavior[action])
                 MC_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, **lr_dict)
                 L_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_larger_dict)
-                v_next = np.dot(x_next, value_learner.w_curr)
-                delta_curr = r_next + float(not done) * gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
                 gamma_bar_next = (Lambda.value(x_next) * gamma(x_next)) ** 2
                 L_var_learner.learn(delta_curr ** 2, done, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, **lr_dict)
                 # SGD on meta-objective
@@ -67,7 +66,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             # ln_prob_action = torch.log(torch.dot(prob_behavior, onehot_action))
             ln_prob_action = torch.log(prob_behavior[action])
             ln_prob_action.backward(torch.ones(D).double())
-            W += eta * I * rho_curr * tensor_W.grad.numpy()
+            W += eta * I * rho_curr * delta_curr * tensor_W.grad.numpy()
             # timestep++
             return_cumulative += I * r_next
             for learner in learners:

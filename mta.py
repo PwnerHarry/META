@@ -26,8 +26,8 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
                 x_next = encoder(o_next)
                 MC_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1.0, 1.0, rho_curr, **lr_dict)
                 L_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_larger_dict)
-                v_next = np.dot(x_next, value_learner.w_curr)
-                delta_curr = r_next + float(not done) * gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
+                v_next = float(not done) * np.dot(x_next, value_learner.w_curr)
+                delta_curr = r_next + gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
                 gamma_bar_next = (Lambda.value(x_next) * gamma(x_next)) ** 2
                 L_var_learner.learn(delta_curr ** 2, done, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, **lr_dict)
                 # SGD on meta-objective
