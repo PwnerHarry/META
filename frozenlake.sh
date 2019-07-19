@@ -44,16 +44,15 @@ echo "runtimes: $RUNTIMES, episodes: $EPISODES"
 sleep 2
 
 # LOAD ENVIRONMENT
-module load python/3.7 scipy-stack
-module llvm
-module cuda/10.0
+module load python
+
 source ~/ENV/bin/activate
 
 # COMPILE TO ACCELERATE
 python -m compileall ./
 
 # BASELINES AND GREEDY
-python predict_frozenlake.py --off_policy $OFF_POLICY --episodes $EPISODES --runtimes $RUNTIMES --alpha $ALPHA --beta $BETA --evaluate_MTA 0
+# python predict_frozenlake.py --off_policy $OFF_POLICY --episodes $EPISODES --runtimes $RUNTIMES --alpha $ALPHA --beta $BETA --evaluate_MTA 0
 
 # COARSE SEARCH FOR KAPPA
 python predict_frozenlake.py --alpha $ALPHA --beta $BETA --kappa `awk "BEGIN {print 0.0001 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --off_policy $OFF_POLICY --evaluate_baselines 0 --evaluate_greedy 0

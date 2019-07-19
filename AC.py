@@ -1,15 +1,16 @@
-import gym, numpy as np
+import gym, torch, torch.nn, torch.nn.functional, numpy as np
 from utils import *
 from greedy import *
 from mta import *
 from TOGTD import *
 from TOTD import *
+from torch.autograd import Variable
 
 def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA', learner_type='togtd', constant_lambda=1):
     # suppose we use exponential softmax on values
     D = encoder(0).size
-    return_trace = np.empty(episodes); return_trace[:] = np.nan
     W = np.ones((env.action_space.n, D)) # W is the $|A|\times|S|$ parameter matrix for policy
+    return_trace = np.empty(episodes); return_trace[:] = np.nan
     if learner_type == 'totd':
         LEARNER = TOTD_LEARNER; lr_dict = {'alpha_curr': alpha}; lr_larger_dict = {'alpha_curr': 1.1 * alpha}
     elif learner_type == 'togtd':
@@ -56,10 +57,17 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             # one-step of policy evaluation of the critic!
             value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_dict)
             # one-step of policy improvement of the actor (gradient descent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
-            dsoftmax = jacobian_softmax(prob_behavior)[action, :]
-            dlog = dsoftmax / prob_target[action]
-            grad_W = np.matmul(dlog.reshape(-1, 1), x_curr.reshape(1, -1)) / W # TODO: This gives divided by 0 at the first, check if this gradient is correct!
-            W += eta * I * rho_curr * grad_W # TODO: make sure the correction of importance sampling ratio is correct
+            # dsoftmax = jacobian_softmax(prob_behavior)[action, :]
+            # dlog = dsoftmax / prob_target[action]
+            # grad_W = np.matmul(dlog.reshape(-1, 1), x_curr.reshape(1, -1)) / W # TODO: This gives divided by 0 at the first, check if this gradient is correct!
+            # W += eta * I * rho_curr * grad_W # TODO: make sure the correction of importance sampling ratio is correct
+            tensor_W = Variable(torch.from_numpy(W).double(), requires_grad=True)
+            prob_behavior = torch.nn.functional.softmax(torch.mm(tensor_W, torch.from_numpy(x_curr).double().reshape(D, 1)), dim=0) # https://discuss.pytorch.org/t/how-to-do-dot-product-of-two-tensors/3984
+            # onehot_action = torch.zeros(env.action_space.n); onehot_action[action] = 1
+            # ln_prob_action = torch.log(torch.dot(prob_behavior, onehot_action))
+            ln_prob_action = torch.log(prob_behavior[action])
+            ln_prob_action.backward(torch.ones(D).double())
+            W += eta * I * rho_curr * tensor_W.grad.numpy()
             # timestep++
             return_cumulative += I * r_next
             for learner in learners:
@@ -76,5 +84,5 @@ def eval_AC_per_run(env, runtime, runtimes, episodes, critic_type, learner_type,
     return return_trace.reshape(1, -1)
 
 def eval_AC(env, critic_type, learner_type, gamma, alpha, beta, eta, runtimes, episodes, encoder, constant_lambda=1, kappa=0.001):
-    results = Parallel(n_jobs=-1)(delayed(eval_AC_per_run)(env, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, constant_lambda, kappa) for runtime in range(runtimes))
+    results = Parallel(n_jobs=1)(delayed(eval_AC_per_run)(env, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, constant_lambda, kappa) for runtime in range(runtimes))
     return np.concatenate(results, axis=0)
