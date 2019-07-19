@@ -75,7 +75,12 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
 
 def eval_AC_per_run(env, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, constant_lambda, kappa):
     np.random.seed(seed=runtime)
-    print('%d of %d for AC (%s, %s)' % (runtime + 1, runtimes, critic_type, learner_type))
+    if critic_type == 'baseline':
+        print('%d of %d for AC(%g, %s), alpha: %g, beta: %g, eta: %g' % (runtime + 1, runtimes, constant_lambda, learner_type, alpha, beta, eta))
+    elif critic_type == 'greedy':
+        print('%d of %d for AC(greedy, %s), alpha: %g, beta: %g, eta: %g' % (runtime + 1, runtimes, critic_type, learner_type, alpha, beta, eta))
+    elif critic_type == 'MTA':
+        print('%d of %d for AC(MTA, %s), alpha: %g, beta: %g, eta: %g, kappa: %g' % (runtime + 1, runtimes, critic_type, learner_type, alpha, beta, eta, kappa))
     return_trace = AC(env, episodes, encoder, gamma=gamma, alpha=alpha, beta=beta, eta=eta, kappa=kappa, critic_type=critic_type, learner_type=learner_type, constant_lambda=constant_lambda)
     return return_trace.reshape(1, -1)
 
