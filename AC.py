@@ -11,8 +11,6 @@ Actor-Critic with Linear Function Approximator and Softmax Policy
 '''
 def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA', learner_type='togtd', constant_lambda=1):
     D = encoder(0).size
-    W = np.ones((env.action_space.n, D)) # W is the $|A|\times|S|$ parameter matrix for policy
-    return_trace = np.empty(episodes); return_trace[:] = np.nan
     if learner_type == 'totd':
         LEARNER = TOTD_LEARNER; lr_dict = {'alpha_curr': alpha}; lr_larger_dict = {'alpha_curr': 1.1 * alpha}
     elif learner_type == 'togtd':
@@ -26,12 +24,17 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
     elif critic_type == 'MTA':
         Lambda = LAMBDA(env, initial_value=np.linalg.lstsq(get_state_set_matrix(env, encoder), np.ones(env.observation_space.n), rcond=None)[0], approximator='linear')
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
+    W = np.ones((env.action_space.n, D)) # W is the $|A|\times|S|$ parameter matrix for policy
+    return_trace = np.empty(episodes); return_trace[:] = np.nan
     for episode in range(episodes):
-        o_curr, done, log_rho_accu, return_cumulative, I = env.reset(), False, 0, 0, 1; x_curr = encoder(o_curr)
         for learner in learners: learner.refresh()
+        o_curr, done, log_rho_accu, return_cumulative, I = env.reset(), False, 0, 0, 1; x_curr = encoder(o_curr)
         while not done:
-            prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr)) # https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html
-            action = np.random.choice(range(len(prob_behavior)), p=prob_behavior); rho_curr = prob_target[action] / prob_behavior[action]
+            # prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr)) # https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html
+            prob_behavior = softmax(np.matmul(W, x_curr))
+            action = np.random.choice(range(len(prob_behavior)), p=prob_behavior)
+            # rho_curr = prob_target[action] / prob_behavior[action]
+            rho_curr = 1
             o_next, r_next, done, _ = env.step(action); x_next = encoder(o_next)        
             v_next = float(not done) * np.dot(x_next, value_learner.w_curr)
             delta_curr = r_next + gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
@@ -49,7 +52,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                         pass
                     warnings.filterwarnings("default")
             elif critic_type == 'MTA':
-                log_rho_accu += np.log(prob_target[action]) - np.log(prob_behavior[action])
+                # log_rho_accu += np.log(prob_target[action]) - np.log(prob_behavior[action])
                 MC_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, **lr_dict)
                 L_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_larger_dict)
                 gamma_bar_next = (Lambda.value(x_next) * gamma(x_next)) ** 2
