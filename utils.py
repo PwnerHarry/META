@@ -16,9 +16,12 @@ def softmax(x): # a numerically stable softmax!
     exps = np.exp(x - np.max(x))
     return exps / np.sum(exps)
 
-def jacobian_softmax(softmax):
-    s = softmax.reshape(-1, 1)
-    return np.diagflat(s) - np.matmul(s, s.T) # $J = I - \bm{s}\bm{s}^{T}$
+@jit(nopython=True, cache=True)
+def get_grad_W(W, prob_actions, DIAGFLAT, action, x):
+    p = prob_actions.reshape(-1, 1)
+    dsoftmax = DIAGFLAT - p * p.T
+    dlog = dsoftmax[action, :].reshape(-1, 1) / p[action]
+    return dlog * x.reshape(1, -1) / W
 
 @jit(nopython=True, cache=True)
 def decode(X, x):
