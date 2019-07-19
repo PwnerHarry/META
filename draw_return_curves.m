@@ -5,7 +5,7 @@ cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 expectation_list = [ ...
     "return"];
 LineColors = [linspecer(numel(expectation_list) - 2); [1, 0, 0]; [0, 0, 1];];
-num_points = 1001;
+num_points = 201;
 
 CURVES = []; LEGENDS = {};
 figure();
@@ -25,9 +25,17 @@ for result_index = 1: numel(expectation_list)
     elseif strcmp(sample_method, 'log')
         X = get_statistics2(results_mean, num_points, true);
     end
-    MEAN = results_mean(X);
+    MEAN = NaN(size(X)); STD = NaN(size(X));
+    MEAN(1) = mean(results_mean(X(1): round(0.5 * X(1) + 0.5 * X(2))));
+    STD(1) = mean(results_std(X(1): round(0.5 * X(1) + 0.5 * X(2))));
+    for i = 2: length(X) - 1
+        MEAN(i) = mean(results_mean(round(0.5 * X(i - 1) + 0.5 * X(i)): round(0.5 * X(i) + 0.5 * X(i + 1))));
+        STD(i) = mean(results_std(round(0.5 * X(i - 1) + 0.5 * X(i)): round(0.5 * X(i) + 0.5 * X(i + 1))));
+    end
+    MEAN(end) = mean(results_mean(round(0.5 * X(end - 1) + 0.5 * X(end)): X(end)));
+    STD(end) = mean(results_std(round(0.5 * X(end - 1) + 0.5 * X(end)): X(end)));
     MIN = min(min(MEAN), MIN);
-    INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-results_std(X); results_std(X)];
+    INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-STD; STD];
     INTERVAL(INTERVAL <= 0) = eps;
     [CURVE, ~] = band_drawer(X, MEAN, INTERVAL, LineColors(result_index, :)); %X, MEAN, INTERVAL, COLOR
     CURVES = [CURVES, CURVE];
@@ -42,7 +50,7 @@ set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 if strcmp(sample_method, 'log')
     set(gca, 'xscale', 'log');
 end
-% set(gca, 'yscale', 'log');
+set(gca, 'yscale', 'log');
 axis([1, inf, MIN, inf]);
 set(gca, 'FontSize', 16);
 set(gca, 'FontName', 'Book Antiqua');
