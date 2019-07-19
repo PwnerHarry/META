@@ -28,13 +28,12 @@ def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_t
                 MC_var_learner.learn(delta_curr ** 2, done, gamma_bar_next, 1, x_next, x_curr, 1, 1, 1, **lr_dict)
                 errsq = (np.dot(x_next, MC_exp_learner.w_next) - np.dot(x_next, value_learner.w_curr)) ** 2
                 varg = max(0, np.dot(x_next, MC_var_learner.w_next))
-                if errsq + varg > 0:
+                Lambda.w[o_next] = 1
+                if errsq + varg > np.sqrt(np.finfo(float).eps): # a safer threshold for numerical stability
                     try:
                         Lambda.w[o_next] = errsq / (errsq + varg)
                     except RuntimeWarning:
-                        Lambda.w[o_next] = 1
-                else:
-                    Lambda.w[o_next] = 1
+                        pass
                 value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.w[o_next], Lambda.w[o_curr], rho_curr, **lr_dict)
                 for learner in learners: learner.next()
                 o_curr, x_curr = o_next, x_next

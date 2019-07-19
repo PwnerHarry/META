@@ -6,8 +6,10 @@ from TOGTD import *
 from TOTD import *
 from torch.autograd import Variable
 
+'''
+Actor-Critic with Linear Function Approximator and Softmax Policy
+'''
 def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA', learner_type='togtd', constant_lambda=1):
-    # suppose we use exponential softmax on values
     D = encoder(0).size
     W = np.ones((env.action_space.n, D)) # W is the $|A|\times|S|$ parameter matrix for policy
     return_trace = np.empty(episodes); return_trace[:] = np.nan
@@ -26,8 +28,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
     for episode in range(episodes):
         o_curr, done, log_rho_accu, return_cumulative, I = env.reset(), False, 0, 0, 1; x_curr = encoder(o_curr)
-        for learner in learners:
-            learner.refresh()
+        for learner in learners: learner.refresh()
         while not done:
             prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr)) # https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html
             action = np.random.choice(range(len(prob_behavior)), p=prob_behavior); rho_curr = prob_target[action] / prob_behavior[action]
@@ -39,36 +40,37 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                 gamma_bar_next = (rho_curr * gamma(x_next)) ** 2
                 MC_var_learner.learn(delta_curr ** 2, done, gamma_bar_next, 1, x_next, x_curr, 1, 1, 1, **lr_dict)
                 errsq, varg = (np.dot(x_next, MC_exp_learner.w_next) - np.dot(x_next, value_learner.w_curr)) ** 2, max(0, np.dot(x_next, MC_var_learner.w_next))
-                if errsq + varg > 0:
+                Lambda.w[o_next] = 1
+                if errsq + varg > np.sqrt(np.finfo(float).eps): # a safer threshold for numerical stability
                     warnings.filterwarnings("error")
                     try:
                         Lambda.w[o_next] = errsq / (errsq + varg)
                     except RuntimeWarning:
-                        Lambda.w[o_next] = 1
-                        warnings.filterwarnings("default")
-                else:
-                    Lambda.w[o_next] = 1
+                        pass
+                    warnings.filterwarnings("default")
             elif critic_type == 'MTA':
                 log_rho_accu += np.log(prob_target[action]) - np.log(prob_behavior[action])
                 MC_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, **lr_dict)
                 L_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_larger_dict)
                 gamma_bar_next = (Lambda.value(x_next) * gamma(x_next)) ** 2
                 L_var_learner.learn(delta_curr ** 2, done, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, **lr_dict)
-                # SGD on meta-objective
-                VmE = v_next - np.dot(x_next, L_exp_learner.w_curr)
-                coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + np.dot(x_next, L_var_learner.w_curr)) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))
-                Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
+                warnings.filterwarnings("error")
+                try:
+                    VmE = v_next - np.dot(x_next, L_exp_learner.w_curr)
+                    coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + np.dot(x_next, L_var_learner.w_curr)) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))
+                    Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
+                except RuntimeWarning:
+                    pass
+                warnings.filterwarnings("default")
             # one-step of policy evaluation of the critic!
             value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_dict)
             # one-step of policy improvement of the actor (gradient descent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
             W += eta * I * rho_curr * delta_curr * get_grad_W(W, prob_behavior, np.diagflat(prob_behavior), action, x_curr) # TODO: make sure the correction of importance sampling ratio is correct            
             # timestep++
             return_cumulative += I * r_next
-            for learner in learners:
-                learner.next()
-            o_curr, x_curr = o_next, x_next
-            I *= gamma(x_next) # TODO: know how the gamma accumulation is implemented!
-        return_trace[episode] = return_cumulative # Bookkeeping
+            o_curr, x_curr, I = o_next, x_next, I * gamma(x_next) # TODO: know how the gamma accumulation is implemented!
+            for learner in learners: learner.next()
+        return_trace[episode] = return_cumulative
     warnings.filterwarnings("default")
     return return_trace
 
