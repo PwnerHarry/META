@@ -8,6 +8,7 @@ from torch.autograd import Variable
 
 '''
 Actor-Critic with Linear Function Approximator and Softmax Policy
+Status: Extremely Ugly and Depracated! However, functional!
 '''
 def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA', learner_type='togtd', constant_lambda=1):
     D = encoder(0).size
@@ -30,11 +31,9 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
         for learner in learners: learner.refresh()
         o_curr, done, log_rho_accu, return_cumulative, I = env.reset(), False, 0, 0, 1; x_curr = encoder(o_curr)
         while not done:
-            # prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr)) # https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html
-            prob_behavior = softmax(np.matmul(W, x_curr))
+            prob_behavior = softmax(np.matmul(W, x_curr)) # prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr))
             action = np.random.choice(range(len(prob_behavior)), p=prob_behavior)
-            # rho_curr = prob_target[action] / prob_behavior[action]
-            rho_curr = 1
+            rho_curr = 1 # rho_curr = prob_target[action] / prob_behavior[action]
             o_next, r_next, done, _ = env.step(action); x_next = encoder(o_next)        
             v_next = float(not done) * np.dot(x_next, value_learner.w_curr)
             delta_curr = r_next + gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
@@ -55,8 +54,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                 # log_rho_accu += np.log(prob_target[action]) - np.log(prob_behavior[action])
                 MC_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, **lr_dict)
                 L_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_larger_dict)
-                gamma_bar_next = (Lambda.value(x_next) * gamma(x_next)) ** 2
-                L_var_learner.learn(delta_curr ** 2, done, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, **lr_dict)
+                L_var_learner.learn(delta_curr ** 2, done, (Lambda.value(x_next) * gamma(x_next)) ** 2, 1, x_next, x_curr, 1, 1, rho_curr, **lr_dict)
                 warnings.filterwarnings("error")
                 try:
                     VmE = v_next - np.dot(x_next, L_exp_learner.w_curr)
@@ -68,7 +66,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             # one-step of policy evaluation of the critic!
             value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_dict)
             # one-step of policy improvement of the actor (gradient descent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
-            W += eta * I * rho_curr * delta_curr * get_grad_W(W, prob_behavior, np.diagflat(prob_behavior), action, x_curr) # TODO: make sure the correction of importance sampling ratio is correct            
+            W -= eta * I * rho_curr * delta_curr * get_grad_W(W, prob_behavior, np.diagflat(prob_behavior), action, x_curr) # TODO: make sure the correction of importance sampling ratio is correct            
             # timestep++
             return_cumulative += I * r_next
             o_curr, x_curr, I = o_next, x_next, I * gamma(x_next) # TODO: know how the gamma accumulation is implemented!
