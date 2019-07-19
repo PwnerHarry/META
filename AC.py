@@ -55,9 +55,14 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                 gamma_bar_next = (Lambda.value(x_next) * gamma(x_next)) ** 2
                 L_var_learner.learn(delta_curr ** 2, done, gamma_bar_next, 1, x_next, x_curr, 1, 1, rho_curr, **lr_dict)
                 # SGD on meta-objective
-                VmE = v_next - np.dot(x_next, L_exp_learner.w_curr)
-                coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + np.dot(x_next, L_var_learner.w_curr)) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))
-                Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
+                warnings.filterwarnings("error")
+                try:
+                    VmE = v_next - np.dot(x_next, L_exp_learner.w_curr)
+                    coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + np.dot(x_next, L_var_learner.w_curr)) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))
+                    Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
+                except RuntimeWarning:
+                    pass
+                warnings.filterwarnings("default")
             # one-step of policy evaluation of the critic!
             value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_dict)
             # one-step of policy improvement of the actor (gradient descent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
