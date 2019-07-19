@@ -1,11 +1,13 @@
 % MANUALLY LOAD THE RESULTS FIRST
-sample_method = 'linear';
+sample_method = 'log';
 cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 
 expectation_list = [ ...
-    "return_baseline_0", "return_baseline_20", "return_baseline_40", ...
-    "return_baseline_60", "return_baseline_80", "return_baseline_100", ...
-    "return_greedy", "return_mta"];
+    "error_value_totd_0", "error_value_totd_20", "error_value_totd_40", ...
+    "error_value_totd_60", "error_value_totd_80", "error_value_totd_100", ...
+    "error_value_togtd_0", "error_value_togtd_20", "error_value_togtd_40", ...
+    "error_value_togtd_60", "error_value_togtd_80", "error_value_togtd_100", ...
+    "error_value_greedy", "error_value_mta"];
 LineColors = [linspecer(numel(expectation_list) - 2); [1, 0, 0]; [0, 0, 1];];
 num_points = 201;
 
@@ -41,21 +43,33 @@ for result_index = 1: numel(expectation_list)
     INTERVAL(INTERVAL <= 0) = eps;
     [CURVE, ~] = band_drawer(X, MEAN, INTERVAL, LineColors(result_index, :)); %X, MEAN, INTERVAL, COLOR
     CURVES = [CURVES, CURVE];
-    if strcmp(result_name, "return_mta")
+    if strcmp(result_name, "error_value_mta")
         LEGEND = "MTA";
-    elseif strcmp(result_name, "return_baseline_0")
+    elseif strcmp(result_name, "error_value_togtd_0")
         LEGEND = "GTD(0)";
-    elseif strcmp(result_name, "return_baseline_20")
+    elseif strcmp(result_name, "error_value_togtd_20")
         LEGEND = "GTD(.2)";
-    elseif strcmp(result_name, "return_baseline_40")
+    elseif strcmp(result_name, "error_value_togtd_40")
         LEGEND = "GTD(.4)";
-    elseif strcmp(result_name, "return_baseline_60")
+    elseif strcmp(result_name, "error_value_togtd_60")
         LEGEND = "GTD(.6)";
-    elseif strcmp(result_name, "return_baseline_80")
+    elseif strcmp(result_name, "error_value_togtd_80")
         LEGEND = "GTD(.8)";
-    elseif strcmp(result_name, "return_baseline_100")
+    elseif strcmp(result_name, "error_value_togtd_100")
         LEGEND = "GTD(1)";
-    elseif strcmp(result_name, "return_greedy")
+    elseif strcmp(result_name, "error_value_totd_0")
+        LEGEND = "TD(0)";
+    elseif strcmp(result_name, "error_value_totd_20")
+        LEGEND = "TD(.2)";
+    elseif strcmp(result_name, "error_value_totd_40")
+        LEGEND = "TD(.4)";
+    elseif strcmp(result_name, "error_value_totd_60")
+        LEGEND = "TD(.6)";
+    elseif strcmp(result_name, "error_value_totd_80")
+        LEGEND = "TD(.8)";
+    elseif strcmp(result_name, "error_value_totd_100")
+        LEGEND = "TD(1)";
+    elseif strcmp(result_name, "error_value_greedy")
         LEGEND = "greedy";
     end
     LEGENDS = [LEGENDS, LEGEND];
@@ -66,7 +80,7 @@ set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 if strcmp(sample_method, 'log')
     set(gca, 'xscale', 'log');
 end
-% set(gca, 'yscale', 'log');
+set(gca, 'yscale', 'log');
 axis([1, inf, MIN, inf]);
 set(gca, 'FontSize', 16);
 set(gca, 'FontName', 'Book Antiqua');
