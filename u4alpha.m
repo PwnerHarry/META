@@ -51,7 +51,6 @@ for index_filename = 1: numel(filenames)
                 eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(end - %d: end));', index_method, method, smoothing_window));
                 eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(end - %d: end));', index_method, method, smoothing_window));
             else
-                
                 eval(sprintf('MEANS(%d, index_filename) = mean(loaded.error_value_%s_mean(end - %d: end));', index_method, method, smoothing_window));
                 eval(sprintf('STDS(%d, index_filename) = mean(loaded.error_value_%s_std(end - %d: end));', index_method, method, smoothing_window));
             end
@@ -66,8 +65,12 @@ NEW_STDS = zeros(numel(METHOD_LIST), numel(IA));
 for index_unique = 1: numel(IA)
     locations = find(IC == index_unique);
     MEAN_MTA = MEANS(end, locations);
-    [~, IMIN] = min(MEAN_MTA);
-    index_best = locations(IMIN);
+    if strcmp(env, 'frozenlake_AC')
+        [~, IBEST] = max(MEAN_MTA);
+    else
+        [~, IBEST] = min(MEAN_MTA);
+    end
+    index_best = locations(IBEST);
     NEW_MEANS(end, index_unique) = MEANS(end, index_best);
     NEW_STDS(end, index_unique) = STDS(end, index_best);
     NEW_MEANS(1: end - 1, index_unique) = mean(MEANS(1: end - 1, locations), 2, 'omitnan');

@@ -76,12 +76,14 @@ def togtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=lamb
             x_curr = x_next
     return value_trace
 
-def eval_togtd_per_run(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate, encoder):
+def eval_togtd_per_run(env_name, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate, encoder):
     np.random.seed(seed=runtime)
+    env = gym.make(env_name)
+    env.seed(runtime)
     print('%d of %d for togtd(%g), alpha: %g, beta: %g' % (runtime + 1, runtimes, Lambda.value(encoder(0)), alpha, beta))
     value_trace = togtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=gamma, alpha=alpha, beta=beta)
     return value_trace.reshape(1, -1)
 
-def eval_togtd(env, behavior, target, Lambda, gamma, alpha, beta, runtimes, episodes, evaluate, encoder):
-    results = Parallel(n_jobs=-1)(delayed(eval_togtd_per_run)(env, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate, encoder) for runtime in range(runtimes))
+def eval_togtd(env_name, behavior, target, Lambda, gamma, alpha, beta, runtimes, episodes, evaluate, encoder):
+    results = Parallel(n_jobs=-1)(delayed(eval_togtd_per_run)(env_name, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, beta, evaluate, encoder) for runtime in range(runtimes))
     return np.concatenate(results, axis=0)

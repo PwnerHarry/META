@@ -43,8 +43,10 @@ def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_t
     warnings.filterwarnings("default")
     return value_trace
 
-def eval_greedy_per_run(env, runtime, runtimes, episodes, target, behavior, encoder, gamma, Lambda, alpha, beta, evaluate, learner_type):
+def eval_greedy_per_run(env_name, runtime, runtimes, episodes, target, behavior, encoder, gamma, Lambda, alpha, beta, evaluate, learner_type):
     np.random.seed(seed=runtime)
+    env = gym.make(env_name)
+    env.seed(runtime)
     if learner_type == 'togtd':
         print('%d of %d for greedy, alpha: %g, beta: %g' % (runtime + 1, runtimes, alpha, beta))
     elif learner_type == 'totd':
@@ -52,9 +54,10 @@ def eval_greedy_per_run(env, runtime, runtimes, episodes, target, behavior, enco
     value_trace = greedy(env, episodes, target, behavior, evaluate=evaluate, Lambda=Lambda, encoder=encoder,gamma=gamma, alpha=alpha, beta=beta, learner_type=learner_type)
     return value_trace.reshape(1, -1)
 
-def eval_greedy(env, behavior, target, evaluate, gamma, alpha, beta, runtimes, episodes, encoder, learner_type='togtd'):
+def eval_greedy(env_name, behavior, target, evaluate, gamma, alpha, beta, runtimes, episodes, encoder, learner_type='togtd'):
     LAMBDAS = []
+    env = gym.make(env_name)
     for runtime in range(runtimes):
         LAMBDAS.append(LAMBDA(env, approximator='tabular', initial_value=np.ones(env.observation_space.n)))
-    results = Parallel(n_jobs = -1)(delayed(eval_greedy_per_run)(env, runtime, runtimes, episodes, target, behavior, encoder, gamma, LAMBDAS[runtime], alpha, beta, evaluate, learner_type=learner_type) for runtime in range(runtimes))
+    results = Parallel(n_jobs = -1)(delayed(eval_greedy_per_run)(env_name, runtime, runtimes, episodes, target, behavior, encoder, gamma, LAMBDAS[runtime], alpha, beta, evaluate, learner_type=learner_type) for runtime in range(runtimes))
     return np.concatenate(results, axis=0)

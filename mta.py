@@ -43,8 +43,10 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
     warnings.filterwarnings("default")
     return value_trace
 
-def eval_MTA_per_run(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, Lambda, alpha, beta, evaluate, encoder, learner_type):
+def eval_MTA_per_run(env_name, runtime, runtimes, episodes, target, behavior, kappa, gamma, Lambda, alpha, beta, evaluate, encoder, learner_type):
     np.random.seed(seed=runtime)
+    env = gym.make(env_name)
+    env.seed(runtime)
     if learner_type == 'togtd':
         print('%d of %d for MTA, alpha: %g, beta: %g, kappa: %g' % (runtime + 1, runtimes, alpha, beta, kappa))
     elif learner_type == 'totd':
@@ -52,7 +54,8 @@ def eval_MTA_per_run(env, runtime, runtimes, episodes, target, behavior, kappa, 
     value_trace = MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type='togtd', gamma=gamma, alpha=alpha, beta=beta, kappa=kappa)
     return value_trace.reshape(1, -1)
 
-def eval_MTA(env, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, encoder, learner_type='togtd', parametric_lambda=True):
+def eval_MTA(env_name, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, encoder, learner_type='togtd', parametric_lambda=True):
+    env = gym.make(env_name)
     if parametric_lambda:
         initial_weights_lambda = np.linalg.lstsq(get_state_set_matrix(env, encoder), np.ones(env.observation_space.n), rcond=None)[0]
     else:
@@ -63,5 +66,5 @@ def eval_MTA(env, behavior, target, kappa, gamma, alpha, beta, runtimes, episode
             LAMBDAS.append(LAMBDA(env, initial_value=initial_weights_lambda, approximator='linear'))
         else:
             LAMBDAS.append(LAMBDA(env, initial_value=initial_weights_lambda, approximator='tabular', state_set_matrix=get_state_set_matrix(env, encoder)))
-    results = Parallel(n_jobs=-1)(delayed(eval_MTA_per_run)(env, runtime, runtimes, episodes, target, behavior, kappa, gamma, LAMBDAS[runtime], alpha, beta, evaluate, encoder, learner_type) for runtime in range(runtimes))
+    results = Parallel(n_jobs=-1)(delayed(eval_MTA_per_run)(env_name, runtime, runtimes, episodes, target, behavior, kappa, gamma, LAMBDAS[runtime], alpha, beta, evaluate, encoder, learner_type) for runtime in range(runtimes))
     return np.concatenate(results, axis=0)

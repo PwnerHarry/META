@@ -23,8 +23,8 @@ if args.beta == 0:
     args.beta = 0.01 * args.alpha
 
 # Experiment Preparation
-env = gym.make('FrozenLake-v0')
-gamma, encoder = lambda x: args.gamma, lambda s: tilecoding4x4(s)
+env_name, gamma, encoder = 'FrozenLake-v0', lambda x: args.gamma, lambda s: tilecoding4x4(s)
+env = gym.make(env_name)
 target = np.matlib.repmat(np.array([0.2, 0.3, 0.3, 0.2]).reshape(1, 4), env.observation_space.n, 1)
 if args.off_policy:
     behavior = np.matlib.repmat(np.array([0.25, 0.25, 0.25, 0.25]).reshape(1, 4), env.observation_space.n, 1)
@@ -42,18 +42,18 @@ if args.evaluate_baselines:
     BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
         Lambda = LAMBDA(env, baseline_lambda, approximator='constant')
-        results = eval_togtd(env, behavior, target, Lambda, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder)
+        results = eval_togtd(env_name, behavior, target, Lambda, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder)
         exec("things_to_save[\'error_value_%s_%g_mean\'] = np.nanmean(results, axis=0)" % (args.learner_type, baseline_lambda * 100)) # no dots in variable names for MATLAB
         exec("things_to_save[\'error_value_%s_%g_std\'] = np.nanstd(results, axis=0)" % (args.learner_type, baseline_lambda * 100))
 
 # LAMBDA-GREEDY
 if args.evaluate_greedy:
-    error_value_greedy = eval_greedy(env, behavior, target, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder, learner_type=args.learner_type)
+    error_value_greedy = eval_greedy(env_name, behavior, target, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder, learner_type=args.learner_type)
     things_to_save['error_value_greedy_mean'], things_to_save['error_value_greedy_std'] = np.nanmean(error_value_greedy, axis=0), np.nanstd(error_value_greedy, axis=0)
 
 # MTA
 if args.evaluate_MTA:
-    error_value_mta = eval_MTA(env, behavior, target, kappa=args.kappa, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder, learner_type=args.learner_type)
+    error_value_mta = eval_MTA(env_name, behavior, target, kappa=args.kappa, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder, learner_type=args.learner_type)
     things_to_save['error_value_mta_mean'], things_to_save['error_value_mta_std'] = np.nanmean(error_value_mta, axis=0), np.nanstd(error_value_mta, axis=0)
 
 time_finish = time.time()
