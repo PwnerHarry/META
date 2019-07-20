@@ -41,7 +41,7 @@ for result_index = 1: numel(expectation_list)
     INTERVAL(INTERVAL <= 0) = eps;
     [CURVE, ~] = band_drawer(X, MEAN, INTERVAL, LineColors(result_index, :)); %X, MEAN, INTERVAL, COLOR
     CURVES = [CURVES, CURVE];
-    if strcmp(result_name, "return_mta")
+    if strcmp(result_name, "return_mta") || strcmp(result_name, "return_MTA")
         LEGEND = "MTA";
     elseif strcmp(result_name, "return_baseline_0")
         LEGEND = "GTD(0)";

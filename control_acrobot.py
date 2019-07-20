@@ -53,7 +53,7 @@ print('time elapsed: %gs' % (time_finish - time_start))
 
 # SAVE
 if args.evaluate_MTA:
-    filename = 'frozenlake_AC_a_%g_b_%g_y_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.kappa, args.episodes, args.runtimes)
+    filename = 'acrobot_a_%g_b_%g_y_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.kappa, args.episodes, args.runtimes)
 else:
-    filename = 'frozenlake_AC_a_%g_b_%g_y_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.episodes, args.runtimes)
+    filename = 'acrobot_a_%g_b_%g_y_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.episodes, args.runtimes)
 scipy.io.savemat(filename, things_to_save)
