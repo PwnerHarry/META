@@ -29,7 +29,6 @@ def decode(X, x):
 
 class LAMBDA():# state-based parametric lambda
     def __init__(self, env, initial_value, approximator='constant', state_set_matrix=None):
-        self.n = env.observation_space.n
         self.approximator = approximator
         if self.approximator == 'constant':
             self.w = initial_value
@@ -38,8 +37,6 @@ class LAMBDA():# state-based parametric lambda
         elif self.approximator == 'tabular':
             self.w = initial_value.reshape(-1)
             self.X = state_set_matrix
-        elif self.approximator == 'NN':
-            pass # Neural Network approximator to be implemented using PyTorch
     def value(self, x):
         if self.approximator == 'constant':
             v = self.w
