@@ -37,12 +37,11 @@ def MC(env, episodes, target, behavior, gamma=lambda x: 0.95):
     # variance_of_return_trace = []
     for epi in range(episodes):
         state, done = env.reset(), False
-        old_expected_return = np.copy(learner.expected_return)
+        # old_expected_return = np.copy(learner.expected_return)
         if epi % (episodes * 0.001) == 0 and episodes >= 1e7:
             print('episode: %d of %d (%.1f%%)' % (epi, episodes, 100.0 * epi / episodes))
         # Get the (s, a, r) pairs for an entire episode.
-        episode = []
-        done = False
+        episode, done = [], False
         while not done:
             action = decide(state, behavior)
             next_state, reward, done, _ = env.step(action)
@@ -50,19 +49,11 @@ def MC(env, episodes, target, behavior, gamma=lambda x: 0.95):
                 learner.return_counts[next_state] += 1
             episode.append((state, action, reward))
             state = next_state
-        # expected_return_trace.append(np.copy(learner.expected_return))
-        # variance_of_return_trace.append(np.copy(learner.variance_of_return))
         # Update expected G for every visit.
         G = 0.0
-        for t in range(len(episode)-1, -1, -1):
+        for t in range(len(episode) - 1, -1, -1):
             state, action, reward = episode[t]
             rho = importance_sampling_ratio(target, behavior, state, action)
             G = rho * (reward + gamma(state) * G)
-            if G > 0:
-                learner.backward_step(state, G)
-        if G > 0:
-            diff = np.linalg.norm(learner.expected_return.reshape(-1) - old_expected_return.reshape(-1), np.inf)
-            print('change in Chebyshev norm: %.2e' % diff)
-            if diff < 1e-10:
-                break
+            learner.backward_step(state, G)
     return learner.expected_return, learner.variance_of_return, learner.return_counts

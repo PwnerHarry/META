@@ -1,27 +1,34 @@
 import gym, gym.utils.seeding, numpy as np
 from matplotlib import pyplot as plt
 from joblib import Parallel, delayed
+from numba import jit
 
 # MISC
+@jit(nopython=True, cache=True)
 def importance_sampling_ratio(target_policy, behavior_policy, s, a):
     return target_policy[s, a] / behavior_policy[s, a]
 
 def decide(state_id, policy_matrix):
-    dist = policy_matrix[state_id, :]
-    action_id = np.random.choice(range(len(dist)), p=dist)
-    return action_id
+    return np.random.choice(range(policy_matrix.shape[1]), p=policy_matrix[state_id, :])
 
+@jit(nopython=True, cache=True)
 def softmax(x): # a numerically stable softmax!
     exps = np.exp(x - np.max(x))
     return exps / np.sum(exps)
 
-def jacobian_softmax(softmax):
-    s = softmax.reshape(-1, 1)
-    return np.diagflat(s) - np.matmul(s, s.T) # $J = I - \bm{s}\bm{s}^{T}$
+@jit(nopython=True, cache=True)
+def get_grad_W(W, prob_actions, DIAGFLAT, action, x):
+    p = prob_actions.reshape(-1, 1)
+    dsoftmax = DIAGFLAT - p * p.T
+    dlog = dsoftmax[action, :].reshape(-1, 1) / p[action]
+    return dlog * x.reshape(1, -1)
+
+@jit(cache=True)
+def decode(X, x):
+    return np.where((X == tuple(x)).all(axis=1))[0]
 
 class LAMBDA():# state-based parametric lambda
-    def __init__(self, env, initial_value, approximator='constant'):
-        self.n = env.observation_space.n
+    def __init__(self, env, initial_value, approximator='constant', state_set_matrix=None):
         self.approximator = approximator
         if self.approximator == 'constant':
             self.w = initial_value
@@ -29,70 +36,52 @@ class LAMBDA():# state-based parametric lambda
             self.w = initial_value.reshape(-1)
         elif self.approximator == 'tabular':
             self.w = initial_value.reshape(-1)
-        elif self.approximator == 'NN':
-            pass # Neural Network approximator to be implemented using PyTorch
+            self.X = state_set_matrix
     def value(self, x):
         if self.approximator == 'constant':
-            return self.w
+            v = self.w
         elif self.approximator == 'tabular':
-            return self.w[x]
+            if type(x) is int:
+                v = self.w[x]
+            else:
+                v = self.w[decode(self.X, x)]
         elif self.approximator == 'linear':
-            return min(1, max(0, np.dot(x.reshape(-1), self.w)))
+            v = np.dot(x.reshape(-1), self.w)
+        return min(1, max(0, v))
     def gradient(self, x):
         if self.approximator == 'linear':
             return x.reshape(-1)
+        elif self.approximator == 'tabular':
+            if type(x) is int:
+                return onehot(x, np.size(self.w))
+            else:
+                return onehot(decode(self.X, x), np.size(self.w))
     def GD(self, x, step_length):
         gradient = self.gradient(x)
-        value_after = np.dot(x.reshape(-1), (self.w - step_length * gradient))
+        if self.approximator == 'linear':
+            value_after = np.dot(x.reshape(-1), (self.w - step_length * gradient))
+        elif self.approximator == 'tabular':
+            value_after = np.dot(gradient, self.w) - step_length
         if value_after >= 0 and value_after <= 1:
             self.w -= step_length * gradient
 
-# ENVIRONMENTS
-class RingWorldEnv(gym.Env):
-    def __init__(self, N):
-        self.action_space = gym.spaces.Discrete(2)
-        self.observation_space = gym.spaces.Discrete(N)
-        P = {}
-        for s in range(self.observation_space.n):
-            small_dict = {}
-            for a in [0, 1]:
-                increment = -1 if a == 0 else 1
-                if s == 0 or s == self.observation_space.n - 1:
-                    entry = [(1.0, s, 0, True)]
-                elif s + increment == self.observation_space.n - 1:
-                    entry = [(1.0, self.observation_space.n - 1, 1, True)]
-                elif s + increment == 0:
-                    entry = [(1.0, 0, -1, True)]
-                else:
-                    entry = [(1.0, s + increment, 0, False)]
-                small_dict[a] = entry
-            P[s] = small_dict
-        self.unwrapped.P = P
-        self.unwrapped.reward_range = (-1, 1)
-    def step(self, action):
-        increment = -1 if action == 0 else 1
-        self.state = (self.state + increment) % self.observation_space.n
-        if self.state == 0:
-            return self.state, -1, True, {}
-        elif self.state == self.observation_space.n - 1:
-            return self.state, 1, True, {}
-        return self.state, 0, False, {}
-    def reset(self):
-        self.state = int(self.observation_space.n / 2)
-        return self.state
-
 # EVALUATION METHODS
+@jit(nopython=True, cache=True)
 def mse(estimate, target, weight):
-    diff = target - estimate.reshape(np.shape(target))
-    return np.linalg.norm(np.multiply(diff, weight.reshape(np.shape(target))), 2) ** 2
+    return np.linalg.norm(np.multiply(estimate - target, weight), 2) ** 2
 
+@jit(nopython=True, cache=True)
 def evaluate_estimate(weight, expectation, variance, distribution, stat_type, state_set_matrix):
     # place the state representations row by row in the state_set_matrix
-    estimate = np.dot(state_set_matrix, weight).reshape(-1)
+    estimate = get_estimate(weight, state_set_matrix)
     if stat_type == 'expectation':
-        return mse(estimate, expectation, distribution)
+        return mse(estimate.reshape(-1), expectation.reshape(-1), distribution)
     elif stat_type == 'variance':
-        return mse(estimate, variance, distribution)
+        return mse(estimate.reshape(-1), variance.reshape(-1), distribution)
+
+@jit(nopython=True, cache=True)
+def get_estimate(weight, state_set_matrix):
+    return np.dot(state_set_matrix, weight)
 
 def get_state_set_matrix(env, encoder):
     state_set_matrix = np.zeros((env.observation_space.n, np.size(encoder(0))))
@@ -101,15 +90,56 @@ def get_state_set_matrix(env, encoder):
     return state_set_matrix
 
 # ENCODING METHODS
+@jit(nopython=True, cache=True)
 def onehot(observation, N):
     x = np.zeros(N)
     x[observation] = 1
     return x
 
+@jit(nopython=True, cache=True)
 def index2plane(s, n):
     feature = np.zeros(2 * n)
     feature[s // n] = 1; feature[n + s % n] = 1
     return feature
+
+@jit(nopython=True, cache=True)
+def index2coord(s, n):
+    feature = np.zeros(2)
+    feature[0], feature[1] = s // n, s % n
+    return feature
+
+@jit(nopython=True, cache=True)
+def tilecoding4x4(s):
+    x, y = s // 4, s % 4
+    feature1 = np.zeros(2)
+    if x:
+        feature1[1] = 1
+    else:
+        feature1[0] = 1
+    feature2 = np.zeros(4)
+    if x <= 1 and y <= 2:
+        feature2[0] = 1
+    elif x <= 1 and y == 3:
+        feature2[1] = 1
+    elif x > 1 and y <= 2:
+        feature2[2] = 1
+    elif x > 1 and y == 3:
+        feature2[3] = 1
+    feature3 = np.zeros(4)
+    if x <= 2 and y <= 1:
+        feature3[0] = 1
+    elif x <= 2 and y > 1:
+        feature3[1] = 1
+    elif x == 3 and y <= 1:
+        feature3[2] = 1
+    elif x == 3 and y > 1:
+        feature3[3] = 1
+    feature4 = np.zeros(2)
+    if y:
+        feature4[1] = 1
+    else:
+        feature4[0] = 1
+    return np.concatenate((feature1, feature2, feature3, feature4), axis=0)
 
 # DYNAMIC PROGRAMMING METHODS
 def iterative_policy_evaluation(env, policy, gamma, start_dist):
@@ -132,8 +162,7 @@ def iterative_policy_evaluation(env, policy, gamma, start_dist):
         for a in range(env.action_space.n):
             RELATED = TABLE[s][a]
             for entry in RELATED:
-                R[s, a, entry[1]] = entry[2]
-                P[s, a, entry[1]] = entry[0]
+                R[s, a, entry[1]], P[s, a, entry[1]] = entry[2], entry[0]
     theta = 1e-10
     delta = theta
     j = np.zeros(env.observation_space.n)

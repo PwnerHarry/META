@@ -1,0 +1,10 @@
+import torch, torch.nn
+from torch.autograd import Variable
+
+# W = np.ones((env.action_space.n, D)) # W is the $|A|\times|S|$ parameter matrix for policy
+W = Variable(torch.ones((env.action_space.n, D)), requires_grad=True)
+# prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr)) # https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html
+prob_behavior = torch.nn.Softmax(torch.dot(W, Variable(x_curr, requires_grad=False))) # https://discuss.pytorch.org/t/how-to-do-dot-product-of-two-tensors/3984
+choice = torch.zeross(env.action_space.n); choice[action] = 1
+y.backward(choice)
+gradient = x.grad
