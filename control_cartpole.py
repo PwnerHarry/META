@@ -24,7 +24,7 @@ if args.beta == 0:
 if args.eta == 0:
     args.eta = 1.0 * args.alpha
 # Experiment Preparation
-env_name = 'Acrobot-v1'
+env_name = 'CartPole-v1'
 env, gamma, encoder = gym.make(env_name), lambda x: args.gamma, None
 
 things_to_save = {}
@@ -53,7 +53,7 @@ print('time elapsed: %gs' % (time_finish - time_start))
 
 # SAVE
 if args.evaluate_MTA:
-    filename = 'acrobot_a_%g_b_%g_y_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.kappa, args.episodes, args.runtimes)
+    filename = 'cartpole_a_%g_b_%g_y_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.kappa, args.episodes, args.runtimes)
 else:
-    filename = 'acrobot_a_%g_b_%g_y_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.episodes, args.runtimes)
+    filename = 'cartpole_a_%g_b_%g_y_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.episodes, args.runtimes)
 scipy.io.savemat(filename, things_to_save)

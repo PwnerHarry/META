@@ -19,9 +19,9 @@ def softmax(x): # a numerically stable softmax!
 @jit(nopython=True, cache=True)
 def get_grad_W(W, prob_actions, DIAGFLAT, action, x):
     p = prob_actions.reshape(-1, 1)
-    dsoftmax = p * p.T - DIAGFLAT
+    dsoftmax = DIAGFLAT - p * p.T
     dlog = dsoftmax[action, :].reshape(-1, 1) / p[action]
-    return dlog * x.reshape(1, -1) / W
+    return dlog * x.reshape(1, -1)
 
 @jit(cache=True)
 def decode(X, x):
