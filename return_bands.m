@@ -7,7 +7,7 @@ expectation_list = [ ...
     "return_baseline_60", "return_baseline_80", "return_baseline_100", ...
     "return_greedy", "return_MTA"];
 LineColors = [linspecer(numel(expectation_list) - 2); [1, 0, 0]; [0, 0, 1];];
-num_points = 201;
+num_points = 101;
 
 CURVES = []; LEGENDS = {};
 figure();

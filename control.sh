@@ -33,7 +33,7 @@ echo "env: $ENV, runtimes: $RUNTIMES, episodes: $EPISODES"
 
 for ALPHA in 0.01 0.02 0.03 0.04 0.05 0.001 0.002 0.003 0.004 0.005 0.0001 0.0002 0.0003 0.0004 0.0005
 do
-    python control_$ENV.py --runtimes $RUNTIMES --episodes $EPISODES --evaluate_MTA 0 --alpha $ALPHA
+    # python control_$ENV.py --runtimes $RUNTIMES --episodes $EPISODES --evaluate_MTA 0 --alpha $ALPHA
 
     python control_$ENV.py --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 1 * $ALPHA}"`
     python control_$ENV.py --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 2 * $ALPHA}"`

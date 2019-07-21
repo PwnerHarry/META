@@ -22,7 +22,7 @@ args = parser.parse_args()
 if args.beta == 0:
     args.beta = 0.01 * args.alpha
 if args.eta == 0:
-    args.eta = 1.0 * args.alpha
+    args.eta = 0.1 * args.alpha
 # Experiment Preparation
 env_name = 'Acrobot-v1'
 env, gamma, encoder = gym.make(env_name), lambda x: args.gamma, None

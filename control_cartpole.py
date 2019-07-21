@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(description='')
 parser.add_argument('--alpha', type=float, default=0.01, help='')
 parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--eta', type=float, default=0, help='')
-parser.add_argument('--gamma', type=float, default=0.99, help='')
+parser.add_argument('--gamma', type=float, default=1, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
 parser.add_argument('--episodes', type=int, default=1000, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
@@ -22,7 +22,7 @@ args = parser.parse_args()
 if args.beta == 0:
     args.beta = 0.01 * args.alpha
 if args.eta == 0:
-    args.eta = 1.0 * args.alpha
+    args.eta = 0.1 * args.alpha
 # Experiment Preparation
 env_name = 'CartPole-v1'
 env, gamma, encoder = gym.make(env_name), lambda x: args.gamma, None

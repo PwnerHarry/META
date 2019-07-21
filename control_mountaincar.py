@@ -10,9 +10,9 @@ parser = argparse.ArgumentParser(description='')
 parser.add_argument('--alpha', type=float, default=0.01, help='')
 parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--eta', type=float, default=0, help='')
-parser.add_argument('--gamma', type=float, default=1, help='')
+parser.add_argument('--gamma', type=float, default=0.99, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
-parser.add_argument('--episodes', type=int, default=100000, help='')
+parser.add_argument('--episodes', type=int, default=1000, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
 parser.add_argument('--evaluate_baselines', type=int, default=1, help='')
@@ -24,7 +24,8 @@ if args.beta == 0:
 if args.eta == 0:
     args.eta = 0.1 * args.alpha
 # Experiment Preparation
-env_name, gamma, encoder = 'FrozenLake-v0', lambda x: args.gamma, lambda s: tilecoding4x4(s)
+env_name = 'MountainCar-v0'
+env, gamma, encoder = gym.make(env_name), lambda x: args.gamma, None
 
 things_to_save = {}
 time_start = time.time()
@@ -52,7 +53,7 @@ print('time elapsed: %gs' % (time_finish - time_start))
 
 # SAVE
 if args.evaluate_MTA:
-    filename = 'frozenlake_AC_a_%g_b_%g_y_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.kappa, args.episodes, args.runtimes)
+    filename = 'mountaincar_a_%g_b_%g_y_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.kappa, args.episodes, args.runtimes)
 else:
-    filename = 'frozenlake_AC_a_%g_b_%g_y_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.episodes, args.runtimes)
+    filename = 'mountaincar_a_%g_b_%g_y_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.episodes, args.runtimes)
 scipy.io.savemat(filename, things_to_save)

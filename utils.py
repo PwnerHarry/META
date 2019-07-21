@@ -20,8 +20,7 @@ def softmax(x): # a numerically stable softmax!
 def get_grad_W(W, prob_actions, DIAGFLAT, action, x):
     p = prob_actions.reshape(-1, 1)
     dsoftmax = DIAGFLAT - p * p.T
-    dlog = dsoftmax[action, :].reshape(-1, 1) / p[action]
-    return dlog * x.reshape(1, -1)
+    return dsoftmax[action, :].reshape(-1, 1) * x.reshape(1, -1) / p[action]
 
 @jit(cache=True)
 def decode(X, x):
@@ -45,12 +44,12 @@ class LAMBDA():# state-based parametric lambda
                 v = self.w[x]
             else:
                 v = self.w[decode(self.X, x)]
-        elif self.approximator == 'linear':
-            v = np.dot(x.reshape(-1), self.w)
+        elif self.approximator == 'linear': # the linear function approximator uses 1 - w^T x
+            v = 1 - np.dot(x.reshape(-1), self.w)
         return min(1, max(0, v))
     def gradient(self, x):
         if self.approximator == 'linear':
-            return x.reshape(-1)
+            return -1.0 * x.reshape(-1)
         elif self.approximator == 'tabular':
             if type(x) is int:
                 return onehot(x, np.size(self.w))
