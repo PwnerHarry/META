@@ -30,7 +30,10 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
     # W = np.zeros((env.action_space.n, D))
     W = numpy.random.normal(0, 1, env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
     return_trace = np.empty(episodes); return_trace[:] = np.nan
+    break_flag = False
     for episode in range(episodes):
+        if break_flag:
+            break
         for learner in learners: learner.refresh()
         o_curr, done, log_rho_accu, lambda_curr, return_cumulative, I = env.reset(), False, 0, 1, 0, 1
         if encoder is None: 
@@ -73,7 +76,8 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                         coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + np.dot(x_next, L_var_learner.w_curr)) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))
                         Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
                     except RuntimeWarning:
-                        pass
+                        break_flag = True
+                        break
                     warnings.filterwarnings("default")
                 lambda_curr, lambda_next = Lambda.value(x_curr), Lambda.value(x_next)
             # one-step of policy evaluation of the critic!

@@ -12,7 +12,7 @@ parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--eta', type=float, default=0, help='')
 parser.add_argument('--gamma', type=float, default=0.99, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
-parser.add_argument('--episodes', type=int, default=1000, help='')
+parser.add_argument('--episodes', type=int, default=100, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
 parser.add_argument('--evaluate_baselines', type=int, default=1, help='')
@@ -22,7 +22,7 @@ args = parser.parse_args()
 if args.beta == 0:
     args.beta = 0.01 * args.alpha
 if args.eta == 0:
-    args.eta = 0.1 * args.alpha
+    args.eta = 0.5 * args.alpha
 # Experiment Preparation
 env_name = 'Acrobot-v1'
 env, gamma, encoder = gym.make(env_name), lambda x: args.gamma, None
