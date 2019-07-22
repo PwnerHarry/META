@@ -32,7 +32,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             Lambda = LAMBDA(env, initial_value=np.zeros(D), approximator='linear')
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
     # W = np.zeros((env.action_space.n, D)) # W is the $|A|\times|S|$ parameter matrix for policy
-    W = numpy.random(0, 1, env.action_space.n * D).reshape(env.action_space.n, D)
+    W = numpy.random.normal(0, 1, env.action_space.n * D).reshape(env.action_space.n, D)
     return_trace = np.empty(episodes); return_trace[:] = np.nan
     for episode in range(episodes):
         for learner in learners: learner.refresh()
