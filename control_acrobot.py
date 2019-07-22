@@ -25,7 +25,7 @@ if args.eta == 0:
     args.eta = 0.5 * args.alpha
 # Experiment Preparation
 env_name = 'Acrobot-v1'
-env, gamma, encoder = gym.make(env_name), lambda x: args.gamma, None
+env, gamma, encoder = gym.make(env_name), lambda x: args.gamma, lambda x: x
 
 things_to_save = {}
 time_start = time.time()

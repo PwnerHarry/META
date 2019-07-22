@@ -4,7 +4,7 @@ from TOGTD import *
 from TOTD import *
 
 def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type='togtd', gamma=lambda x: 0.95, alpha=0.05, beta=0.05, kappa=0.01):
-    D = encoder(0).size
+    D = np.size(encoder(env.reset()))
     value_trace = np.empty(episodes); value_trace[:] = np.nan
     if learner_type == 'totd':
         LEARNER = TOTD_LEARNER; lr_dict = {'alpha_curr': alpha}; lr_larger_dict = {'alpha_curr': 1.1 * alpha}

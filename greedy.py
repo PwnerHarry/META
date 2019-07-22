@@ -4,7 +4,7 @@ from TOGTD import *
 from TOTD import *
 
 def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type, gamma=lambda x: 0.95, alpha=0.05, beta=0.05):
-    D = encoder(0).size
+    D = np.size(encoder(env.reset()))
     if learner_type == 'togtd':
         LEARNER = TOGTD_LEARNER; lr_dict = {'alpha_curr': alpha, 'beta_curr': beta}
     elif learner_type == 'totd':

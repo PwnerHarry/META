@@ -11,10 +11,7 @@ Actor-Critic with Linear Function Approximator and Softmax Policy
 Status: Extremely Ugly and Depracated! However, functional!
 '''
 def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA', learner_type='togtd', constant_lambda=1):
-    if encoder is None:
-        D = np.size(env.reset())
-    else:
-        D = encoder(0).size
+    D = np.size(encoder(env.reset()))
     if learner_type == 'totd':
         LEARNER = TOTD_LEARNER; lr_dict = {'alpha_curr': alpha}; lr_larger_dict = {'alpha_curr': 1.1 * alpha}
     elif learner_type == 'togtd':
@@ -35,20 +32,12 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
     for episode in range(episodes):
         if break_flag: break
         for learner in learners: learner.refresh()
-        o_curr, done, log_rho_accu, lambda_curr, return_cumulative, I = env.reset(), False, 0, 1, 0, 1
-        if encoder is None: 
-            x_curr = o_curr
-        else:
-            x_curr = encoder(o_curr)
+        o_curr, done, log_rho_accu, lambda_curr, return_cumulative, I = env.reset(), False, 0, 1, 0, 1; x_curr = encoder(o_curr)
         while not done:
             prob_behavior = softmax(np.matmul(W, x_curr)) # prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr))
             action = np.random.choice(range(len(prob_behavior)), p=prob_behavior)
             rho_curr = 1 # rho_curr = prob_target[action] / prob_behavior[action]
-            o_next, r_next, done, _ = env.step(action)
-            if encoder is None: 
-                x_next = o_next
-            else:
-                x_next = encoder(o_next)        
+            o_next, r_next, done, _ = env.step(action); x_next = encoder(o_next)        
             v_next = float(not done) * np.dot(x_next, value_learner.w_curr)
             delta_curr = r_next + gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
             if critic_type == 'greedy' or critic_type == 'MTA':

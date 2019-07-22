@@ -58,7 +58,7 @@ def togtd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=lamb
     alpha:      learning rate for the weight vector of the values
     beta:       learning rate for the auxiliary vector for off-policy
     """
-    D = encoder(0).size
+    D = np.size(encoder(env.reset()))
     value_learner = TOGTD_LEARNER(env, D)
     value_trace = np.empty(episodes); value_trace[:] = np.nan
     for episode in range(episodes):

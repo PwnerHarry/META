@@ -107,6 +107,12 @@ def index2coord(s, n):
     feature[0], feature[1] = s // n, s % n
     return feature
 
+def vec2longvec(x, n):
+    l = []
+    for i in range(n):
+        l.append(np.power(x, i + 1))
+    return np.concatenate(tuple(l), axis=0)
+
 @jit(nopython=True, cache=True)
 def tilecoding4x4(s):
     x, y = s // 4, s % 4
