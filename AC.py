@@ -28,9 +28,10 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
         Lambda = LAMBDA(env, initial_value=np.zeros(D), approximator='linear')
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
     # W = np.zeros((env.action_space.n, D))
-    W = numpy.random.normal(0, 1, env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
+    W = numpy.random.normal(0, eta, env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
     return_trace = np.empty(episodes); return_trace[:] = np.nan
     break_flag = False
+    # last_reward_episode = 0
     for episode in range(episodes):
         if break_flag: break
         for learner in learners: learner.refresh()
@@ -83,6 +84,9 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             o_curr, x_curr, lambda_curr, I = o_next, x_next, lambda_next, I * gamma(x_next) # TODO: know how the gamma accumulation is implemented!
             for learner in learners: learner.next()
         return_trace[episode] = return_cumulative
+        # if return_cumulative > 0:
+        #     print('episode: %g(+%g),\t lambda(0): %.2f,\t return_cumulative: %g' % (episode, episode - last_reward_episode, Lambda.value(encoder(0)), return_cumulative))
+        #     last_reward_episode = episode
     warnings.filterwarnings("default")
     return return_trace
 
