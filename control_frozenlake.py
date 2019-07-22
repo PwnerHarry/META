@@ -22,7 +22,7 @@ args = parser.parse_args()
 if args.beta == 0:
     args.beta = 0.01 * args.alpha
 if args.eta == 0:
-    args.eta = 0.1 * args.alpha
+    args.eta = 0.5 * args.alpha
 # Experiment Preparation
 env_name, gamma, encoder = 'FrozenLake-v0', lambda x: args.gamma, lambda s: tilecoding4x4(s)
 
