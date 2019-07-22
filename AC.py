@@ -23,16 +23,12 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
         Lambda = LAMBDA(env, constant_lambda, approximator='constant')
         value_learner = LEARNER(env, D); learners = [value_learner]
     elif critic_type == 'greedy':
-        if encoder is not None: Lambda = LAMBDA(env, approximator='tabular', initial_value=np.ones(env.observation_space.n), state_set_matrix=get_state_set_matrix(env, encoder))
         MC_exp_learner, MC_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, MC_var_learner, value_learner]
     elif critic_type == 'MTA':
-        if encoder is not None:
-            Lambda = LAMBDA(env, initial_value=np.linalg.lstsq(get_state_set_matrix(env, encoder), np.ones(env.observation_space.n), rcond=None)[0], approximator='linear')
-        else:
-            Lambda = LAMBDA(env, initial_value=np.zeros(D), approximator='linear')
+        Lambda = LAMBDA(env, initial_value=np.zeros(D), approximator='linear')
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
-    # W = np.zeros((env.action_space.n, D)) # W is the $|A|\times|S|$ parameter matrix for policy
-    W = numpy.random.normal(0, 1, env.action_space.n * D).reshape(env.action_space.n, D)
+    # W = np.zeros((env.action_space.n, D))
+    W = numpy.random.normal(0, 1, env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
     return_trace = np.empty(episodes); return_trace[:] = np.nan
     for episode in range(episodes):
         for learner in learners: learner.refresh()
