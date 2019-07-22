@@ -7,7 +7,7 @@ from TOTD import *
 from TOGTD import *
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--alpha', type=float, default=0.01, help='')
+parser.add_argument('--alpha', type=float, default=0.05, help='')
 parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--eta', type=float, default=0, help='')
 parser.add_argument('--gamma', type=float, default=0.99, help='')
