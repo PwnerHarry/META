@@ -32,8 +32,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
     return_trace = np.empty(episodes); return_trace[:] = np.nan
     break_flag = False
     for episode in range(episodes):
-        if break_flag:
-            break
+        if break_flag: break
         for learner in learners: learner.refresh()
         o_curr, done, log_rho_accu, lambda_curr, return_cumulative, I = env.reset(), False, 0, 1, 0, 1
         if encoder is None: 
@@ -51,34 +50,29 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                 x_next = encoder(o_next)        
             v_next = float(not done) * np.dot(x_next, value_learner.w_curr)
             delta_curr = r_next + gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
-            if critic_type == 'greedy':
-                MC_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, **lr_dict)
-                gamma_bar_next = (rho_curr * gamma(x_next)) ** 2
-                MC_var_learner.learn(delta_curr ** 2, done, gamma_bar_next, 1, x_next, x_curr, 1, 1, 1, **lr_dict)
-                errsq, varg = (np.dot(x_next, MC_exp_learner.w_next) - np.dot(x_next, value_learner.w_curr)) ** 2, max(0, np.dot(x_next, MC_var_learner.w_next))
-                lambda_next = 1
-                if errsq + varg > np.sqrt(np.finfo(float).eps): # a safer threshold for numerical stability
-                    warnings.filterwarnings("error")
-                    try:
-                        lambda_next = errsq / (errsq + varg)
-                    except RuntimeWarning:
-                        pass
-                    warnings.filterwarnings("default")
-            else:
-                if critic_type == 'MTA':
-                    warnings.filterwarnings("error")
-                    try:
+            if critic_type == 'greedy' or critic_type == 'MTA':
+                warnings.filterwarnings("error")
+                try:
+                    if critic_type == 'greedy':
+                        MC_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, **lr_dict)
+                        gamma_bar_next = (rho_curr * gamma(x_next)) ** 2
+                        MC_var_learner.learn(delta_curr ** 2, done, gamma_bar_next, 1, x_next, x_curr, 1, 1, 1, **lr_dict)
+                        errsq, varg = (np.dot(x_next, MC_exp_learner.w_next) - np.dot(x_next, value_learner.w_curr)) ** 2, max(0, np.dot(x_next, MC_var_learner.w_next))
+                        lambda_next = 1
+                        if errsq + varg > np.sqrt(np.finfo(float).eps): lambda_next = errsq / (errsq + varg)
+                    elif critic_type == 'MTA':
                         # log_rho_accu += np.log(prob_target[action]) - np.log(prob_behavior[action])
                         MC_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, **lr_dict)
                         L_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **lr_larger_dict)
                         L_var_learner.learn(delta_curr ** 2, done, (Lambda.value(x_next) * gamma(x_next)) ** 2, 1, x_next, x_curr, 1, 1, rho_curr, **lr_dict)
                         VmE = v_next - np.dot(x_next, L_exp_learner.w_curr)
-                        coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + np.dot(x_next, L_var_learner.w_curr)) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))
+                        coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + np.dot(x_next, L_var_learner.w_curr)) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))                        
                         Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
-                    except RuntimeWarning:
-                        break_flag = True
-                        break
-                    warnings.filterwarnings("default")
+                except RuntimeWarning:
+                    break_flag = True
+                    break
+                warnings.filterwarnings("default")
+            if critic_type != 'greedy':
                 lambda_curr, lambda_next = Lambda.value(x_curr), Lambda.value(x_next)
             # one-step of policy evaluation of the critic!
             value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, lambda_next, lambda_curr, rho_curr, **lr_dict)
