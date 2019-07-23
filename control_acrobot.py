@@ -20,7 +20,7 @@ parser.add_argument('--evaluate_greedy', type=int, default=1, help='')
 parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
 args = parser.parse_args()
 if args.beta == 0:
-    args.beta = 0.01 * args.alpha
+    args.beta = 10.0 * args.alpha
 if args.eta == 0:
     args.eta = 0.5 * args.alpha
 # Experiment Preparation
@@ -53,7 +53,7 @@ print('time elapsed: %gs' % (time_finish - time_start))
 
 # SAVE
 if args.evaluate_MTA:
-    filename = 'acrobot_a_%g_b_%g_y_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.kappa, args.episodes, args.runtimes)
+    filename = 'acrobot_a_%g_y_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.eta, args.kappa, args.episodes, args.runtimes)
 else:
-    filename = 'acrobot_a_%g_b_%g_y_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.episodes, args.runtimes)
+    filename = 'acrobot_a_%g_y_%g_e_%g_r_%d.mat' % (args.alpha, args.eta, args.episodes, args.runtimes)
 scipy.io.savemat(filename, things_to_save)

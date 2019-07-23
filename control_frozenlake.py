@@ -20,7 +20,7 @@ parser.add_argument('--evaluate_greedy', type=int, default=1, help='')
 parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
 args = parser.parse_args()
 if args.beta == 0:
-    args.beta = 0.01 * args.alpha
+    args.beta = 10.0 * args.alpha
 if args.eta == 0:
     args.eta = 0.5 * args.alpha
 # Experiment Preparation

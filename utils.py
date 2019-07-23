@@ -107,11 +107,19 @@ def index2coord(s, n):
     feature[0], feature[1] = s // n, s % n
     return feature
 
-def vec2longvec(x, n):
-    l = []
-    for i in range(n):
-        l.append(np.power(x, i + 1))
-    return np.concatenate(tuple(l), axis=0)
+@jit(nopython=True, cache=True)
+def tile_encoding(observation, shape, low, high, TILINGS, TILES_PER_DIMENSION):
+    feature = np.zeros(shape=(TILES_PER_DIMENSION ** shape, TILINGS))
+    GRID_PER_DIMENSION, LENGTH_DIMENSIONS = TILES_PER_DIMENSION * TILINGS, high - low
+    GRID_LENGTHS, TILE_LENGTHS = LENGTH_DIMENSIONS / GRID_PER_DIMENSION, LENGTH_DIMENSIONS / TILES_PER_DIMENSION
+    for offset in range(TILINGS):
+        coordinate, coordinates = 0, np.zeros(shape)
+        for index in range(shape):
+            coordinates[index] = (observation[index] - (low[index] + offset * GRID_LENGTHS[index])) // TILE_LENGTHS[index]
+        for i in range(len(coordinates) - 1, -1, -1):
+            coordinate = coordinate * TILES_PER_DIMENSION + coordinates[i]
+        feature[int(coordinate), offset] = 1.0
+    return feature.reshape(-1)
 
 @jit(nopython=True, cache=True)
 def tilecoding4x4(s):
