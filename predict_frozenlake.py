@@ -7,13 +7,13 @@ from TOTD import *
 from TOGTD import *
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--alpha', type=float, default=0.002, help='')
+parser.add_argument('--alpha', type=float, default=0.001, help='')
 parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--gamma', type=float, default=0.95, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
 parser.add_argument('--episodes', type=int, default=100000, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
-parser.add_argument('--off_policy', type=int, default=0, help='')
+parser.add_argument('--off_policy', type=int, default=1, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
 parser.add_argument('--evaluate_baselines', type=int, default=1, help='')
 parser.add_argument('--evaluate_greedy', type=int, default=1, help='')
