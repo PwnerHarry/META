@@ -31,7 +31,7 @@ class LAMBDA():# state-based parametric lambda
         self.approximator = approximator
         if self.approximator == 'constant':
             self.w = initial_value
-        elif self.approximator == 'linear':
+        elif self.approximator == 'linear' or self.approximator == 'naive_linear':
             self.w = initial_value.reshape(-1)
         elif self.approximator == 'tabular':
             self.w = initial_value.reshape(-1)
@@ -44,12 +44,16 @@ class LAMBDA():# state-based parametric lambda
                 v = self.w[x]
             else:
                 v = self.w[decode(self.X, x)]
-        elif self.approximator == 'linear': # the linear function approximator uses 1 - w^T x
+        elif self.approximator == 'linear': # linear FA uses 1 - w^T x
             v = 1 - np.dot(x.reshape(-1), self.w)
+        elif self.approximator == 'naive_linear': # naive linear FA uses w^T x
+            v = np.dot(x.reshape(-1), self.w)
         return min(1, max(0, v))
     def gradient(self, x):
         if self.approximator == 'linear':
             return -1.0 * x.reshape(-1)
+        elif self.approximator == 'naive_linear':
+            return x.reshape(-1)
         elif self.approximator == 'tabular':
             if type(x) is int:
                 return onehot(x, np.size(self.w))
@@ -58,6 +62,8 @@ class LAMBDA():# state-based parametric lambda
     def GD(self, x, step_length):
         gradient = self.gradient(x)
         if self.approximator == 'linear':
+            value_after = 1 - np.dot(x.reshape(-1), (self.w - step_length * gradient))
+        elif self.approximator == 'naive_linear':
             value_after = np.dot(x.reshape(-1), (self.w - step_length * gradient))
         elif self.approximator == 'tabular':
             value_after = np.dot(gradient, self.w) - step_length
