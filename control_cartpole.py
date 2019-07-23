@@ -26,7 +26,7 @@ if args.eta == 0:
 # Experiment Preparation
 env_name = 'CartPole-v1'
 env, gamma = gym.make(env_name), lambda x: args.gamma
-encoder = lambda x: x
+encoder = lambda x: x # tilecoding does not work!
 
 things_to_save = {}
 time_start = time.time()
