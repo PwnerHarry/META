@@ -25,7 +25,8 @@ if args.eta == 0:
     args.eta = 0.5 * args.alpha
 # Experiment Preparation
 env_name = 'CartPole-v1'
-env, gamma, encoder = gym.make(env_name), lambda x: args.gamma, lambda x: x
+env, gamma = gym.make(env_name), lambda x: args.gamma
+encoder = lambda x: tile_encoding(x, env.observation_space.shape[0], env.observation_space.low, env.observation_space.high, 8, 8)
 
 things_to_save = {}
 time_start = time.time()
