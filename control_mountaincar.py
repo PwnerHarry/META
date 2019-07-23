@@ -26,7 +26,7 @@ if args.eta == 0:
 # Experiment Preparation
 env_name = 'MountainCar-v0'
 env, gamma = gym.make(env_name), lambda x: args.gamma
-encoder = lambda x: tile_encoding(x, env.observation_space.shape[0], env.observation_space.low, env.observation_space.high, 8, 16)
+encoder = lambda x: tile_encoding(x, env.observation_space.shape[0], env.observation_space.low, env.observation_space.high, 8, 8)
 
 things_to_save = {}
 time_start = time.time()
