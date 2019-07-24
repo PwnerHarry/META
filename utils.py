@@ -59,8 +59,10 @@ class LAMBDA():# state-based parametric lambda
                 return onehot(x, np.size(self.w))
             else:
                 return onehot(decode(self.X, x), np.size(self.w))
-    def GD(self, x, step_length):
+    def GD(self, x, step_length, normalize=False):
         gradient = self.gradient(x)
+        if normalize:
+            gradient = gradient / np.linalg.norm(gradient, 2)
         if self.approximator == 'linear':
             value_after = 1 - np.dot(x.reshape(-1), (self.w - step_length * gradient))
         elif self.approximator == 'naive_linear':
