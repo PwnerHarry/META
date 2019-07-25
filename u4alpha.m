@@ -52,7 +52,7 @@ for index_filename = 1: numel(filenames)
                 eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
             else
                 eval(sprintf('MEANS(%d, index_filename) = mean(loaded.error_value_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
-                eval(sprintf('STDS(%d, index_filename) = mean(loaded.error_value_%s_std(end - %d: end)), ''omitnan'';', index_method, method, smoothing_window));
+                eval(sprintf('STDS(%d, index_filename) = mean(loaded.error_value_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
             end
         catch ME
         end
@@ -129,7 +129,7 @@ end
 L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 set(gca, 'xscale', 'log');
-% set(gca, 'yscale', 'log');
+set(gca, 'yscale', 'log');
 axis([0, inf, -inf, inf]);
 drawnow;
 end
