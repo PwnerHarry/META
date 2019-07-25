@@ -16,8 +16,6 @@ source ~/ENV/bin/activate
 # COMPILE TO ACCELERATE
 python -m compileall ./
 
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa 0.2
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa 0.25
 python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa 0.3
 python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa 0.35
 python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa 0.4
