@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account=def-bengioy
-#SBATCH --cpus-per-task=40
-#SBATCH --mem=8G
+#SBATCH --cpus-per-task=48
+#SBATCH --mem=16G
 #SBATCH --time=12:0:0
 
 # DEFAULT VALUES
