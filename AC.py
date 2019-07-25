@@ -1,4 +1,4 @@
-import gym, torch, numpy.random, numpy as np
+import gym, numpy.random, numpy as np
 from utils import *
 from greedy import *
 from mta import *
