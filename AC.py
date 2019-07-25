@@ -4,7 +4,6 @@ from greedy import *
 from mta import *
 from TOGTD import *
 from TOTD import *
-from torch.autograd import Variable
 
 '''
 Actor-Critic with Linear Function Approximator and Softmax Policy
