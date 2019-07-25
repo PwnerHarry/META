@@ -22,7 +22,7 @@ elseif nargin == 4 % X, MEAN, INTERVAL, COLOR
 end
 COLOR = Curve.Color;
 delete(Curve);
-BAND = fill([X, flip(X)], [INTERVAL(1, :), flip(INTERVAL(2, :))], COLOR, 'EdgeColor', 'none', 'FaceAlpha', '0.4');
+BAND = fill([X, flip(X)], [INTERVAL(1, :), flip(INTERVAL(2, :))], COLOR, 'EdgeColor', 'none', 'FaceAlpha', '0.2');
 hold on;
 CURVE = plot(X, MEAN, '-', 'LineWidth', LineWidth, 'COLOR', COLOR);
 drawnow;
