@@ -2,7 +2,7 @@
 #SBATCH --account=def-bengioy
 #SBATCH --cpus-per-task=48
 #SBATCH --mem=16G
-#SBATCH --time=12:0:0
+#SBATCH --time=24:0:0
 
 # DEFAULT VALUES
 RUNTIMES="240"
