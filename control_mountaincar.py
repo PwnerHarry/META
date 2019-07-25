@@ -5,14 +5,15 @@ from mta import *
 from AC import *
 from TOTD import *
 from TOGTD import *
+import mountaincar
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--alpha', type=float, default=0.02, help='')
 parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--eta', type=float, default=0, help='')
-parser.add_argument('--gamma', type=float, default=0.95, help='')
+parser.add_argument('--gamma', type=float, default=1, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
-parser.add_argument('--episodes', type=int, default=10000, help='')
+parser.add_argument('--episodes', type=int, default=1000, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
 parser.add_argument('--evaluate_baselines', type=int, default=1, help='')
@@ -24,7 +25,7 @@ if args.beta == 0:
 if args.eta == 0:
     args.eta = 0.5 * args.alpha
 # Experiment Preparation
-env_name = 'MountainCar-v0'
+env_name = 'MountainCar-v1'
 env, gamma = gym.make(env_name), lambda x: args.gamma
 encoder = lambda x: tile_encoding(x, env.observation_space.shape[0], env.observation_space.low, env.observation_space.high, 8, 8)
 
