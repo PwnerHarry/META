@@ -32,6 +32,13 @@ while [ "$1" != "" ]; do
     shift
 done
 
+# LOAD ENVIRONMENT
+module load python/3.7 scipy-stack
+source ~/ENV/bin/activate
+
+# COMPILE TO ACCELERATE
+python -m compileall ./
+
 python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_MTA 0 --alpha $ALPHA
 
 python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 1 * $ALPHA}"`
