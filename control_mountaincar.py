@@ -5,7 +5,7 @@ from mta import *
 from AC import *
 from TOTD import *
 from TOGTD import *
-import mountaincar
+# import mountaincar
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--alpha', type=float, default=0.02, help='')
