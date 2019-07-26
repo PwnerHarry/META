@@ -25,7 +25,7 @@ if args.beta == 0:
 if args.eta == 0:
     args.eta = 0.5 * args.alpha
 # Experiment Preparation
-env_name = 'MountainCar-v1'
+env_name = 'MountainCar-v0'
 env, gamma = gym.make(env_name), lambda x: args.gamma
 encoder = lambda x: tile_encoding(x, env.observation_space.shape[0], env.observation_space.low, env.observation_space.high, 8, 8)
 
