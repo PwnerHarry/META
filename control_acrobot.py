@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(description='')
 parser.add_argument('--alpha', type=float, default=0.01, help='')
 parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--eta', type=float, default=0, help='')
-parser.add_argument('--gamma', type=float, default=1, help='')
+parser.add_argument('--gamma', type=float, default=0.99, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
 parser.add_argument('--episodes', type=int, default=100, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
@@ -26,7 +26,7 @@ if args.eta == 0:
 # Experiment Preparation
 env_name = 'Acrobot-v1'
 env, gamma = gym.make(env_name), lambda x: args.gamma
-encoder = lambda x: tile_encoding(x, env.observation_space.shape[0], env.observation_space.low, env.observation_space.high, 4, 4)
+encoder = lambda x: tile_encoding(x, env.observation_space.shape[0], env.observation_space.low, env.observation_space.high, 3, 3)
 
 things_to_save = {}
 time_start = time.time()

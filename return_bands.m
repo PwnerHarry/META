@@ -12,7 +12,7 @@ num_points = 101;
 CURVES = []; LEGENDS = {};
 figure();
 MIN = inf;
-BANDWIDTH = 0.01;
+BANDWIDTH = 0.1;
 
 for result_index = 1: numel(expectation_list)
     result_name  = expectation_list(result_index);

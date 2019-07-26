@@ -21,11 +21,11 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
     elif critic_type == 'greedy':
         MC_exp_learner, MC_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, MC_var_learner, value_learner]
     elif critic_type == 'MTA':
-        Lambda = LAMBDA(env, initial_value=np.zeros(D), approximator='linear')
+        Lambda = LAMBDA(env, initial_value=np.zeros(D), approximator='naive_linear')
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
-    # W = np.zeros((env.action_space.n, D))
+    W = np.zeros((env.action_space.n, D))
     # W = numpy.random.normal(0, 1, env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
-    W = numpy.random.uniform(low=-eta, high=eta, size=env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
+    # W = numpy.random.uniform(low=-eta, high=eta, size=env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
     return_trace = np.empty(episodes); return_trace[:] = np.nan
     break_flag = False
     # last_reward_episode = 0
@@ -70,8 +70,8 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             # one-step of policy evaluation of the critic!
             value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, lambda_next, lambda_curr, rho_curr, **lr_dict)
             # one-step of policy improvement of the actor (gradient ascent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
-            delta_curr_new = r_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_next) - np.dot(x_curr, value_learner.w_next)
-            if delta_curr_new and eta and I:
+            if eta and I: # and episode >= 0.1 * episodes:
+                delta_curr_new = r_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_next) - np.dot(x_curr, value_learner.w_next) 
                 W += eta * I * rho_curr * delta_curr_new * get_grad_W(W, prob_behavior, np.diagflat(prob_behavior), action, x_curr) # TODO: make sure the correction of importance sampling ratio is correct            
             # timestep++
             return_cumulative += I * r_next
