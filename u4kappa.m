@@ -10,13 +10,13 @@ end
 filenames(reduce_index) = [];
 
 % loading data files one by one
-smoothing_window = 1000;
+smoothing_window = 100;
 if strcmp(env, 'ringworld')
     METHOD_LIST = {'mta'};
 elseif strcmp(env, 'frozenlake')
     METHOD_LIST = {'mta'};
 else
-    METHOD_LIST = {'baseline_0', 'baseline_20', 'baseline_40', 'baseline_60', 'baseline_80', 'baseline_100', 'greedy', 'MTA'};
+    METHOD_LIST = {'MTA'};
 end
 MEANS = nan(numel(METHOD_LIST), numel(filenames));
 STDS = nan(numel(METHOD_LIST), numel(filenames));
@@ -30,7 +30,7 @@ for index_filename = 1: numel(filenames)
     for index_method = 1: numel(METHOD_LIST)
         method = METHOD_LIST{index_method};
         try
-            if strcmp(env, 'frozenlake_AC')
+            if strcmp(env, 'mountaincar') || strcmp(env, 'cartpole') || strcmp(env, 'frozenlake_AC')
                 eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
                 eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
             else
@@ -47,12 +47,12 @@ MEANS = MEANS(:, I);
 STDS = STDS(:, I);
 
 % draw
-cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 figure;
 BANDWIDTH = 0.1;
 LINECOLORS = [0, 0, 1];
 CURVES = []; LEGENDS = {};
 for index_method = 1: numel(METHOD_LIST)
+    method = METHOD_LIST{index_method};
     MEAN = MEANS(index_method, :); STD = STDS(index_method, :);
     INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-STD; STD];
     if strcmp(method, 'mta') || strcmp(method, 'MTA')
@@ -68,8 +68,7 @@ for index_method = 1: numel(METHOD_LIST)
         continue;
     end
     CURVES = [CURVES, CURVE];
-    method = METHOD_LIST{index_method};
-if strcmp(method, "togtd_0") || strcmp(method, "baseline_0")
+    if strcmp(method, "togtd_0") || strcmp(method, "baseline_0")
         LEGEND = "GTD(0)";
     elseif strcmp(method, "togtd_20") || strcmp(method, "baseline_20")
         LEGEND = "GTD(.2)";
