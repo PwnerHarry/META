@@ -49,7 +49,7 @@ STDS = STDS(:, I);
 % draw
 cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 figure;
-BANDWIDTH = 0.5;
+BANDWIDTH = 0.1;
 LINECOLORS = [0, 0, 1];
 CURVES = []; LEGENDS = {};
 for index_method = 1: numel(METHOD_LIST)
