@@ -84,7 +84,9 @@ MEANS = MEANS(:, I);
 STDS = STDS(:, I);
 
 % draw
-cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
+main_path = fileparts(mfilename('fullpath'));
+cd(main_path);
+addpath(genpath(fullfile(main_path, 'gadgets')));
 figure;
 BANDWIDTH = 0.1;
 LINECOLORS = [linspecer(numel(METHOD_LIST) - 2); [1, 0, 0]; [0, 0, 1];];

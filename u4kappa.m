@@ -10,6 +10,9 @@ end
 filenames(reduce_index) = [];
 
 % loading data files one by one
+main_path = fileparts(mfilename('fullpath'));
+cd(main_path);
+addpath(genpath(fullfile(main_path, 'gadgets')));
 smoothing_window = 100;
 if strcmp(env, 'ringworld')
     METHOD_LIST = {'mta'};
