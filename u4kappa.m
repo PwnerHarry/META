@@ -1,12 +1,4 @@
 function u4kappa(env, folder, pattern)
-% draw the u-shaped band, with x-axis as the learning rate alpha
-% specify the configuration with pattern, using regular expression
-
-% usage:
-% ushaped('ringworld', 'ringworld/e_1e6_r_40', 'behavior\_0\.33\_target\_0\.25')
-% ushaped('frozenlake', 'frozenlake/e_1e6_r_40', 'behavior\_0\.25\_target\_0\.2')
-
-% get file list in which the files satisfy the filter
 dirOutput = dir(fullfile(folder, '*'));
 filenames = {dirOutput.name}';
 reduce_index = [];
@@ -20,10 +12,10 @@ filenames(reduce_index) = [];
 % loading data files one by one
 smoothing_window = 1000;
 if strcmp(env, 'ringworld')
-    METHOD_LIST = {'totd_0', 'totd_20', 'totd_40', 'totd_60', 'totd_80', 'totd_100', 'greedy', 'mta'};
+    METHOD_LIST = {'mta'};
 elseif strcmp(env, 'frozenlake')
-    METHOD_LIST = {'togtd_0', 'togtd_20', 'togtd_40', 'togtd_60', 'togtd_80', 'togtd_100', 'greedy', 'mta'};
-elseif strcmp(env, 'frozenlake_AC')
+    METHOD_LIST = {'mta'};
+else
     METHOD_LIST = {'baseline_0', 'baseline_20', 'baseline_40', 'baseline_60', 'baseline_80', 'baseline_100', 'greedy', 'MTA'};
 end
 MEANS = nan(numel(METHOD_LIST), numel(filenames));
@@ -57,12 +49,19 @@ STDS = STDS(:, I);
 % draw
 cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 figure;
-BANDWIDTH = 0.1;
-LINECOLORS = [linspecer(numel(METHOD_LIST) - 2); [1, 0, 0]; [0, 0, 1];];
+BANDWIDTH = 0.5;
+LINECOLORS = [0, 0, 1];
 CURVES = []; LEGENDS = {};
 for index_method = 1: numel(METHOD_LIST)
     MEAN = MEANS(index_method, :); STD = STDS(index_method, :);
     INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-STD; STD];
+    if strcmp(method, 'mta') || strcmp(method, 'MTA')
+        LEGEND = "MTA";
+        reduce_index = find(isnan(KAPPAS));
+        KAPPAS(reduce_index) = [];
+        MEAN(:, reduce_index) = [];
+        INTERVAL(:, reduce_index) = [];
+    end
     try
         [CURVE, ~] = band_drawer(KAPPAS', MEAN, INTERVAL, LINECOLORS(index_method, :));
     catch ME
@@ -96,8 +95,6 @@ if strcmp(method, "togtd_0") || strcmp(method, "baseline_0")
         LEGEND = "TD(1)";
     elseif strcmp(method, "greedy")
         LEGEND = "greedy";
-    elseif strcmp(method, "mta") || strcmp(method, "MTA")
-        LEGEND = "MTA";
     end
     LEGENDS = [LEGENDS, LEGEND];
 end
