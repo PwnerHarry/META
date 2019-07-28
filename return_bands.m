@@ -1,6 +1,8 @@
 % MANUALLY LOAD THE RESULTS FIRST
 sample_method = 'linear';
-cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
+main_path = fileparts(mfilename('fullpath'));
+cd(main_path);
+addpath(genpath(fullfile(main_path, 'gadgets')));
 
 expectation_list = [ ...
     "return_baseline_0", "return_baseline_20", "return_baseline_40", ...
@@ -58,7 +60,7 @@ for result_index = 1: numel(expectation_list)
     elseif strcmp(result_name, "return_greedy")
         LEGEND = "greedy";
     end
-    LEGENDS = [LEGENDS, LEGEND];
+    LEGENDS = [EGENDS, LEGEND];
 end
 
 L = legend(CURVES, LEGENDS);

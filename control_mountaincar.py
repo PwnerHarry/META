@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(description='')
 parser.add_argument('--alpha', type=float, default=0.02, help='')
 parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--eta', type=float, default=0, help='')
-parser.add_argument('--gamma', type=float, default=1, help='')
+parser.add_argument('--gamma', type=float, default=0.99, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
 parser.add_argument('--episodes', type=int, default=1000, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
@@ -23,7 +23,7 @@ args = parser.parse_args()
 if args.beta == 0:
     args.beta = 10.0 * args.alpha
 if args.eta == 0:
-    args.eta = 0.5 * args.alpha
+    args.eta = 0.1 * args.alpha
 # Experiment Preparation
 env_name = 'MountainCar-v0'
 env, gamma = gym.make(env_name), lambda x: args.gamma

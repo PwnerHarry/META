@@ -1,6 +1,8 @@
 % MANUALLY LOAD THE RESULTS FIRST
 sample_method = 'log';
-cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
+main_path = fileparts(mfilename('fullpath'));
+cd(main_path);
+addpath(genpath(fullfile(main_path, 'gadgets')));
 
 expectation_list = [ ...
     "error_value_totd_0", "error_value_totd_20", "error_value_totd_40", ...
