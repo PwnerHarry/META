@@ -60,7 +60,7 @@ for result_index = 1: numel(expectation_list)
     elseif strcmp(result_name, "return_greedy")
         LEGEND = "greedy";
     end
-    LEGENDS = [EGENDS, LEGEND];
+    LEGENDS = [LEGENDS, LEGEND];
 end
 
 L = legend(CURVES, LEGENDS);
