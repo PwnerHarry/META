@@ -70,8 +70,8 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             # one-step of policy evaluation of the critic!
             value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, lambda_next, lambda_curr, rho_curr, **lr_dict)
             # one-step of policy improvement of the actor (gradient ascent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
-            if np.linalg.norm(value_learner.w_next - value_learner.w_curr, 2) < 1e-6:
-                delta_curr_new = r_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_next) - np.dot(x_curr, value_learner.w_next) 
+            delta_curr_new = r_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_next) - np.dot(x_curr, value_learner.w_next)
+            if delta_curr_new < 1e-5:
                 W += eta * I * rho_curr * delta_curr_new * get_grad_W(W, prob_behavior, np.diagflat(prob_behavior), action, x_curr) # TODO: make sure the correction of importance sampling ratio is correct            
             # timestep++
             return_cumulative += I * r_next
