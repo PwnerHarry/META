@@ -23,7 +23,7 @@ args = parser.parse_args()
 if args.beta == 0:
     args.beta = 10.0 * args.alpha
 if args.eta == 0:
-    args.eta = 0.1 * args.alpha
+    args.eta = args.alpha
 # Experiment Preparation
 env_name = 'MountainCar-v1'
 env, gamma = gym.make(env_name), lambda x: args.gamma
