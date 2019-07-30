@@ -1,4 +1,4 @@
-import math, gym, numpy as np
+import random, math, gym, numpy as np
 from gym.envs.toy_text import discrete
 from gym.utils import seeding
 from gym import spaces
@@ -35,7 +35,9 @@ class MountainCarEnv(gym.Env):
 
     def step(self, action):
         assert self.action_space.contains(action), "%r (%s) invalid" % (action, type(action))
-
+        # ADD NOISE TO ACTION!!!
+        if random.random() < 0.2:
+            action = np.random.choice(range(self.action_space.n), p=np.ones(self.action_space.n) / self.action_space.n)
         position, velocity = self.state
         velocity += (action-1)*self.force + math.cos(3*position)*(-self.gravity)
         velocity = np.clip(velocity, -self.max_speed, self.max_speed)
@@ -46,7 +48,7 @@ class MountainCarEnv(gym.Env):
         done = bool(position >= self.goal_position and velocity >= self.goal_velocity)
 
         self.state = (position, velocity)
-        return np.array(self.state), float(done), done, {}
+        return np.array(self.state), -1, done, {}
 
     def reset(self):
         self.state = np.array([self.np_random.uniform(low=-0.6, high=-0.4), 0])

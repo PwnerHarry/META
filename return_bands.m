@@ -1,5 +1,5 @@
 % MANUALLY LOAD THE RESULTS FIRST
-sample_method = 'linear';
+sample_method = 'log';
 main_path = fileparts(mfilename('fullpath'));
 cd(main_path);
 addpath(genpath(fullfile(main_path, 'gadgets')));
@@ -19,7 +19,7 @@ BANDWIDTH = 0.1;
 for result_index = 1: numel(expectation_list)
     result_name  = expectation_list(result_index);
     try
-        eval(sprintf('results_mean = %s_mean;', result_name));
+        eval(sprintf('results_mean = -%s_mean;', result_name));
         eval(sprintf('results_std = %s_std;', result_name));
     catch ME
         continue;
@@ -68,7 +68,7 @@ set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 if strcmp(sample_method, 'log')
     set(gca, 'xscale', 'log');
 end
-% set(gca, 'yscale', 'log');
+set(gca, 'yscale', 'log');
 axis([1, inf, MIN, inf]);
 set(gca, 'FontSize', 16);
 set(gca, 'FontName', 'Book Antiqua');

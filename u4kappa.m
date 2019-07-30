@@ -33,7 +33,10 @@ for index_filename = 1: numel(filenames)
     for index_method = 1: numel(METHOD_LIST)
         method = METHOD_LIST{index_method};
         try
-            if strcmp(env, 'mountaincar') || strcmp(env, 'cartpole') || strcmp(env, 'frozenlake_AC')
+            if strcmp(env, 'mountaincar')
+                eval(sprintf('MEANS(%d, index_filename) = -mean(loaded.return_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
+                eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
+            elseif strcmp(env, 'cartpole') || strcmp(env, 'frozenlake_AC')
                 eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
                 eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
             else
