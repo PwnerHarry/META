@@ -20,10 +20,10 @@ parser.add_argument('--evaluate_greedy', type=int, default=1, help='')
 parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
 args = parser.parse_args()
 if args.beta == 0:
-    args.beta = 10 * args.alpha
+    args.beta = args.alpha
 
 # Experiment Preparation
-env_name, gamma, encoder = 'FrozenLake-v0', lambda x: args.gamma, lambda s: tilecoding4x4(s)
+env_name, gamma, encoder = 'FrozenLake-v0', lambda x: args.gamma, lambda s: tilecoding4x4withbias(s)
 env = gym.make(env_name)
 target = np.matlib.repmat(np.array([0.2, 0.3, 0.3, 0.2]).reshape(1, 4), env.observation_space.n, 1)
 if args.off_policy:

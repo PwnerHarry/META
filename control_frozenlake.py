@@ -20,11 +20,11 @@ parser.add_argument('--evaluate_greedy', type=int, default=1, help='')
 parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
 args = parser.parse_args()
 if args.beta == 0:
-    args.beta = 10.0 * args.alpha
+    args.beta = args.alpha
 if args.eta == 0:
     args.eta = args.alpha
 # Experiment Preparation
-env_name, gamma, encoder = 'FrozenLake8x8-v0', lambda x: args.gamma, lambda s: tilecoding4x4(s)
+env_name, gamma, encoder = 'FrozenLake8x8-v0', lambda x: args.gamma, lambda s: tilecoding4x4withbias(s)
 things_to_save = {}
 time_start = time.time()
 

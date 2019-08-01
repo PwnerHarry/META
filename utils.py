@@ -130,7 +130,8 @@ def tile_encoding(observation, shape, low, high, TILINGS, TILES_PER_DIMENSION):
     return feature.reshape(-1)
 
 @jit(nopython=True, cache=True)
-def tilecoding4x4(s):
+def tilecoding4x4withbias(s):
+    feature0 = np.ones(1)
     x, y = s // 4, s % 4
     feature1 = np.zeros(2)
     if x:
@@ -160,7 +161,7 @@ def tilecoding4x4(s):
         feature4[1] = 1
     else:
         feature4[0] = 1
-    return np.concatenate((feature1, feature2, feature3, feature4), axis=0)
+    return np.concatenate((feature0, feature1, feature2, feature3, feature4), axis=0)
 
 # DYNAMIC PROGRAMMING METHODS
 def iterative_policy_evaluation(env, policy, gamma, start_dist):
