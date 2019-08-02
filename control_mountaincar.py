@@ -8,20 +8,18 @@ from TOGTD import *
 import mountaincar
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--alpha', type=float, default=0.02, help='')
+parser.add_argument('--alpha', type=float, default=0.1, help='')
 parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--eta', type=float, default=0, help='')
 parser.add_argument('--gamma', type=float, default=1, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
-parser.add_argument('--episodes', type=int, default=1000, help='')
-parser.add_argument('--runtimes', type=int, default=8, help='')
+parser.add_argument('--episodes', type=int, default=10000, help='')
+parser.add_argument('--runtimes', type=int, default=240, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
 parser.add_argument('--evaluate_baselines', type=int, default=1, help='')
 parser.add_argument('--evaluate_greedy', type=int, default=1, help='')
 parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
 args = parser.parse_args()
-if args.beta == 0:
-    args.beta = 10.0 * args.alpha
 if args.eta == 0:
     args.eta = args.alpha
 # Experiment Preparation
