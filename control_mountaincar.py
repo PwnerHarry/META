@@ -35,8 +35,8 @@ if args.evaluate_baselines:
     BASELINE_LAMBDAS = [0, 0.4, 0.8, 0.9, 0.95, 0.975, 0.99, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
         results = eval_AC(env_name, critic_type='baseline', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, constant_lambda=baseline_lambda, kappa=args.kappa)
-        exec("things_to_save[\'return_baseline_%g_mean\'] = np.nanmean(results, axis=0)" % (baseline_lambda * 100)) # no dots in variable names for MATLAB
-        exec("things_to_save[\'return_baseline_%g_std\'] = np.nanstd(results, axis=0)" % (baseline_lambda * 100))
+        exec("things_to_save[\'return_baseline_%g_mean\'] = np.nanmean(results, axis=0)" % (baseline_lambda * 1000)) # no dots in variable names for MATLAB
+        exec("things_to_save[\'return_baseline_%g_std\'] = np.nanstd(results, axis=0)" % (baseline_lambda * 1000))
 
 # LAMBDA-GREEDY
 if args.evaluate_greedy:
