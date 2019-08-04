@@ -16,8 +16,7 @@ parser.add_argument('--kappa', type=float, default=0.001, help='')
 parser.add_argument('--episodes', type=int, default=10000, help='')
 parser.add_argument('--runtimes', type=int, default=240, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
-parser.add_argument('--evaluate_baselines', type=int, default=1, help='')
-parser.add_argument('--evaluate_greedy', type=int, default=1, help='')
+parser.add_argument('--evaluate_others', type=int, default=1, help='')
 parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
 args = parser.parse_args()
 if args.eta == 0:
@@ -30,16 +29,15 @@ encoder = lambda x: tile_encoding(x, env.observation_space.shape[0], env.observa
 things_to_save = {}
 time_start = time.time()
 
-# BASELINES
+
 if args.evaluate_baselines:
+    # BASELINES
     BASELINE_LAMBDAS = [0, 0.4, 0.8, 0.9, 0.95, 0.975, 0.99, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
         results = eval_AC(env_name, critic_type='baseline', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, constant_lambda=baseline_lambda, kappa=args.kappa)
         exec("things_to_save[\'return_baseline_%g_mean\'] = np.nanmean(results, axis=0)" % (baseline_lambda * 1000)) # no dots in variable names for MATLAB
         exec("things_to_save[\'return_baseline_%g_std\'] = np.nanstd(results, axis=0)" % (baseline_lambda * 1000))
-
-# LAMBDA-GREEDY
-if args.evaluate_greedy:
+    # LAMBDA-GREEDY
     results = eval_AC(env_name, critic_type='greedy', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, constant_lambda=0, kappa=args.kappa)
     things_to_save['return_greedy_mean'], things_to_save['return_greedy_std'] = np.nanmean(results, axis=0), np.nanstd(results, axis=0)
 
