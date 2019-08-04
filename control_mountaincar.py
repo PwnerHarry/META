@@ -30,7 +30,7 @@ things_to_save = {}
 time_start = time.time()
 
 
-if args.evaluate_baselines:
+if args.evaluate_others:
     # BASELINES
     BASELINE_LAMBDAS = [0, 0.4, 0.8, 0.9, 0.95, 0.975, 0.99, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
