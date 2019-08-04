@@ -20,8 +20,7 @@ def softmax(x): # a numerically stable softmax!
 def get_grad_W(W, prob_actions, DIAGFLAT, action, x):
     p = prob_actions.reshape(-1, 1)
     dsoftmax = DIAGFLAT - p * p.T
-    dlog = dsoftmax[action, :].reshape(-1, 1) / p[action]
-    return dlog * x.reshape(1, -1)
+    return dsoftmax[action, :].reshape(-1, 1) * x.reshape(1, -1) / p[action]
 
 @jit(cache=True)
 def decode(X, x):
@@ -32,7 +31,7 @@ class LAMBDA():# state-based parametric lambda
         self.approximator = approximator
         if self.approximator == 'constant':
             self.w = initial_value
-        elif self.approximator == 'linear':
+        elif self.approximator == 'linear' or self.approximator == 'naive_linear':
             self.w = initial_value.reshape(-1)
         elif self.approximator == 'tabular':
             self.w = initial_value.reshape(-1)
@@ -45,20 +44,28 @@ class LAMBDA():# state-based parametric lambda
                 v = self.w[x]
             else:
                 v = self.w[decode(self.X, x)]
-        elif self.approximator == 'linear':
+        elif self.approximator == 'linear': # linear FA uses 1 - w^T x
+            v = 1 - np.dot(x.reshape(-1), self.w)
+        elif self.approximator == 'naive_linear': # naive linear FA uses w^T x
             v = np.dot(x.reshape(-1), self.w)
         return min(1, max(0, v))
     def gradient(self, x):
         if self.approximator == 'linear':
+            return -1.0 * x.reshape(-1)
+        elif self.approximator == 'naive_linear':
             return x.reshape(-1)
         elif self.approximator == 'tabular':
             if type(x) is int:
                 return onehot(x, np.size(self.w))
             else:
                 return onehot(decode(self.X, x), np.size(self.w))
-    def GD(self, x, step_length):
+    def GD(self, x, step_length, normalize=False):
         gradient = self.gradient(x)
+        if normalize:
+            gradient = gradient / np.linalg.norm(gradient, 2)
         if self.approximator == 'linear':
+            value_after = 1 - np.dot(x.reshape(-1), (self.w - step_length * gradient))
+        elif self.approximator == 'naive_linear':
             value_after = np.dot(x.reshape(-1), (self.w - step_length * gradient))
         elif self.approximator == 'tabular':
             value_after = np.dot(gradient, self.w) - step_length
@@ -109,6 +116,20 @@ def index2coord(s, n):
     return feature
 
 @jit(nopython=True, cache=True)
+def tile_encoding(observation, shape, low, high, TILINGS, TILES_PER_DIMENSION):
+    feature = np.zeros(shape=(TILES_PER_DIMENSION ** shape, TILINGS))
+    GRID_PER_DIMENSION, LENGTH_DIMENSIONS = TILES_PER_DIMENSION * TILINGS, high - low
+    GRID_LENGTHS, TILE_LENGTHS = LENGTH_DIMENSIONS / GRID_PER_DIMENSION, LENGTH_DIMENSIONS / TILES_PER_DIMENSION
+    for offset in range(TILINGS):
+        coordinate, coordinates = 0, np.zeros(shape)
+        for index in range(shape):
+            coordinates[index] = (observation[index] - (low[index] + offset * GRID_LENGTHS[index])) // TILE_LENGTHS[index]
+        for i in range(len(coordinates) - 1, -1, -1):
+            coordinate = coordinate * TILES_PER_DIMENSION + coordinates[i]
+        feature[int(coordinate), offset] = 1.0
+    return feature.reshape(-1)
+
+@jit(nopython=True, cache=True)
 def tilecoding4x4(s):
     x, y = s // 4, s % 4
     feature1 = np.zeros(2)
@@ -140,6 +161,40 @@ def tilecoding4x4(s):
     else:
         feature4[0] = 1
     return np.concatenate((feature1, feature2, feature3, feature4), axis=0)
+
+@jit(nopython=True, cache=True)
+def tilecoding4x4withbias(s):
+    feature0 = np.ones(1)
+    x, y = s // 4, s % 4
+    feature1 = np.zeros(2)
+    if x:
+        feature1[1] = 1
+    else:
+        feature1[0] = 1
+    feature2 = np.zeros(4)
+    if x <= 1 and y <= 2:
+        feature2[0] = 1
+    elif x <= 1 and y == 3:
+        feature2[1] = 1
+    elif x > 1 and y <= 2:
+        feature2[2] = 1
+    elif x > 1 and y == 3:
+        feature2[3] = 1
+    feature3 = np.zeros(4)
+    if x <= 2 and y <= 1:
+        feature3[0] = 1
+    elif x <= 2 and y > 1:
+        feature3[1] = 1
+    elif x == 3 and y <= 1:
+        feature3[2] = 1
+    elif x == 3 and y > 1:
+        feature3[3] = 1
+    feature4 = np.zeros(2)
+    if y:
+        feature4[1] = 1
+    else:
+        feature4[0] = 1
+    return np.concatenate((feature0, feature1, feature2, feature3, feature4), axis=0)
 
 # DYNAMIC PROGRAMMING METHODS
 def iterative_policy_evaluation(env, policy, gamma, start_dist):

@@ -1,23 +1,27 @@
 % MANUALLY LOAD THE RESULTS FIRST
 sample_method = 'linear';
-cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
+main_path = fileparts(mfilename('fullpath'));
+cd(main_path);
+addpath(genpath(fullfile(main_path, 'gadgets')));
 
 expectation_list = [ ...
     "return_baseline_0", "return_baseline_20", "return_baseline_40", ...
     "return_baseline_60", "return_baseline_80", "return_baseline_100", ...
-    "return_greedy", "return_MTA"];
+    "return_baseline_400", "return_baseline_800", "return_baseline_900", ...
+    "return_baseline_950", "return_baseline_975", "return_baseline_990", ...
+    "return_baseline_1000", "return_greedy", "return_MTA"];
 LineColors = [linspecer(numel(expectation_list) - 2); [1, 0, 0]; [0, 0, 1];];
-num_points = 201;
+num_points = 101;
 
 CURVES = []; LEGENDS = {};
 figure();
 MIN = inf;
-BANDWIDTH = 0.01;
+BANDWIDTH = 0.1;
 
 for result_index = 1: numel(expectation_list)
     result_name  = expectation_list(result_index);
     try
-        eval(sprintf('results_mean = %s_mean;', result_name));
+        eval(sprintf('results_mean = -%s_mean;', result_name));
         eval(sprintf('results_std = %s_std;', result_name));
     catch ME
         continue;
@@ -47,13 +51,19 @@ for result_index = 1: numel(expectation_list)
         LEGEND = "GTD(0)";
     elseif strcmp(result_name, "return_baseline_20")
         LEGEND = "GTD(.2)";
-    elseif strcmp(result_name, "return_baseline_40")
+    elseif strcmp(result_name, "return_baseline_40") || strcmp(result_name, "return_baseline_400")
         LEGEND = "GTD(.4)";
     elseif strcmp(result_name, "return_baseline_60")
         LEGEND = "GTD(.6)";
-    elseif strcmp(result_name, "return_baseline_80")
+    elseif strcmp(result_name, "return_baseline_80") || strcmp(result_name, "return_baseline_800")
         LEGEND = "GTD(.8)";
-    elseif strcmp(result_name, "return_baseline_100")
+    elseif strcmp(result_name, "return_baseline_90") || strcmp(result_name, "return_baseline_900")
+        LEGEND = "GTD(.9)";
+    elseif strcmp(result_name, "return_baseline_95") || strcmp(result_name, "return_baseline_950")
+        LEGEND = "GTD(.95)";
+    elseif strcmp(result_name, "return_baseline_975")
+        LEGEND = "GTD(.975)";
+    elseif strcmp(result_name, "return_baseline_100") || strcmp(result_name, "return_baseline_1000")
         LEGEND = "GTD(1)";
     elseif strcmp(result_name, "return_greedy")
         LEGEND = "greedy";
@@ -66,7 +76,7 @@ set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 if strcmp(sample_method, 'log')
     set(gca, 'xscale', 'log');
 end
-% set(gca, 'yscale', 'log');
+set(gca, 'yscale', 'log');
 axis([1, inf, MIN, inf]);
 set(gca, 'FontSize', 16);
 set(gca, 'FontName', 'Book Antiqua');

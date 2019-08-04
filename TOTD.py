@@ -51,7 +51,7 @@ def totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=lambd
     gamma:      anonymous function determining each lambda for each feature (or state or observation)
     alpha:      learning rate for the weight vector of the values
     """
-    D = encoder(0).size
+    D = np.size(encoder(env.reset()))
     value_learner = TOTD_LEARNER(env, D)
     value_trace = np.empty(episodes); value_trace[:] = np.nan
     for episode in range(episodes):

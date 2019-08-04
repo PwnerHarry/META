@@ -11,7 +11,7 @@ parser.add_argument('--alpha', type=float, default=0.01, help='')
 parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--eta', type=float, default=0, help='')
 parser.add_argument('--gamma', type=float, default=0.99, help='')
-parser.add_argument('--kappa', type=float, default=0.001, help='')
+parser.add_argument('--kappa', type=float, default=0.0001, help='')
 parser.add_argument('--episodes', type=int, default=1000, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
@@ -20,12 +20,13 @@ parser.add_argument('--evaluate_greedy', type=int, default=1, help='')
 parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
 args = parser.parse_args()
 if args.beta == 0:
-    args.beta = 0.01 * args.alpha
+    args.beta = 10.0 * args.alpha
 if args.eta == 0:
-    args.eta = 1.0 * args.alpha
+    args.eta = 0.5 * args.alpha
 # Experiment Preparation
-env_name = 'Acrobot-v1'
-env, gamma, encoder = gym.make(env_name), lambda x: args.gamma, None
+env_name = 'CartPole-v1'
+env, gamma = gym.make(env_name), lambda x: args.gamma
+encoder = lambda x: x # tilecoding does not work!
 
 things_to_save = {}
 time_start = time.time()
@@ -53,7 +54,7 @@ print('time elapsed: %gs' % (time_finish - time_start))
 
 # SAVE
 if args.evaluate_MTA:
-    filename = 'acrobot_a_%g_b_%g_y_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.kappa, args.episodes, args.runtimes)
+    filename = 'cartpole_a_%g_b_%g_y_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.kappa, args.episodes, args.runtimes)
 else:
-    filename = 'acrobot_a_%g_b_%g_y_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.episodes, args.runtimes)
+    filename = 'cartpole_a_%g_b_%g_y_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.episodes, args.runtimes)
 scipy.io.savemat(filename, things_to_save)

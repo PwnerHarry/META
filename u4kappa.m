@@ -1,12 +1,4 @@
 function u4kappa(env, folder, pattern)
-% draw the u-shaped band, with x-axis as the learning rate alpha
-% specify the configuration with pattern, using regular expression
-
-% usage:
-% ushaped('ringworld', 'ringworld/e_1e6_r_40', 'behavior\_0\.33\_target\_0\.25')
-% ushaped('frozenlake', 'frozenlake/e_1e6_r_40', 'behavior\_0\.25\_target\_0\.2')
-
-% get file list in which the files satisfy the filter
 dirOutput = dir(fullfile(folder, '*'));
 filenames = {dirOutput.name}';
 reduce_index = [];
@@ -18,13 +10,16 @@ end
 filenames(reduce_index) = [];
 
 % loading data files one by one
-smoothing_window = 1000;
+main_path = fileparts(mfilename('fullpath'));
+cd(main_path);
+addpath(genpath(fullfile(main_path, 'gadgets')));
+smoothing_window = 100;
 if strcmp(env, 'ringworld')
-    METHOD_LIST = {'totd_0', 'totd_20', 'totd_40', 'totd_60', 'totd_80', 'totd_100', 'greedy', 'mta'};
+    METHOD_LIST = {'mta'};
 elseif strcmp(env, 'frozenlake')
-    METHOD_LIST = {'togtd_0', 'togtd_20', 'togtd_40', 'togtd_60', 'togtd_80', 'togtd_100', 'greedy', 'mta'};
-elseif strcmp(env, 'frozenlake_AC')
-    METHOD_LIST = {'baseline_0', 'baseline_20', 'baseline_40', 'baseline_60', 'baseline_80', 'baseline_100', 'greedy', 'MTA'};
+    METHOD_LIST = {'mta'};
+else
+    METHOD_LIST = {'MTA'};
 end
 MEANS = nan(numel(METHOD_LIST), numel(filenames));
 STDS = nan(numel(METHOD_LIST), numel(filenames));
@@ -38,12 +33,15 @@ for index_filename = 1: numel(filenames)
     for index_method = 1: numel(METHOD_LIST)
         method = METHOD_LIST{index_method};
         try
-            if strcmp(env, 'frozenlake_AC')
-                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(end - %d: end));', index_method, method, smoothing_window));
-                eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(end - %d: end));', index_method, method, smoothing_window));
+            if strcmp(env, 'mountaincar')
+                eval(sprintf('MEANS(%d, index_filename) = -mean(loaded.return_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
+                eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
+            elseif strcmp(env, 'cartpole') || strcmp(env, 'frozenlake_AC')
+                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
+                eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
             else
-                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.error_value_%s_mean(end - %d: end));', index_method, method, smoothing_window));
-                eval(sprintf('STDS(%d, index_filename) = mean(loaded.error_value_%s_std(end - %d: end));', index_method, method, smoothing_window));
+                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.error_value_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
+                eval(sprintf('STDS(%d, index_filename) = mean(loaded.error_value_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
             end
         catch ME
         end
@@ -55,22 +53,28 @@ MEANS = MEANS(:, I);
 STDS = STDS(:, I);
 
 % draw
-cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
 figure;
 BANDWIDTH = 0.1;
-LINECOLORS = [linspecer(numel(METHOD_LIST) - 2); [1, 0, 0]; [0, 0, 1];];
+LINECOLORS = [0, 0, 1];
 CURVES = []; LEGENDS = {};
 for index_method = 1: numel(METHOD_LIST)
+    method = METHOD_LIST{index_method};
     MEAN = MEANS(index_method, :); STD = STDS(index_method, :);
     INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-STD; STD];
+    if strcmp(method, 'mta') || strcmp(method, 'MTA')
+        LEGEND = "MTA";
+        reduce_index = find(isnan(KAPPAS));
+        KAPPAS(reduce_index) = [];
+        MEAN(:, reduce_index) = [];
+        INTERVAL(:, reduce_index) = [];
+    end
     try
         [CURVE, ~] = band_drawer(KAPPAS', MEAN, INTERVAL, LINECOLORS(index_method, :));
     catch ME
         continue;
     end
     CURVES = [CURVES, CURVE];
-    method = METHOD_LIST{index_method};
-if strcmp(method, "togtd_0") || strcmp(method, "baseline_0")
+    if strcmp(method, "togtd_0") || strcmp(method, "baseline_0")
         LEGEND = "GTD(0)";
     elseif strcmp(method, "togtd_20") || strcmp(method, "baseline_20")
         LEGEND = "GTD(.2)";
@@ -96,8 +100,6 @@ if strcmp(method, "togtd_0") || strcmp(method, "baseline_0")
         LEGEND = "TD(1)";
     elseif strcmp(method, "greedy")
         LEGEND = "greedy";
-    elseif strcmp(method, "mta") || strcmp(method, "MTA")
-        LEGEND = "MTA";
     end
     LEGENDS = [LEGENDS, LEGEND];
 end

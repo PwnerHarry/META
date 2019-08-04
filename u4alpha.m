@@ -18,12 +18,12 @@ end
 filenames(reduce_index) = [];
 
 % loading data files one by one
-smoothing_window = 1000;
+smoothing_window = 10;
 if strcmp(env, 'ringworld')
     METHOD_LIST = {'totd_0', 'totd_20', 'totd_40', 'totd_60', 'totd_80', 'totd_100', 'greedy', 'mta'};
 elseif strcmp(env, 'frozenlake')
     METHOD_LIST = {'togtd_0', 'togtd_20', 'togtd_40', 'togtd_60', 'togtd_80', 'togtd_100', 'greedy', 'mta'};
-elseif strcmp(env, 'frozenlake_AC')
+elseif strcmp(env, 'frozenlake_AC') || strcmp(env, 'mountaincar')
     METHOD_LIST = {'baseline_0', 'baseline_20', 'baseline_40', 'baseline_60', 'baseline_80', 'baseline_100', 'greedy', 'MTA'};
 end
 MEANS = nan(numel(METHOD_LIST), numel(filenames));
@@ -38,7 +38,7 @@ for index_filename = 1: numel(filenames)
         end
     elseif strcmp(env, 'frozenlake')
         [startIndex, endIndex] = regexp(filename, 'a\_.*\_b');
-    elseif strcmp(env, 'frozenlake_AC')
+    elseif strcmp(env, 'frozenlake_AC') || strcmp(env, 'mountaincar')
         [startIndex, endIndex] = regexp(filename, 'a\_.*\_b');
     end
     alpha = str2double(filename(startIndex + 2: endIndex - 2));
@@ -47,12 +47,12 @@ for index_filename = 1: numel(filenames)
     for index_method = 1: numel(METHOD_LIST)
         method = METHOD_LIST{index_method};
         try
-            if strcmp(env, 'frozenlake_AC')
-                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(end - %d: end));', index_method, method, smoothing_window));
-                eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(end - %d: end));', index_method, method, smoothing_window));
+            if strcmp(env, 'frozenlake_AC') || strcmp(env, 'mountaincar')
+                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
+                eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
             else
-                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.error_value_%s_mean(end - %d: end));', index_method, method, smoothing_window));
-                eval(sprintf('STDS(%d, index_filename) = mean(loaded.error_value_%s_std(end - %d: end));', index_method, method, smoothing_window));
+                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.error_value_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
+                eval(sprintf('STDS(%d, index_filename) = mean(loaded.error_value_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
             end
         catch ME
         end
@@ -65,7 +65,7 @@ NEW_STDS = zeros(numel(METHOD_LIST), numel(IA));
 for index_unique = 1: numel(IA)
     locations = find(IC == index_unique);
     MEAN_MTA = MEANS(end, locations);
-    if strcmp(env, 'frozenlake_AC')
+    if strcmp(env, 'frozenlake_AC') || strcmp(env, 'mountaincar')
         [~, IBEST] = max(MEAN_MTA);
     else
         [~, IBEST] = min(MEAN_MTA);
@@ -84,7 +84,9 @@ MEANS = MEANS(:, I);
 STDS = STDS(:, I);
 
 % draw
-cd(fileparts(mfilename('fullpath'))); addpath(genpath(cd));
+main_path = fileparts(mfilename('fullpath'));
+cd(main_path);
+addpath(genpath(fullfile(main_path, 'gadgets')));
 figure;
 BANDWIDTH = 0.1;
 LINECOLORS = [linspecer(numel(METHOD_LIST) - 2); [1, 0, 0]; [0, 0, 1];];
@@ -130,6 +132,6 @@ L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
-axis([0, inf, 0, inf]);
+axis([0, inf, -inf, inf]);
 drawnow;
 end

@@ -5,37 +5,38 @@ from mta import *
 from AC import *
 from TOTD import *
 from TOGTD import *
+import mountaincar
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--alpha', type=float, default=0.01, help='')
+parser.add_argument('--alpha', type=float, default=0.1, help='')
 parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--eta', type=float, default=0, help='')
-parser.add_argument('--gamma', type=float, default=0.99, help='')
+parser.add_argument('--gamma', type=float, default=1, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
-parser.add_argument('--episodes', type=int, default=50000, help='')
-parser.add_argument('--runtimes', type=int, default=16, help='')
+parser.add_argument('--episodes', type=int, default=10000, help='')
+parser.add_argument('--runtimes', type=int, default=240, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
 parser.add_argument('--evaluate_baselines', type=int, default=1, help='')
 parser.add_argument('--evaluate_greedy', type=int, default=1, help='')
 parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
 args = parser.parse_args()
-if args.beta == 0:
-    args.beta = 0.01 * args.alpha
 if args.eta == 0:
-    args.eta = 1.0 * args.alpha
+    args.eta = args.alpha
 # Experiment Preparation
-env_name, gamma, encoder = 'FrozenLake-v0', lambda x: args.gamma, lambda s: tilecoding4x4(s)
+env_name = 'MountainCar-v1'
+env, gamma = gym.make(env_name), lambda x: args.gamma
+encoder = lambda x: tile_encoding(x, env.observation_space.shape[0], env.observation_space.low, env.observation_space.high, 8, 8)
 
 things_to_save = {}
 time_start = time.time()
 
 # BASELINES
 if args.evaluate_baselines:
-    BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
+    BASELINE_LAMBDAS = [0, 0.4, 0.8, 0.9, 0.95, 0.975, 0.99, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
         results = eval_AC(env_name, critic_type='baseline', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, constant_lambda=baseline_lambda, kappa=args.kappa)
-        exec("things_to_save[\'return_baseline_%g_mean\'] = np.nanmean(results, axis=0)" % (baseline_lambda * 100)) # no dots in variable names for MATLAB
-        exec("things_to_save[\'return_baseline_%g_std\'] = np.nanstd(results, axis=0)" % (baseline_lambda * 100))
+        exec("things_to_save[\'return_baseline_%g_mean\'] = np.nanmean(results, axis=0)" % (baseline_lambda * 1000)) # no dots in variable names for MATLAB
+        exec("things_to_save[\'return_baseline_%g_std\'] = np.nanstd(results, axis=0)" % (baseline_lambda * 1000))
 
 # LAMBDA-GREEDY
 if args.evaluate_greedy:
@@ -52,7 +53,7 @@ print('time elapsed: %gs' % (time_finish - time_start))
 
 # SAVE
 if args.evaluate_MTA:
-    filename = 'frozenlake_AC_a_%g_b_%g_y_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.kappa, args.episodes, args.runtimes)
+    filename = 'mountaincar_a_%g_b_%g_y_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.kappa, args.episodes, args.runtimes)
 else:
-    filename = 'frozenlake_AC_a_%g_b_%g_y_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.episodes, args.runtimes)
+    filename = 'mountaincar_a_%g_b_%g_y_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.eta, args.episodes, args.runtimes)
 scipy.io.savemat(filename, things_to_save)

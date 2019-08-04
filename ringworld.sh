@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account=def-bengioy
-#SBATCH --cpus-per-task=40
-#SBATCH --mem=8G
+#SBATCH --cpus-per-task=48
+#SBATCH --mem=16G
 #SBATCH --time=12:0:0
 
 # DEFAULT VALUES
@@ -45,19 +45,29 @@ sleep 2
 
 # LOAD ENVIRONMENT
 module load python/3.7 scipy-stack
-module llvm
-module cuda/10.0
 source ~/ENV/bin/activate
 
 # COMPILE TO ACCELERATE
 python -m compileall ./
 
-# BASELINES AND GREEDY
+# BASELINES AND LAMBDA_GREEDY
 python predict_ringworld.py --alpha $ALPHA --kappa 0 --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_MTA 0
 
 # COARSE SEARCH FOR KAPPA
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.0001 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.001 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.01 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.1 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 1 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_baselines 0 --evaluate_greedy 0
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 1 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 2 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 3 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 4 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 5 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.1 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.2 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.3 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.4 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.5 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.01 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.02 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.03 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.04 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.05 * $ALPHA}"` --episodes $EPISODES --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
