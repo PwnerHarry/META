@@ -32,6 +32,10 @@ while [ "$1" != "" ]; do
     shift
 done
 
+echo "alpha: $ALPHA"
+echo "runtimes: $RUNTIMES, episodes: $EPISODES"
+sleep 2
+
 # LOAD ENVIRONMENT
 module load python/3.7 scipy-stack
 source ~/ENV/bin/activate
@@ -39,22 +43,24 @@ source ~/ENV/bin/activate
 # COMPILE TO ACCELERATE
 python -m compileall ./
 
+# BASELINES AND LAMBDA_GREEDY
 python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_MTA 0 --alpha $ALPHA
 
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 1 * $ALPHA}"`
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 2 * $ALPHA}"`
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 3 * $ALPHA}"`
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 4 * $ALPHA}"`
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 5 * $ALPHA}"`
+# COARSE SEARCH FOR KAPPA
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 1 * $ALPHA}"`
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 2 * $ALPHA}"`
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 3 * $ALPHA}"`
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 4 * $ALPHA}"`
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 5 * $ALPHA}"`
 
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.1 * $ALPHA}"`
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.2 * $ALPHA}"`
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.3 * $ALPHA}"`
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.4 * $ALPHA}"`
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.5 * $ALPHA}"`
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.1 * $ALPHA}"`
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.2 * $ALPHA}"`
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.3 * $ALPHA}"`
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.4 * $ALPHA}"`
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.5 * $ALPHA}"`
 
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.01 * $ALPHA}"`
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.02 * $ALPHA}"`
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.03 * $ALPHA}"`
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.04 * $ALPHA}"`    
-python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_baselines 0 --evaluate_greedy 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.05 * $ALPHA}"`
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.01 * $ALPHA}"`
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.02 * $ALPHA}"`
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.03 * $ALPHA}"`
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.04 * $ALPHA}"`    
+python predict_frozenlake.py --off_policy 1 --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 0.05 * $ALPHA}"`

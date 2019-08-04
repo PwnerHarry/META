@@ -11,19 +11,18 @@ parser.add_argument('--alpha', type=float, default=0.001, help='')
 parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--gamma', type=float, default=0.95, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
-parser.add_argument('--episodes', type=int, default=100000, help='')
+parser.add_argument('--episodes', type=int, default=100, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
 parser.add_argument('--off_policy', type=int, default=1, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
-parser.add_argument('--evaluate_baselines', type=int, default=1, help='')
-parser.add_argument('--evaluate_greedy', type=int, default=1, help='')
+parser.add_argument('--evaluate_others', type=int, default=1, help='')
 parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
 args = parser.parse_args()
 if args.beta == 0:
     args.beta = args.alpha
 
 # Experiment Preparation
-env_name, gamma, encoder = 'FrozenLake-v0', lambda x: args.gamma, lambda s: tilecoding4x4withbias(s)
+env_name, gamma, encoder = 'FrozenLake-v0', lambda x: args.gamma, lambda s: tilecoding4x4(s)
 env = gym.make(env_name)
 target = np.matlib.repmat(np.array([0.2, 0.3, 0.3, 0.2]).reshape(1, 4), env.observation_space.n, 1)
 if args.off_policy:
@@ -37,17 +36,16 @@ evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, DP_expectatio
 
 things_to_save = {}
 time_start = time.time()
-# BASELINES
-if args.evaluate_baselines:
-    BASELINE_LAMBDAS = [0, 0.2, 0.4, 0.6, 0.8, 1]
+
+if args.evaluate_others:
+    # BASELINES
+    BASELINE_LAMBDAS = [0, 0.4, 0.8, 0.9, 0.95, 0.975, 0.99, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
         Lambda = LAMBDA(env, baseline_lambda, approximator='constant')
         results = eval_togtd(env_name, behavior, target, Lambda, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder)
-        exec("things_to_save[\'error_value_%s_%g_mean\'] = np.nanmean(results, axis=0)" % (args.learner_type, baseline_lambda * 100)) # no dots in variable names for MATLAB
-        exec("things_to_save[\'error_value_%s_%g_std\'] = np.nanstd(results, axis=0)" % (args.learner_type, baseline_lambda * 100))
-
-# LAMBDA-GREEDY
-if args.evaluate_greedy:
+        exec("things_to_save[\'error_value_%s_%g_mean\'] = np.nanmean(results, axis=0)" % (args.learner_type, baseline_lambda * 1000)) # no dots in variable names for MATLAB
+        exec("things_to_save[\'error_value_%s_%g_std\'] = np.nanstd(results, axis=0)" % (args.learner_type, baseline_lambda * 1000))
+    # LAMBDA-GREEDY
     error_value_greedy = eval_greedy(env_name, behavior, target, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder, learner_type=args.learner_type)
     things_to_save['error_value_greedy_mean'], things_to_save['error_value_greedy_std'] = np.nanmean(error_value_greedy, axis=0), np.nanstd(error_value_greedy, axis=0)
 

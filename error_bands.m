@@ -9,6 +9,11 @@ expectation_list = [ ...
     "error_value_totd_60", "error_value_totd_80", "error_value_totd_100", ...
     "error_value_togtd_0", "error_value_togtd_20", "error_value_togtd_40", ...
     "error_value_togtd_60", "error_value_togtd_80", "error_value_togtd_100", ...
+    "error_value_totd_400", "error_value_totd_800", "error_value_totd_900", ...
+    "error_value_totd_950", "error_value_totd_975", "error_value_totd_990", ...
+    "error_value_totd_1000", "error_value_togtd_400", "error_value_togtd_800", ...
+    "error_value_togtd_900", "error_value_togtd_950", "error_value_togtd_975", ...
+    "error_value_togtd_990", "error_value_togtd_1000", ...
     "error_value_greedy", "error_value_mta"];
 LineColors = [linspecer(numel(expectation_list) - 2); [1, 0, 0]; [0, 0, 1];];
 num_points = 201;
@@ -51,25 +56,41 @@ for result_index = 1: numel(expectation_list)
         LEGEND = "GTD(0)";
     elseif strcmp(result_name, "error_value_togtd_20")
         LEGEND = "GTD(.2)";
-    elseif strcmp(result_name, "error_value_togtd_40")
+    elseif strcmp(result_name, "error_value_togtd_40") || strcmp(result_name, "error_value_togtd_400")
         LEGEND = "GTD(.4)";
     elseif strcmp(result_name, "error_value_togtd_60")
         LEGEND = "GTD(.6)";
-    elseif strcmp(result_name, "error_value_togtd_80")
+    elseif strcmp(result_name, "error_value_togtd_80") || strcmp(result_name, "error_value_togtd_800")
         LEGEND = "GTD(.8)";
-    elseif strcmp(result_name, "error_value_togtd_100")
+    elseif strcmp(result_name, "error_value_togtd_900")
+        LEGEND = "GTD(.9)";
+    elseif strcmp(result_name, "error_value_togtd_950")
+        LEGEND = "GTD(.95)";
+    elseif strcmp(result_name, "error_value_togtd_975")
+        LEGEND = "GTD(.975)";
+    elseif strcmp(result_name, "error_value_togtd_990")
+        LEGEND = "GTD(.99)";
+    elseif strcmp(result_name, "error_value_togtd_100") || strcmp(result_name, "error_value_togtd_1000")
         LEGEND = "GTD(1)";
     elseif strcmp(result_name, "error_value_totd_0")
         LEGEND = "TD(0)";
     elseif strcmp(result_name, "error_value_totd_20")
         LEGEND = "TD(.2)";
-    elseif strcmp(result_name, "error_value_totd_40")
+    elseif strcmp(result_name, "error_value_totd_40") || strcmp(result_name, "error_value_totd_400")
         LEGEND = "TD(.4)";
     elseif strcmp(result_name, "error_value_totd_60")
         LEGEND = "TD(.6)";
-    elseif strcmp(result_name, "error_value_totd_80")
+    elseif strcmp(result_name, "error_value_totd_80") || strcmp(result_name, "error_value_totd_800")
         LEGEND = "TD(.8)";
-    elseif strcmp(result_name, "error_value_totd_100")
+    elseif strcmp(result_name, "error_value_totd_900")
+        LEGEND = "TD(.9)";
+    elseif strcmp(result_name, "error_value_totd_950")
+        LEGEND = "TD(.95)";
+    elseif strcmp(result_name, "error_value_totd_975")
+        LEGEND = "TD(.975)";
+    elseif strcmp(result_name, "error_value_totd_990")
+        LEGEND = "TD(.99)";
+    elseif strcmp(result_name, "error_value_totd_100") || strcmp(result_name, "error_value_totd_1000")
         LEGEND = "TD(1)";
     elseif strcmp(result_name, "error_value_greedy")
         LEGEND = "greedy";
