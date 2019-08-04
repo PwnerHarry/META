@@ -21,6 +21,10 @@ parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
 args = parser.parse_args()
 if args.eta == 0:
     args.eta = args.alpha
+
+if args.beta == 0:
+    args.beta = args.alpha
+
 # Experiment Preparation
 env_name = 'MountainCar-v1'
 env, gamma = gym.make(env_name), lambda x: args.gamma
