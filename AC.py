@@ -17,7 +17,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
         LEARNER, slow_lr_dict, fast_lr_dict = TOTD_LEARNER, {'alpha_curr': alpha}, {'alpha_curr': min(1.0, 2 * alpha)}
     if critic_type == 'baseline':
         Lambda = LAMBDA(env, constant_lambda, approximator='constant')
-        lambda_curr, lambda_next = Lambda.value(x_curr), Lambda.value(x_next)
+        lambda_curr, lambda_next = constant_lambda, constant_lambda
         value_learner = LEARNER(env, D); learners = [value_learner]
     elif critic_type == 'greedy':
         MC_exp_learner, MC_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, MC_var_learner, value_learner]
