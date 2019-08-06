@@ -23,9 +23,10 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
     elif critic_type == 'MTA':
         Lambda = LAMBDA(env, initial_value=np.zeros(D), approximator='linear')
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
-    # W = np.zeros((env.action_space.n, D))
-    W = numpy.random.normal(0, eta, env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
+    W = np.zeros((env.action_space.n, D))
+    # W = numpy.random.normal(0, eta, env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
     # W = numpy.random.uniform(low=-eta, high=eta, size=env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
+    # W = np.load('W_file.npy')
     return_trace = np.empty(episodes); return_trace[:] = np.nan
     break_flag = False
     for episode in range(episodes):
@@ -58,7 +59,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                         L_var_next = np.dot(x_next, L_var_learner.w_curr)
                         if L_var_next > np.sqrt(np.finfo(float).eps):
                             coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + L_var_next) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))                        
-                            Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
+                            Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient, normalize=True)
                 except RuntimeWarning:
                     break_flag = True
                     break
@@ -75,8 +76,8 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             o_curr, x_curr, lambda_curr, I = o_next, x_next, lambda_next, I * gamma(x_next) # TODO: know how the gamma accumulation is implemented!
             for learner in learners: learner.next()
         return_trace[episode] = return_cumulative
-        if return_cumulative:
-            print('episode: %g,\t lambda(0): %.2f,\t return_cumulative: %g' % (episode, Lambda.value(x_start), return_cumulative))
+        # if return_cumulative:
+        #     print('episode: %g,\t lambda(0): %.2f,\t return_cumulative: %g' % (episode, Lambda.value(x_start), return_cumulative))
     warnings.filterwarnings("default")
     return return_trace
 
