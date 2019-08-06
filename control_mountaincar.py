@@ -37,7 +37,7 @@ time_start = time.time()
 
 if args.evaluate_others:
     # BASELINES
-    BASELINE_LAMBDAS = [0.975] #[0, 0.4, 0.8, 0.9, 0.95, 0.975, 0.99, 1]
+    BASELINE_LAMBDAS = [0, 0.4, 0.8, 0.9, 0.95, 0.975, 0.99, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
         results = eval_AC(env_name, critic_type='baseline', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, constant_lambda=baseline_lambda, kappa=args.kappa)
         exec("things_to_save[\'return_baseline_%g_mean\'] = np.nanmean(results, axis=0)" % (baseline_lambda * 1000)) # no dots in variable names for MATLAB
