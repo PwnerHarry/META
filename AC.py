@@ -17,6 +17,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
         LEARNER, slow_lr_dict, fast_lr_dict = TOTD_LEARNER, {'alpha_curr': alpha}, {'alpha_curr': min(1.0, 2 * alpha)}
     if critic_type == 'baseline':
         Lambda = LAMBDA(env, constant_lambda, approximator='constant')
+        lambda_curr, lambda_next = Lambda.value(x_curr), Lambda.value(x_next)
         value_learner = LEARNER(env, D); learners = [value_learner]
     elif critic_type == 'greedy':
         MC_exp_learner, MC_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, MC_var_learner, value_learner]
@@ -44,9 +45,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             if critic_type == 'greedy' or critic_type == 'MTA':
                 warnings.filterwarnings("error")
                 try:
-                    if critic_type == 'baseline':
-                        lambda_curr, lambda_next = Lambda.value(x_curr), Lambda.value(x_next)
-                    elif critic_type == 'greedy':
+                    if critic_type == 'greedy':
                         MC_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, **fast_lr_dict)
                         gamma_bar_next = (rho_curr * gamma(x_next)) ** 2
                         MC_var_learner.learn(delta_curr ** 2, done, gamma_bar_next, 1, x_next, x_curr, 1, 1, 1, **fast_lr_dict)

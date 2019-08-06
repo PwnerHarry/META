@@ -62,10 +62,9 @@ def eval_MTA_per_run(env_name, runtime, runtimes, episodes, target, behavior, ka
     value_trace = MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type='togtd', gamma=gamma, alpha=alpha, beta=beta, kappa=kappa)
     return value_trace.reshape(1, -1)
 
-def eval_MTA(env_name, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, encoder, learner_type='togtd', parametric_lambda=True):
+def eval_MTA(env_name, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, encoder, learner_type='togtd', parametric_lambda=False):
     env = gym.make(env_name)
     if parametric_lambda:
-        # initial_weights_lambda = np.linalg.lstsq(get_state_set_matrix(env, encoder), np.ones(env.observation_space.n), rcond=None)[0]
         initial_weights_lambda = np.zeros(np.size(encoder(0)))
     else:
         initial_weights_lambda = np.zeros(np.size(onehot(0, env.observation_space.n)))
