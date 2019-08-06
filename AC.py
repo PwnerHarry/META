@@ -65,7 +65,9 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                     break_flag = True
                     break
                 warnings.filterwarnings("default")
-            if critic_type != 'greedy':
+            if critic_type == 'baseline':
+                lambda_curr, lambda_next = Lambda.value(x_curr), Lambda.value(x_next)
+            elif critic_type == 'MTA':
                 lambda_curr, lambda_next = Lambda.value(encoder_lambda(o_curr)), Lambda.value(encoder_lambda(o_next))
             # one-step of policy evaluation of the critic!
             value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, lambda_next, lambda_curr, rho_curr, **slow_lr_dict)
