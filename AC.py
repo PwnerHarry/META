@@ -60,7 +60,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                         L_var_next = np.dot(x_next, L_var_learner.w_curr)
                         if L_var_next > np.sqrt(np.finfo(float).eps):
                             coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + L_var_next) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))                        
-                            Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient, normalize=True)
+                            Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
                 except RuntimeWarning:
                     break_flag = True
                     break

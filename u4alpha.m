@@ -93,7 +93,6 @@ for index_method = 1: numel(METHOD_LIST)
     [CURVE, ~] = band_drawer(ALPHAS', MEAN, INTERVAL, LINECOLORS(index_method, :));
     CURVES = [CURVES, CURVE];
     method = METHOD_LIST{index_method};
-    disp(method);
     if strcmp(method, "togtd_0") || strcmp(method, "baseline_0")
         LEGEND = "GTD(0)";
     elseif strcmp(method, "togtd_20") || strcmp(method, "baseline_20")
