@@ -24,19 +24,20 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
                 log_rho_accu += np.log(rho_curr)
                 o_next, r_next, done, _ = env.step(action)
                 x_next = encoder(o_next)
+                lambda_curr, lambda_next = Lambda.value(x_curr), Lambda.value(x_next)
                 MC_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, **fast_lr_dict)
-                L_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **fast_lr_dict)
+                L_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, lambda_next, lambda_curr, rho_curr, **fast_lr_dict)
                 v_next = float(not done) * np.dot(x_next, value_learner.w_curr)
                 delta_curr = r_next + gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
-                L_var_learner.learn(delta_curr ** 2, done, (Lambda.value(x_next) * gamma(x_next)) ** 2, 1, x_next, x_curr, 1, 1, rho_curr, **fast_lr_dict)
+                L_var_learner.learn(delta_curr ** 2, done, (lambda_next * gamma(x_next)) ** 2, 1, x_next, x_curr, 1, 1, rho_curr, **fast_lr_dict)
                 # SGD on meta-objective
                 VmE = v_next - np.dot(x_next, L_exp_learner.w_curr)
                 L_var_next = np.dot(x_next, L_var_learner.w_curr)
                 if L_var_next > np.sqrt(np.finfo(float).eps):
-                    coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + L_var_next) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))                        
+                    coefficient = gamma(x_next) ** 2 * (lambda_next * (VmE ** 2 + L_var_next) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))                        
                     Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
                 # learn value
-                value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **slow_lr_dict)
+                value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), lambda_curr, rho_curr, **slow_lr_dict)
                 for learner in learners: learner.next()
                 o_curr, x_curr = o_next, x_next
         except RuntimeWarning:
