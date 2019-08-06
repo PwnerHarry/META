@@ -34,7 +34,7 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
                 L_var_next = np.dot(x_next, L_var_learner.w_curr)
                 if L_var_next > np.sqrt(np.finfo(float).eps):
                     coefficient = gamma(x_next) ** 2 * (Lambda.value(x_next) * (VmE ** 2 + L_var_next) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))                        
-                    Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient, normalize=False)
+                    Lambda.GD(x_next, kappa * np.exp(log_rho_accu) * coefficient)
                 # learn value
                 value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **slow_lr_dict)
                 for learner in learners: learner.next()
