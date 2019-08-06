@@ -21,7 +21,8 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
     elif critic_type == 'greedy':
         MC_exp_learner, MC_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, MC_var_learner, value_learner]
     elif critic_type == 'MTA':
-        Lambda = LAMBDA(env, initial_value=np.zeros(D), approximator='linear')
+        encoder_lambda = lambda x: state_aggregation_2d(x, env.observation_space.low, env.observation_space.high, 64)
+        Lambda = LAMBDA(env, initial_value=np.zeros(np.size(encoder_lambda(env.reset()))), approximator='linear')
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
     W = np.zeros((env.action_space.n, D))
     # W = numpy.random.normal(0, eta, env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
@@ -65,7 +66,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                     break
                 warnings.filterwarnings("default")
             if critic_type != 'greedy':
-                lambda_curr, lambda_next = Lambda.value(x_curr), Lambda.value(x_next)
+                lambda_curr, lambda_next = Lambda.value(encoder_lambda(o_curr)), Lambda.value(encoder_lambda(o_next))
             # one-step of policy evaluation of the critic!
             value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, lambda_next, lambda_curr, rho_curr, **slow_lr_dict)
             # one-step of policy improvement of the actor (gradient ascent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
