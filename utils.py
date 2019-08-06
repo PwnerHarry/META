@@ -63,14 +63,16 @@ class LAMBDA():# state-based parametric lambda
         gradient = self.gradient(x)
         if normalize:
             gradient = gradient / np.linalg.norm(gradient, 2)
-        if self.approximator == 'linear':
-            value_after = 1 - np.dot(x.reshape(-1), (self.w - step_length * gradient))
-        elif self.approximator == 'naive_linear':
-            value_after = np.dot(x.reshape(-1), (self.w - step_length * gradient))
-        elif self.approximator == 'tabular':
-            value_after = np.dot(gradient, self.w) - step_length
-        if value_after >= 0 and value_after <= 1:
-            self.w -= step_length * gradient
+        w_to_be = self.w - step_length * gradient
+        # if self.approximator == 'linear':
+        #     value_after = 1 - np.dot(x.reshape(-1), w_to_be)
+        # elif self.approximator == 'naive_linear':
+        #     value_after = np.dot(x.reshape(-1), w_to_be)
+        # elif self.approximator == 'tabular':
+        #     value_after = np.dot(gradient, self.w) - step_length
+        # if value_after >= 0 and value_after <= 1:
+        #     self.w = w_to_be
+        self.w = w_to_be
 
 # EVALUATION METHODS
 @jit(nopython=True, cache=True)

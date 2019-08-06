@@ -28,12 +28,10 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
     # W = numpy.random.uniform(low=-eta, high=eta, size=env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
     return_trace = np.empty(episodes); return_trace[:] = np.nan
     break_flag = False
-    # last_reward_episode = 0
     for episode in range(episodes):
         if break_flag: break
         for learner in learners: learner.refresh()
-        o_curr, done, log_rho_accu, lambda_curr, return_cumulative, I = env.reset(), False, 0, 1, 0, 1; x_curr = encoder(o_curr)
-        # x_start = x_curr
+        o_curr, done, log_rho_accu, lambda_curr, return_cumulative, I = env.reset(), False, 0, 1, 0, 1; x_curr = encoder(o_curr); x_start = x_curr
         while not done:
             prob_behavior = softmax(np.matmul(W, x_curr)) # prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr))
             action = np.random.choice(range(len(prob_behavior)), p=prob_behavior)
@@ -77,9 +75,8 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
             o_curr, x_curr, lambda_curr, I = o_next, x_next, lambda_next, I * gamma(x_next) # TODO: know how the gamma accumulation is implemented!
             for learner in learners: learner.next()
         return_trace[episode] = return_cumulative
-        # if return_cumulative > 0:
-        # print('episode: %g(+%g),\t lambda(0): %.2f,\t return_cumulative: %g' % (episode, episode - last_reward_episode, Lambda.value(x_start), return_cumulative))
-        # last_reward_episode = episode
+        if return_cumulative:
+            print('episode: %g,\t lambda(0): %.2f,\t return_cumulative: %g' % (episode, Lambda.value(x_start), return_cumulative))
     warnings.filterwarnings("default")
     return return_trace
 
@@ -97,5 +94,5 @@ def eval_AC_per_run(env_name, runtime, runtimes, episodes, critic_type, learner_
     return return_trace.reshape(1, -1)
 
 def eval_AC(env_name, critic_type, learner_type, gamma, alpha, beta, eta, runtimes, episodes, encoder, constant_lambda=1, kappa=0.001):
-    results = Parallel(n_jobs=-1)(delayed(eval_AC_per_run)(env_name, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, constant_lambda, kappa) for runtime in range(runtimes))
+    results = Parallel(n_jobs=1)(delayed(eval_AC_per_run)(env_name, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, constant_lambda, kappa) for runtime in range(runtimes))
     return np.concatenate(results, axis=0)
