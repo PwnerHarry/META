@@ -34,6 +34,8 @@ echo "runtimes: $RUNTIMES, episodes: $EPISODES"
 module load python/3.7 scipy-stack
 source ~/ENV/bin/activate
 
+python -m compileall ./
+
 python control_mountaincar.py --runtimes $RUNTIMES --episodes $EPISODES --evaluate_MTA 0 --alpha $ALPHA --eta $ETA
 
 python control_mountaincar.py --runtimes $RUNTIMES --episodes $EPISODES --evaluate_others 0 --alpha $ALPHA --eta $ETA --kappa `awk "BEGIN {print 0.1 * $ALPHA}"`

@@ -5,6 +5,7 @@ from mta import *
 from MC import *
 from TOTD import *
 from TOGTD import *
+import frozenlake
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--alpha', type=float, default=0.001, help='')
@@ -22,7 +23,7 @@ if args.beta == 0:
     args.beta = args.alpha
 
 # Experiment Preparation
-env_name, gamma, encoder = 'FrozenLake-v0', lambda x: args.gamma, lambda s: tilecoding4x4(s)
+env_name, gamma, encoder = 'FrozenLake-v1', lambda x: args.gamma, lambda s: tilecoding4x4(s)
 env = gym.make(env_name)
 target = np.matlib.repmat(np.array([0.2, 0.3, 0.3, 0.2]).reshape(1, 4), env.observation_space.n, 1)
 if args.off_policy:
