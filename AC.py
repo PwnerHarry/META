@@ -95,5 +95,5 @@ def eval_AC_per_run(env_name, runtime, runtimes, episodes, critic_type, learner_
     return return_trace.reshape(1, -1)
 
 def eval_AC(env_name, critic_type, learner_type, gamma, alpha, beta, eta, runtimes, episodes, encoder, constant_lambda=1, kappa=0.001):
-    results = Parallel(n_jobs=1)(delayed(eval_AC_per_run)(env_name, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, constant_lambda, kappa) for runtime in range(runtimes))
+    results = Parallel(n_jobs=-1)(delayed(eval_AC_per_run)(env_name, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, constant_lambda, kappa) for runtime in range(runtimes))
     return np.concatenate(results, axis=0)
