@@ -54,7 +54,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
                     elif critic_type == 'MTA':
                         # log_rho_accu += np.log(prob_target[action]) - np.log(prob_behavior[action])
                         MC_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, **fast_lr_dict)
-                        L_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, **fast_lr_dict)
+                        L_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(encoder_lambda(o_next)), Lambda.value(encoder_lambda(o_curr)), rho_curr, **fast_lr_dict)
                         L_var_learner.learn(delta_curr ** 2, done, (Lambda.value(x_next) * gamma(x_next)) ** 2, 1, x_next, x_curr, 1, 1, rho_curr, **fast_lr_dict)
                         VmE = v_next - np.dot(x_next, L_exp_learner.w_curr)
                         L_var_next = np.dot(x_next, L_var_learner.w_curr)
