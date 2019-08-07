@@ -59,7 +59,7 @@ def AC(env, episodes, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, c
                         L_var_learner.learn(delta_curr ** 2, done, (lambda_next * gamma(x_next)) ** 2, 1, x_next, x_curr, 1, 1, rho_curr, **fast_lr_dict)
                         VmE = v_next - np.dot(x_next, L_exp_learner.w_curr)
                         L_var_next = np.dot(x_next, L_var_learner.w_curr)
-                        if L_var_next > np.sqrt(np.finfo(float).eps):
+                        if np.norm(x_next - x_curr, 2) > 0 and L_var_next > np.sqrt(np.finfo(float).eps):
                             coefficient = gamma(x_next) ** 2 * (lambda_next * (VmE ** 2 + L_var_next) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))                        
                             Lambda.GD(encoder_lambda(o_next), kappa * np.exp(log_rho_accu) * coefficient, normalize=True)
                             lambda_next = Lambda.value(encoder_lambda(o_next))
