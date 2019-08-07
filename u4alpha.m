@@ -20,7 +20,7 @@ filenames(reduce_index) = [];
 % loading data files one by one
 smoothing_window = 10;
 if strcmp(env, 'ringworld')
-    METHOD_LIST = {'totd_0', 'totd_400', 'totd_800', 'totd_900', 'totd_950', 'totd_975', 'totd_990', 'totd_1000', 'greedy', 'mta_nonparam', 'mta'};
+    METHOD_LIST = {'totd_0', 'totd_400', 'totd_800', 'totd_900', 'totd_950', 'totd_975', 'totd_990', 'totd_1000', 'greedy', 'mta'};
 elseif strcmp(env, 'frozenlake')
     METHOD_LIST = {'togtd_0', 'togtd_400', 'togtd_800', 'togtd_900', 'togtd_950', 'togtd_975', 'togtd_990', 'togtd_1000', 'greedy', 'mta_nonparam', 'mta'};
 elseif strcmp(env, 'frozenlake_AC') || strcmp(env, 'mountaincar')
