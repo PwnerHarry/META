@@ -12,7 +12,7 @@ parser.add_argument('--alpha', type=float, default=0.001, help='')
 parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--gamma', type=float, default=0.95, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
-parser.add_argument('--episodes', type=int, default=10000, help='')
+parser.add_argument('--episodes', type=int, default=1000, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
 parser.add_argument('--off_policy', type=int, default=1, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
@@ -36,10 +36,11 @@ start_dist = np.zeros(env.observation_space.n); start_dist[0] = 1.0
 DP_expectation, DP_variance, DP_stat_dist = iterative_policy_evaluation(env, target, gamma=gamma, start_dist=start_dist)
 evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, DP_expectation, DP_variance, DP_stat_dist, stat_type, get_state_set_matrix(env, encoder))
 
-things_to_save = {}
-time_start = time.time()
+
 
 if args.evaluate_others:
+    things_to_save = {}
+    time_start = time.time()
     # BASELINES
     BASELINE_LAMBDAS = [0, 0.4, 0.8, 0.9, 0.95, 0.975, 0.99, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
@@ -50,27 +51,35 @@ if args.evaluate_others:
     # LAMBDA-GREEDY
     error_value_greedy = eval_greedy(env_name, behavior, target, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder, learner_type=args.learner_type)
     things_to_save['error_value_greedy_mean'], things_to_save['error_value_greedy_std'] = np.nanmean(error_value_greedy, axis=0), np.nanstd(error_value_greedy, axis=0)
+    time_finish = time.time()
+    print('time elapsed: %gs' % (time_finish - time_start))
+    # SAVE
+    filename = 'frozenlake_'
+    if args.off_policy:
+        filename = filename + 'off_a_%g_b_%g_' % (args.alpha, args.beta)
+    else:
+        filename = filename + 'on_a_%g_' % (args.alpha)
+    filename = filename + 'e_%g_r_%d.mat' % (args.episodes, args.runtimes)
+    scipy.io.savemat(filename, things_to_save)
 
 # MTA
 if args.evaluate_MTA:
+    things_to_save = {}
+    time_start = time.time()
     error_value_mta = eval_MTA(env_name, behavior, target, kappa=args.kappa, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder, learner_type=args.learner_type, parametric_lambda=args.parametric_lambda)
     if args.parametric_lambda:
         things_to_save['error_value_mta_mean'], things_to_save['error_value_mta_std'] = np.nanmean(error_value_mta, axis=0), np.nanstd(error_value_mta, axis=0)
     else:
         things_to_save['error_value_mta_nonparam_mean'], things_to_save['error_value_mta_nonparam_std'] = np.nanmean(error_value_mta, axis=0), np.nanstd(error_value_mta, axis=0)
-
-time_finish = time.time()
-print('time elapsed: %gs' % (time_finish - time_start))
-
-# SAVE
-filename = 'frozenlake_'
-if not args.parametric_lambda:
-    filename = filename + 'nonparam_'
-if args.off_policy:
-    filename = filename + 'off_a_%g_b_%g_' % (args.alpha, args.beta)
-else:
-    filename = filename + 'on_a_%g_' % (args.alpha)
-if args.evaluate_MTA:
-    filename = filename + 'k_%g_' % (args.kappa)
-filename = filename + 'e_%g_r_%d.mat' % (args.episodes, args.runtimes)
-scipy.io.savemat(filename, things_to_save)
+    time_finish = time.time()
+    print('time elapsed: %gs' % (time_finish - time_start))
+    # SAVE
+    filename = 'frozenlake_'
+    if not args.parametric_lambda:
+        filename = filename + 'nonparam_'
+    if args.off_policy:
+        filename = filename + 'off_a_%g_b_%g_' % (args.alpha, args.beta)
+    else:
+        filename = filename + 'on_a_%g_' % (args.alpha)
+    filename = filename + 'k_%g_e_%g_r_%d.mat' % (args.kappa, args.episodes, args.runtimes)
+    scipy.io.savemat(filename, things_to_save)

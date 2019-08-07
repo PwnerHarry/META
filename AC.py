@@ -9,7 +9,7 @@ from TOTD import *
 Actor-Critic with Linear Function Approximator and Softmax Policy
 Status: Extremely Ugly and Depracated! However, functional!
 '''
-def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA', learner_type='togtd', constant_lambda=1):
+def AC(env, episodes, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, critic_type='MTA', learner_type='togtd', constant_lambda=1):
     D = np.size(encoder(env.reset()))
     if learner_type == 'togtd':
         LEARNER, slow_lr_dict, fast_lr_dict = TOGTD_LEARNER, {'alpha_curr': alpha, 'beta_curr': beta}, {'alpha_curr': min(1.0, 2 * alpha), 'beta_curr': min(1.0, 2 * alpha)}
@@ -22,7 +22,6 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
     elif critic_type == 'greedy':
         MC_exp_learner, MC_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, MC_var_learner, value_learner]
     elif critic_type == 'MTA':
-        encoder_lambda = lambda x: state_aggregation_2d(x, env.observation_space.low, env.observation_space.high, 64)
         Lambda = LAMBDA(env, initial_value=np.zeros(np.size(encoder_lambda(env.reset()))), approximator='linear')
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
     W = np.zeros((env.action_space.n, D))
@@ -83,7 +82,7 @@ def AC(env, episodes, encoder, gamma, alpha, beta, eta, kappa, critic_type='MTA'
     warnings.filterwarnings("default")
     return return_trace
 
-def eval_AC_per_run(env_name, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, constant_lambda, kappa):
+def eval_AC_per_run(env_name, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, encoder_lambda, constant_lambda, kappa):
     np.random.seed(seed=runtime)
     env = gym.make(env_name)
     env.seed(runtime)
@@ -93,9 +92,9 @@ def eval_AC_per_run(env_name, runtime, runtimes, episodes, critic_type, learner_
         print('%d of %d for AC(greedy, %s), alpha: %g, beta: %g, eta: %g' % (runtime + 1, runtimes, learner_type, alpha, beta, eta))
     elif critic_type == 'MTA':
         print('%d of %d for AC(MTA, %s), alpha: %g, beta: %g, eta: %g, kappa: %g' % (runtime + 1, runtimes, learner_type, alpha, beta, eta, kappa))
-    return_trace = AC(env, episodes, encoder, gamma=gamma, alpha=alpha, beta=beta, eta=eta, kappa=kappa, critic_type=critic_type, learner_type=learner_type, constant_lambda=constant_lambda)
+    return_trace = AC(env, episodes, encoder, encoder_lambda, gamma=gamma, alpha=alpha, beta=beta, eta=eta, kappa=kappa, critic_type=critic_type, learner_type=learner_type, constant_lambda=constant_lambda)
     return return_trace.reshape(1, -1)
 
-def eval_AC(env_name, critic_type, learner_type, gamma, alpha, beta, eta, runtimes, episodes, encoder, constant_lambda=1, kappa=0.001):
-    results = Parallel(n_jobs=-1)(delayed(eval_AC_per_run)(env_name, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, constant_lambda, kappa) for runtime in range(runtimes))
+def eval_AC(env_name, critic_type, learner_type, gamma, alpha, beta, eta, runtimes, episodes, encoder, encoder_lambda, constant_lambda=1, kappa=0.001):
+    results = Parallel(n_jobs=-1)(delayed(eval_AC_per_run)(env_name, runtime, runtimes, episodes, critic_type, learner_type, gamma, alpha, beta, eta, encoder, encoder_lambda, constant_lambda, kappa) for runtime in range(runtimes))
     return np.concatenate(results, axis=0)
