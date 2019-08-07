@@ -9,8 +9,8 @@ expectation_list = [ ...
     "return_baseline_60", "return_baseline_80", "return_baseline_100", ...
     "return_baseline_400", "return_baseline_800", "return_baseline_900", ...
     "return_baseline_950", "return_baseline_975", "return_baseline_990", ...
-    "return_baseline_1000", "return_greedy", "return_MTA"];
-LineColors = [linspecer(numel(expectation_list) - 2); [1, 0, 0]; [0, 0, 1];];
+    "return_baseline_1000", "return_greedy", "return_MTA_nonparam", "return_MTA"];
+LineColors = [linspecer(numel(expectation_list) - 3); [1, 0, 0]; [0, 1, 0]; [0, 0, 1];];
 num_points = 101;
 
 CURVES = []; LEGENDS = {};
@@ -47,6 +47,8 @@ for result_index = 1: numel(expectation_list)
     CURVES = [CURVES, CURVE];
     if strcmp(result_name, "return_mta") || strcmp(result_name, "return_MTA")
         LEGEND = "MTA";
+    elseif strcmp(result_name, "return_mta_nonparam") || strcmp(result_name, "return_MTA_nonparam")
+        LEGEND = "MTA(np)";
     elseif strcmp(result_name, "return_baseline_0")
         LEGEND = "GTD(0)";
     elseif strcmp(result_name, "return_baseline_20")

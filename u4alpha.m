@@ -20,11 +20,11 @@ filenames(reduce_index) = [];
 % loading data files one by one
 smoothing_window = 10;
 if strcmp(env, 'ringworld')
-    METHOD_LIST = {'totd_0', 'totd_400', 'totd_800', 'totd_900', 'totd_950', 'totd_975', 'totd_990', 'totd_1000', 'greedy', 'mta'};
+    METHOD_LIST = {'totd_0', 'totd_400', 'totd_800', 'totd_900', 'totd_950', 'totd_975', 'totd_990', 'totd_1000', 'greedy', 'mta_nonparam', 'mta'};
 elseif strcmp(env, 'frozenlake')
-    METHOD_LIST = {'togtd_0', 'togtd_400', 'togtd_800', 'togtd_900', 'togtd_950', 'togtd_975', 'togtd_990', 'togtd_1000', 'greedy', 'mta'};
+    METHOD_LIST = {'togtd_0', 'togtd_400', 'togtd_800', 'togtd_900', 'togtd_950', 'togtd_975', 'togtd_990', 'togtd_1000', 'greedy', 'mta_nonparam', 'mta'};
 elseif strcmp(env, 'frozenlake_AC') || strcmp(env, 'mountaincar')
-    METHOD_LIST = {'baseline_0', 'baseline_400', 'baseline_800', 'baseline_900', 'baseline_950', 'baseline_975', 'baseline_990', 'baseline_1000', 'greedy', 'MTA'};
+    METHOD_LIST = {'baseline_0', 'baseline_400', 'baseline_800', 'baseline_900', 'baseline_950', 'baseline_975', 'baseline_990', 'baseline_1000', 'greedy', 'MTA_nonparam', 'MTA'};
 end
 MEANS = nan(numel(METHOD_LIST), numel(filenames));
 STDS = nan(numel(METHOD_LIST), numel(filenames));
@@ -64,13 +64,18 @@ NEW_MEANS = zeros(numel(METHOD_LIST), numel(IA));
 NEW_STDS = zeros(numel(METHOD_LIST), numel(IA));
 for index_unique = 1: numel(IA)
     locations = find(IC == index_unique);
+    MEAN_MTA_nonparam = MEANS(end - 1, locations);
     MEAN_MTA = MEANS(end, locations);
-    [~, IBEST] = min(MEAN_MTA);
-    index_best = locations(IBEST);
+    [~, IBEST_MTA] = min(MEAN_MTA);
+    index_best = locations(IBEST_MTA);
+    [~, IBEST_MTA_nonparam] = min(MEAN_MTA_nonparam);
+    index_best_nonparam = locations(IBEST_MTA_nonparam);
     NEW_MEANS(end, index_unique) = MEANS(end, index_best);
     NEW_STDS(end, index_unique) = STDS(end, index_best);
-    NEW_MEANS(1: end - 1, index_unique) = mean(MEANS(1: end - 1, locations), 2, 'omitnan');
-    NEW_STDS(1: end - 1, index_unique) = mean(STDS(1: end - 1, locations), 2, 'omitnan');
+    NEW_MEANS(end - 1, index_unique) = MEANS(end - 1, index_best_nonparam);
+    NEW_STDS(end - 1, index_unique) = STDS(end - 1, index_best_nonparam);
+    NEW_MEANS(1: end - 2, index_unique) = mean(MEANS(1: end - 2, locations), 2, 'omitnan');
+    NEW_STDS(1: end - 2, index_unique) = mean(STDS(1: end - 2, locations), 2, 'omitnan');
 end
 MEANS = NEW_MEANS;
 STDS = NEW_STDS;
@@ -85,7 +90,7 @@ cd(main_path);
 addpath(genpath(fullfile(main_path, 'gadgets')));
 figure;
 BANDWIDTH = 0.1;
-LINECOLORS = [linspecer(numel(METHOD_LIST) - 2); [1, 0, 0]; [0, 0, 1];];
+LINECOLORS = [linspecer(numel(METHOD_LIST) - 3); [1, 0, 0]; [0, 1, 0]; [0, 0, 1];];
 CURVES = []; LEGENDS = {};
 for index_method = 1: numel(METHOD_LIST)
     MEAN = MEANS(index_method, :); STD = STDS(index_method, :);
@@ -135,6 +140,8 @@ for index_method = 1: numel(METHOD_LIST)
         LEGEND = "TD(1)";
     elseif strcmp(method, "greedy")
         LEGEND = "greedy";
+    elseif strcmp(method, "mta_nonparam") || strcmp(method, "MTA_nonparam")
+        LEGEND = "MTA(np)";
     elseif strcmp(method, "mta") || strcmp(method, "MTA")
         LEGEND = "MTA";
     end

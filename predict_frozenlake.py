@@ -12,12 +12,13 @@ parser.add_argument('--alpha', type=float, default=0.001, help='')
 parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--gamma', type=float, default=0.95, help='')
 parser.add_argument('--kappa', type=float, default=0.001, help='')
-parser.add_argument('--episodes', type=int, default=1000, help='')
+parser.add_argument('--episodes', type=int, default=10000, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
 parser.add_argument('--off_policy', type=int, default=1, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
 parser.add_argument('--evaluate_others', type=int, default=1, help='')
 parser.add_argument('--evaluate_MTA', type=int, default=1, help='')
+parser.add_argument('--parametric_lambda', type=int, default=1, help='')
 args = parser.parse_args()
 if args.beta == 0:
     args.beta = args.alpha
@@ -52,21 +53,24 @@ if args.evaluate_others:
 
 # MTA
 if args.evaluate_MTA:
-    error_value_mta = eval_MTA(env_name, behavior, target, kappa=args.kappa, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder, learner_type=args.learner_type)
-    things_to_save['error_value_mta_mean'], things_to_save['error_value_mta_std'] = np.nanmean(error_value_mta, axis=0), np.nanstd(error_value_mta, axis=0)
+    error_value_mta = eval_MTA(env_name, behavior, target, kappa=args.kappa, gamma=gamma, alpha=args.alpha, beta=args.beta, runtimes=args.runtimes, episodes=args.episodes, evaluate=evaluate, encoder=encoder, learner_type=args.learner_type, parametric_lambda=args.parametric_lambda)
+    if args.parametric_lambda:
+        things_to_save['error_value_mta_mean'], things_to_save['error_value_mta_std'] = np.nanmean(error_value_mta, axis=0), np.nanstd(error_value_mta, axis=0)
+    else:
+        things_to_save['error_value_mta_nonparam_mean'], things_to_save['error_value_mta_nonparam_std'] = np.nanmean(error_value_mta, axis=0), np.nanstd(error_value_mta, axis=0)
 
 time_finish = time.time()
 print('time elapsed: %gs' % (time_finish - time_start))
 
 # SAVE
-if args.evaluate_MTA:
-    if args.off_policy:
-        filename = 'frozenlake_off_a_%g_b_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.kappa, args.episodes, args.runtimes)
-    else:
-        filename = 'frozenlake_on_a_%g_k_%g_e_%g_r_%d.mat' % (args.alpha, args.kappa, args.episodes, args.runtimes)
+filename = 'frozenlake_'
+if not args.parametric_lambda:
+    filename = filename + 'nonparam_'
+if args.off_policy:
+    filename = filename + 'off_a_%g_b_%g_' % (args.alpha, args.beta)
 else:
-    if args.off_policy:
-        filename = 'frozenlake_off_a_%g_b_%g_e_%g_r_%d.mat' % (args.alpha, args.beta, args.episodes, args.runtimes)
-    else:
-        filename = 'frozenlake_on_a_%g_e_%g_r_%d.mat' % (args.alpha, args.episodes, args.runtimes)
+    filename = filename + 'on_a_%g_' % (args.alpha)
+if args.evaluate_MTA:
+    filename = filename + 'k_%g_' % (args.kappa)
+filename = filename + 'e_%g_r_%d.mat' % (args.episodes, args.runtimes)
 scipy.io.savemat(filename, things_to_save)

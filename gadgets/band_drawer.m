@@ -11,9 +11,7 @@ elseif nargin == 4 % X, MEAN, INTERVAL, COLOR
     MEAN = varargin{2};
     INTERVAL = varargin{3};
     COLOR = varargin{4};
-    if norm(COLOR - [0, 0, 1]) == 0
-        LineWidth = 2;
-    elseif norm(COLOR - [1, 0, 0]) == 0
+    if norm(COLOR - [0, 0, 1]) == 0 || norm(COLOR - [0, 1, 0]) == 0 || norm(COLOR - [1, 0, 0]) == 0
         LineWidth = 2;
     else
         LineWidth = 1;

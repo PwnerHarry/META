@@ -3,9 +3,9 @@ from utils import *
 from TOGTD import *
 from TOTD import *
 
-def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type='togtd', gamma=lambda x: 0.95, alpha=0.05, beta=0.05, kappa=0.01):
+def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type='togtd', gamma=lambda x: 0.95, alpha=0.05, beta=0.05, kappa=0.01, parametric_lambda=True):
     D = np.size(encoder(env.reset()))
-    if np.size(Lambda.w) == D:
+    if parametric_lambda:
         encoder_lambda = encoder
     else:
         encoder_lambda = lambda x: onehot(x, env.observation_space.n)
@@ -51,7 +51,7 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
     warnings.filterwarnings("default")
     return value_trace
 
-def eval_MTA_per_run(env_name, runtime, runtimes, episodes, target, behavior, kappa, gamma, Lambda, alpha, beta, evaluate, encoder, learner_type):
+def eval_MTA_per_run(env_name, runtime, runtimes, episodes, target, behavior, kappa, gamma, Lambda, alpha, beta, evaluate, encoder, learner_type, parametric_lambda):
     np.random.seed(seed=runtime)
     env = gym.make(env_name)
     env.seed(runtime)
@@ -59,10 +59,10 @@ def eval_MTA_per_run(env_name, runtime, runtimes, episodes, target, behavior, ka
         print('%d of %d for MTA, alpha: %g, beta: %g, kappa: %g' % (runtime + 1, runtimes, alpha, beta, kappa))
     elif learner_type == 'totd':
         print('%d of %d for MTA, alpha: %g, kappa: %g' % (runtime + 1, runtimes, alpha, kappa))
-    value_trace = MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type='togtd', gamma=gamma, alpha=alpha, beta=beta, kappa=kappa)
+    value_trace = MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type='togtd', gamma=gamma, alpha=alpha, beta=beta, kappa=kappa, parametric_lambda=parametric_lambda)
     return value_trace.reshape(1, -1)
 
-def eval_MTA(env_name, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, encoder, learner_type='togtd', parametric_lambda=False):
+def eval_MTA(env_name, behavior, target, kappa, gamma, alpha, beta, runtimes, episodes, evaluate, encoder, learner_type='togtd', parametric_lambda=True):
     env = gym.make(env_name)
     if parametric_lambda:
         initial_weights_lambda = np.zeros(np.size(encoder(0)))
@@ -71,5 +71,5 @@ def eval_MTA(env_name, behavior, target, kappa, gamma, alpha, beta, runtimes, ep
     LAMBDAS = []
     for runtime in range(runtimes):
         LAMBDAS.append(LAMBDA(env, initial_value=initial_weights_lambda, approximator='linear'))
-    results = Parallel(n_jobs=-1)(delayed(eval_MTA_per_run)(env_name, runtime, runtimes, episodes, target, behavior, kappa, gamma, LAMBDAS[runtime], alpha, beta, evaluate, encoder, learner_type) for runtime in range(runtimes))
+    results = Parallel(n_jobs=-1)(delayed(eval_MTA_per_run)(env_name, runtime, runtimes, episodes, target, behavior, kappa, gamma, LAMBDAS[runtime], alpha, beta, evaluate, encoder, learner_type, parametric_lambda) for runtime in range(runtimes))
     return np.concatenate(results, axis=0)

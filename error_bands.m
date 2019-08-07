@@ -14,8 +14,8 @@ expectation_list = [ ...
     "error_value_totd_1000", ...
     "error_value_togtd_400", "error_value_togtd_800", "error_value_togtd_900", ...
     "error_value_togtd_950", "error_value_togtd_975", "error_value_togtd_990", ...
-    "error_value_togtd_1000", "error_value_greedy", "error_value_mta"];
-LineColors = [linspecer(numel(expectation_list) - 2); [1, 0, 0]; [0, 0, 1];];
+    "error_value_togtd_1000", "error_value_greedy", "error_value_mta_nonparam", "error_value_mta"];
+LineColors = [linspecer(numel(expectation_list) - 3); [1, 0, 0]; [0, 1, 0]; [0, 0, 1];];
 num_points = 201;
 
 CURVES = []; LEGENDS = {};
@@ -52,6 +52,8 @@ for result_index = 1: numel(expectation_list)
     CURVES = [CURVES, CURVE];
     if strcmp(result_name, "error_value_mta")
         LEGEND = "MTA";
+    elseif strcmp(result_name, "error_value_mta_nonparam")
+        LEGEND = "MTA(np)";
     elseif strcmp(result_name, "error_value_togtd_0")
         LEGEND = "GTD(0)";
     elseif strcmp(result_name, "error_value_togtd_20")
