@@ -72,9 +72,9 @@ def AC(env, episodes, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, c
             value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, lambda_next, lambda_curr, rho_curr, **slow_lr_dict)
             # one-step of policy improvement of the actor (gradient ascent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
             delta_curr_new = r_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_next) - np.dot(x_curr, value_learner.w_next)
-            if np.abs(delta_curr_new) < 1e-4:
-                print('lambda: %.g, episode: %d, TD: %.2e' % (lambda_next, episode, delta_curr_new))
-                W += eta * I * rho_curr * delta_curr_new * get_grad_W(W, prob_behavior, np.diagflat(prob_behavior), action, x_curr) # TODO: make sure the correction of importance sampling ratio is correct            
+            # if np.abs(delta_curr_new) < 1e-4:
+                # print('lambda: %.g, episode: %d, TD: %.2e' % (lambda_next, episode, delta_curr_new))
+            W += eta * I * rho_curr * delta_curr_new * get_grad_W(W, prob_behavior, np.diagflat(prob_behavior), action, x_curr) # TODO: make sure the correction of importance sampling ratio is correct            
             # timestep++
             return_cumulative += I * r_next
             o_curr, x_curr, lambda_curr, I = o_next, x_next, lambda_next, I * gamma(x_next) # TODO: know how the gamma accumulation is implemented!
