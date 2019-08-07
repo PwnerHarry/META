@@ -31,6 +31,7 @@ if args.beta == 0:
 env_name = 'MountainCar-v1'
 env, gamma = gym.make(env_name), lambda x: args.gamma
 encoder = lambda x: tile_encoding(x, env.observation_space.shape[0], env.observation_space.low, env.observation_space.high, 8, 8)
+# encoder = lambda x: state_aggregation_2d(x, env.observation_space.low, env.observation_space.high, 64)
 if args.parametric_lambda:
     encoder_lambda = encoder
 else:
