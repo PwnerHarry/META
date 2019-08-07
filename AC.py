@@ -24,12 +24,13 @@ def AC(env, episodes, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, c
     elif critic_type == 'MTA':
         Lambda = LAMBDA(env, initial_value=np.zeros(np.size(encoder_lambda(env.reset()))), approximator='linear')
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
-    # W = np.zeros((env.action_space.n, D))
-    W = numpy.random.normal(0, eta, env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
+    W = np.zeros((env.action_space.n, D))
+    # W = numpy.random.normal(0, eta, env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
     # W = numpy.random.uniform(low=-eta, high=eta, size=env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
     # W = np.load('W_file.npy')
     return_trace = np.empty(episodes); return_trace[:] = np.nan
     break_flag = False
+    control_flag = False
     for episode in range(episodes):
         if break_flag: break
         for learner in learners: learner.refresh()
@@ -71,7 +72,10 @@ def AC(env, episodes, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, c
             value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, lambda_next, lambda_curr, rho_curr, **slow_lr_dict)
             # one-step of policy improvement of the actor (gradient ascent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
             delta_curr_new = r_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_next) - np.dot(x_curr, value_learner.w_next)
-            W += eta * I * rho_curr * delta_curr_new * get_grad_W(W, prob_behavior, np.diagflat(prob_behavior), action, x_curr) # TODO: make sure the correction of importance sampling ratio is correct            
+            if delta_curr_new < 1e-6 and not control_flag:
+                control_flag = True
+            if control_flag:
+                W += eta * I * rho_curr * delta_curr_new * get_grad_W(W, prob_behavior, np.diagflat(prob_behavior), action, x_curr) # TODO: make sure the correction of importance sampling ratio is correct            
             # timestep++
             return_cumulative += I * r_next
             o_curr, x_curr, lambda_curr, I = o_next, x_next, lambda_next, I * gamma(x_next) # TODO: know how the gamma accumulation is implemented!
