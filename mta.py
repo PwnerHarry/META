@@ -37,7 +37,7 @@ def MTA(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_type
                 # SGD on meta-objective
                 VmE = v_next - np.dot(x_next, L_exp_learner.w_curr)
                 L_var_next = np.dot(x_next, L_var_learner.w_curr)
-                if L_var_next > np.sqrt(np.finfo(float).eps):
+                if episode > 0.1 * episodes and L_var_next > np.sqrt(np.finfo(float).eps):
                     coefficient = gamma(x_next) ** 2 * (lambda_next * (VmE ** 2 + L_var_next) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))                        
                     Lambda.GD(encoder_lambda(o_next), kappa * np.exp(log_rho_accu) * coefficient)
                     lambda_next = Lambda.value(encoder_lambda(o_next))
