@@ -18,7 +18,7 @@ end
 filenames(reduce_index) = [];
 
 % loading data files one by one
-smoothing_window = 50;
+smoothing_window = 25;
 if strcmp(env, 'ringworld')
     METHOD_LIST = {'totd_0', 'totd_400', 'totd_800', 'totd_900', 'totd_950', 'totd_975', 'totd_990', 'totd_1000', 'greedy', 'mta'};
 elseif strcmp(env, 'frozenlake')
