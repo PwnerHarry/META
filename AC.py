@@ -29,21 +29,19 @@ def AC(env, episodes, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, c
     # W = numpy.random.uniform(low=-eta, high=eta, size=env.action_space.n * D).reshape(env.action_space.n, D) # W is the $|A|\times|S|$ parameter matrix for policy
     # W = np.load('W_file.npy')
     return_trace = np.empty(episodes); return_trace[:] = np.nan
-    break_flag = False
     for episode in range(episodes):
-        if break_flag: break
         for learner in learners: learner.refresh()
         o_curr, done, log_rho_accu, lambda_curr, return_cumulative, I = env.reset(), False, 0, 1, 0, 1; x_curr = encoder(o_curr); x_start = x_curr
-        while not done:
-            prob_behavior = softmax(np.matmul(W, x_curr)) # prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr))
-            action = np.random.choice(range(len(prob_behavior)), p=prob_behavior)
-            rho_curr = 1 # rho_curr = prob_target[action] / prob_behavior[action]
-            o_next, r_next, done, _ = env.step(action); x_next = encoder(o_next)        
-            v_next = float(not done) * np.dot(x_next, value_learner.w_curr)
-            delta_curr = r_next + gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
-            if critic_type == 'greedy' or critic_type == 'MTA':
-                warnings.filterwarnings("error")
-                try:
+        try:
+            while not done:
+                prob_behavior = softmax(np.matmul(W, x_curr)) # prob_behavior, prob_target = softmax(np.matmul(W, x_curr)), softmax(np.matmul(W, x_curr))
+                action = np.random.choice(range(len(prob_behavior)), p=prob_behavior)
+                rho_curr = 1 # rho_curr = prob_target[action] / prob_behavior[action]
+                o_next, r_next, done, _ = env.step(action); x_next = encoder(o_next)        
+                v_next = float(not done) * np.dot(x_next, value_learner.w_curr)
+                delta_curr = r_next + gamma(x_next) * v_next - np.dot(x_curr, value_learner.w_curr)
+                if critic_type == 'greedy' or critic_type == 'MTA':
+                    warnings.filterwarnings("error")
                     if critic_type == 'greedy':
                         MC_exp_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, 1, 1, rho_curr, **fast_lr_dict)
                         gamma_bar_next = (rho_curr * gamma(x_next)) ** 2
@@ -63,21 +61,22 @@ def AC(env, episodes, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, c
                             coefficient = gamma(x_next) ** 2 * (lambda_next * (VmE ** 2 + L_var_next) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))                        
                             Lambda.GD(encoder_lambda(o_next), kappa * np.exp(log_rho_accu) * coefficient)
                             lambda_next = Lambda.value(encoder_lambda(o_next))
-                except RuntimeWarning:
-                    break_flag = True
-                    break
-                warnings.filterwarnings("default")
-            # one-step of policy evaluation of the critic!
-            value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, lambda_next, lambda_curr, rho_curr, **slow_lr_dict)
-            # one-step of policy improvement of the actor (gradient ascent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
-            delta_curr_new = r_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_next) - np.dot(x_curr, value_learner.w_next)
-            # if np.abs(delta_curr_new) < 1e-4:
-                # print('lambda: %.g, episode: %d, TD: %.2e' % (lambda_next, episode, delta_curr_new))
-            W += eta * I * rho_curr * delta_curr_new * get_grad_W(W, prob_behavior, np.diagflat(prob_behavior), action, x_curr) # TODO: make sure the correction of importance sampling ratio is correct            
-            # timestep++
-            return_cumulative += I * r_next
-            o_curr, x_curr, lambda_curr, I = o_next, x_next, lambda_next, I * gamma(x_next) # TODO: know how the gamma accumulation is implemented!
-            for learner in learners: learner.next()
+                    warnings.filterwarnings("default")
+                # one-step of policy evaluation of the critic!
+                value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, lambda_next, lambda_curr, rho_curr, **slow_lr_dict)
+                # one-step of policy improvement of the actor (gradient ascent on $W$)! (https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative)
+                delta_curr_new = r_next + float(not done) * gamma(x_next) * np.dot(x_next, value_learner.w_next) - np.dot(x_curr, value_learner.w_next)
+                # if np.abs(delta_curr_new) < 1e-4:
+                    # print('lambda: %.g, episode: %d, TD: %.2e' % (lambda_next, episode, delta_curr_new))
+                W += eta * I * rho_curr * delta_curr_new * get_grad_W(W, prob_behavior, np.diagflat(prob_behavior), action, x_curr) # TODO: make sure the correction of importance sampling ratio is correct            
+                # timestep++
+                return_cumulative += I * r_next
+                o_curr, x_curr, lambda_curr, I = o_next, x_next, lambda_next, I * gamma(x_next) # TODO: know how the gamma accumulation is implemented!
+                for learner in learners: learner.next()
+        except RuntimeWarning:
+            break
+        except ValueError:
+            break
         return_trace[episode] = return_cumulative
         # if return_cumulative:
         #     print('episode: %g,\t lambda(0): %.2f,\t return_cumulative: %g' % (episode, Lambda.value(x_start), return_cumulative))
