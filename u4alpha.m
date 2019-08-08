@@ -23,8 +23,8 @@ if strcmp(env, 'ringworld')
     METHOD_LIST = {'totd_0', 'totd_400', 'totd_800', 'totd_900', 'totd_950', 'totd_975', 'totd_990', 'totd_1000', 'greedy', 'mta'};
 elseif strcmp(env, 'frozenlake')
     METHOD_LIST = {'togtd_0', 'togtd_400', 'togtd_800', 'togtd_900', 'togtd_950', 'togtd_975', 'togtd_990', 'togtd_1000', 'greedy', 'mta_nonparam', 'mta'};
-elseif strcmp(env, 'frozenlake_AC') || strcmp(env, 'mountaincar')
-    METHOD_LIST = {'baseline_0', 'baseline_400', 'baseline_800', 'baseline_900', 'baseline_950', 'baseline_975', 'baseline_990', 'baseline_1000', 'greedy', 'MTA_nonparam', 'MTA'};
+elseif strcmp(env, 'mountaincar')
+    METHOD_LIST = {'baseline_0', 'baseline_400', 'baseline_800', 'baseline_900', 'baseline_950', 'baseline_975', 'baseline_1000', 'greedy', 'MTA'};
 end
 MEANS = nan(numel(METHOD_LIST), numel(filenames));
 STDS = nan(numel(METHOD_LIST), numel(filenames));
@@ -38,7 +38,7 @@ for index_filename = 1: numel(filenames)
         end
     elseif strcmp(env, 'frozenlake')
         [startIndex, endIndex] = regexp(filename, 'a\_.*\_b');
-    elseif strcmp(env, 'frozenlake_AC') || strcmp(env, 'mountaincar')
+    elseif strcmp(env, 'mountaincar')
         [startIndex, endIndex] = regexp(filename, 'a\_.*\_b');
     end
     alpha = str2double(filename(startIndex + 2: endIndex - 2));
@@ -48,8 +48,8 @@ for index_filename = 1: numel(filenames)
         method = METHOD_LIST{index_method};
         try
             if strcmp(env, 'mountaincar')
-                eval(sprintf('MEANS(%d, index_filename) = -mean(loaded.return_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
-                eval(sprintf('STDS(%d, index_filename) = -mean(loaded.return_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
+                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
+                eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
             else
                 eval(sprintf('MEANS(%d, index_filename) = mean(loaded.error_value_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
                 eval(sprintf('STDS(%d, index_filename) = mean(loaded.error_value_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
@@ -90,7 +90,11 @@ cd(main_path);
 addpath(genpath(fullfile(main_path, 'gadgets')));
 figure;
 BANDWIDTH = 0.1;
-LINECOLORS = [linspecer(numel(METHOD_LIST) - 3); [1, 0, 0]; [0, 1, 0]; [0, 0, 1];];
+if strcmp(env, 'mountaincar')
+    LINECOLORS = [linspecer(numel(METHOD_LIST) - 2); [1, 0, 0]; [0, 0, 1];];
+else
+    LINECOLORS = [linspecer(numel(METHOD_LIST) - 3); [1, 0, 0]; [0, 1, 0]; [0, 0, 1];];
+end
 CURVES = []; LEGENDS = {};
 for index_method = 1: numel(METHOD_LIST)
     MEAN = MEANS(index_method, :); STD = STDS(index_method, :);
@@ -116,7 +120,7 @@ for index_method = 1: numel(METHOD_LIST)
         LEGEND = "GTD(.975)";
     elseif strcmp(method, "togtd_990") || strcmp(method, "baseline_990")
         LEGEND = "GTD(.99)";
-    elseif strcmp(method, "togtd_100") || strcmp(method, "togtd_1000") || strcmp(method, "baseline_100")
+    elseif strcmp(method, "togtd_100") || strcmp(method, "togtd_1000") || strcmp(method, "baseline_100") || strcmp(method, "baseline_1000")
         LEGEND = "GTD(1)";
     elseif strcmp(method, "totd_0")
         LEGEND = "TD(0)";
@@ -150,7 +154,9 @@ end
 L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 set(gca, 'xscale', 'log');
-set(gca, 'yscale', 'log');
+if ~strcmp(env, 'mountaincar')
+    set(gca, 'yscale', 'log');
+end
 axis([0, inf, -inf, inf]);
 drawnow;
 end
