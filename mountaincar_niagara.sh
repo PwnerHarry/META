@@ -30,7 +30,7 @@ done
 
 echo "runtimes: $RUNTIMES, episodes: $EPISODES"
 
-module load python/3.7 scipy-stack
+module load python
 source ~/ENV/bin/activate
 
 python -m compileall ./
