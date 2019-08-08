@@ -29,7 +29,7 @@ def greedy(env, episodes, target, behavior, evaluate, Lambda, encoder, learner_t
                 errsq = (np.dot(x_next, MC_exp_learner.w_next) - np.dot(x_next, value_learner.w_curr)) ** 2
                 varg = max(0, np.dot(x_next, MC_var_learner.w_next))
                 Lambda.w[o_next] = 1
-                if errsq + varg > np.sqrt(np.finfo(float).eps): # a safer threshold for numerical stability
+                if  episode > 0.1 * episodes and errsq + varg > np.sqrt(np.finfo(float).eps): # a safer threshold for numerical stability
                     try:
                         Lambda.w[o_next] = errsq / (errsq + varg)
                     except RuntimeWarning:

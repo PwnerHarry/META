@@ -18,7 +18,7 @@ end
 filenames(reduce_index) = [];
 
 % loading data files one by one
-smoothing_window = 10;
+smoothing_window = 50;
 if strcmp(env, 'ringworld')
     METHOD_LIST = {'totd_0', 'totd_400', 'totd_800', 'totd_900', 'totd_950', 'totd_975', 'totd_990', 'totd_1000', 'greedy', 'mta'};
 elseif strcmp(env, 'frozenlake')
@@ -110,7 +110,7 @@ for index_method = 1: numel(METHOD_LIST)
         LEGEND = "GTD(.4)";
     elseif strcmp(method, "togtd_60") || strcmp(method, "baseline_60")
         LEGEND = "GTD(.6)";
-    elseif strcmp(method, "togtd_80") || strcmp(method, "togtd_800") || strcmp(method, "baseline_80")
+    elseif strcmp(method, "togtd_80") || strcmp(method, "togtd_800") || strcmp(method, "baseline_80") || strcmp(method, "baseline_800")
         LEGEND = "GTD(.8)";
     elseif strcmp(method, "togtd_90") || strcmp(method, "togtd_900") || strcmp(method, "baseline_90") || strcmp(method, "baseline_900")
         LEGEND = "GTD(.9)";
