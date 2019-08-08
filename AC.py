@@ -62,7 +62,7 @@ def AC(env, episodes, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, c
                         L_var_next = np.dot(x_next, L_var_learner.w_curr)
                         if control_flag and np.linalg.norm(x_next - x_curr, 2) > 0 and L_var_next > np.sqrt(np.finfo(float).eps):
                             coefficient = gamma(x_next) ** 2 * (lambda_next * (VmE ** 2 + L_var_next) + VmE * (v_next - np.dot(x_next, MC_exp_learner.w_curr)))                        
-                            Lambda.GD(encoder_lambda(o_next), kappa * np.exp(log_rho_accu) * coefficient, normalize=False)
+                            Lambda.GD(encoder_lambda(o_next), kappa * np.exp(log_rho_accu) * coefficient)
                             lambda_next = Lambda.value(encoder_lambda(o_next))
                 except RuntimeWarning:
                     break_flag = True
