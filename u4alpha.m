@@ -47,9 +47,11 @@ for index_filename = 1: numel(filenames)
     for index_method = 1: numel(METHOD_LIST)
         method = METHOD_LIST{index_method};
         try
+            eval(sprintf('index_not_nan = find(~isnan(loaded.return_%s_mean));', method));
+            index_end = index_not_nan(end);
             if strcmp(env, 'mountaincar')
-                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
-                eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
+                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(index_end - %d: index_end), ''omitnan'');', index_method, method, smoothing_window));
+                eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(index_end - %d: index_end), ''omitnan'');', index_method, method, smoothing_window));
             else
                 eval(sprintf('MEANS(%d, index_filename) = mean(loaded.error_value_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
                 eval(sprintf('STDS(%d, index_filename) = mean(loaded.error_value_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
