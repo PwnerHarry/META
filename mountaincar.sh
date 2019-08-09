@@ -17,6 +17,10 @@ while [ "$1" != "" ]; do
                                 shift
                                 ALPHA=$1
                                 ;;
+        --eta )          
+                                shift
+                                ETA=$1
+                                ;;
         --episodes )       
                                 shift
                                 EPISODES=$1
