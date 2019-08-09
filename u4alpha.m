@@ -100,8 +100,14 @@ end
 CURVES = []; LEGENDS = {};
 for index_method = 1: numel(METHOD_LIST)
     MEAN = MEANS(index_method, :); STD = STDS(index_method, :);
-    MEAN = interp1(ALPHAS(~isnan(MEAN)), MEAN(~isnan(MEAN)), ALPHAS, 'nearest')';
-    STD = interp1(ALPHAS(~isnan(STD)), MEAN(~isnan(STD)), ALPHAS, 'nearest')';
+    for jjj = 1: length(MEAN)
+        if isnan(MEAN(jjj)) || MEAN(jjj) == 0
+            MEAN(jjj) = mean(MEAN(setdiff(max(1, jjj - 1): min(jjj + 1, length(MEAN)), jjj)), 'omitnan');
+        end
+        if isnan(STD(jjj)) || STD(jjj) == 0
+            STD(jjj) = mean(STD(setdiff(max(1, jjj - 1): min(jjj + 1, length(MEAN)), jjj)), 'omitnan');
+        end
+    end
     INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-STD; STD];
     [CURVE, ~] = band_drawer(ALPHAS', MEAN, INTERVAL, LINECOLORS(index_method, :));
     CURVES = [CURVES, CURVE];
