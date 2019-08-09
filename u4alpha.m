@@ -98,6 +98,7 @@ end
 CURVES = []; LEGENDS = {};
 for index_method = 1: numel(METHOD_LIST)
     MEAN = MEANS(index_method, :); STD = STDS(index_method, :);
+    MEAN = interp1(ALPHAS(~isnan(MEAN)), MEAN(~isnan(MEAN)), ALPHAS, 'Linear');
     INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-STD; STD];
     [CURVE, ~] = band_drawer(ALPHAS', MEAN, INTERVAL, LINECOLORS(index_method, :));
     CURVES = [CURVES, CURVE];
