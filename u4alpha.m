@@ -68,7 +68,11 @@ for index_unique = 1: numel(IA)
     locations = find(IC == index_unique);
     MEAN_MTA_nonparam = MEANS(end - 1, locations);
     MEAN_MTA = MEANS(end, locations);
-    [~, IBEST_MTA] = min(MEAN_MTA);
+    if strcmp(env, 'mountaincar')
+        [~, IBEST_MTA] = max(MEAN_MTA);
+    else
+        [~, IBEST_MTA] = min(MEAN_MTA);
+    end
     index_best = locations(IBEST_MTA);
     [~, IBEST_MTA_nonparam] = min(MEAN_MTA_nonparam);
     index_best_nonparam = locations(IBEST_MTA_nonparam);
