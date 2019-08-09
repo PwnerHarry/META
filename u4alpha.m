@@ -47,10 +47,10 @@ for index_filename = 1: numel(filenames)
     for index_method = 1: numel(METHOD_LIST)
         method = METHOD_LIST{index_method};
         try
-            eval(sprintf('index_not_nan = find(~isnan(loaded.return_%s_mean));', method));
-            index_end = index_not_nan(end);
             if strcmp(env, 'mountaincar')
-                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(index_end - %d: index_end), ''omitnan'');', index_method, method, smoothing_window));
+                eval(sprintf('index_not_nan = find(~isnan(loaded.return_%s_mean));', method));
+                index_end = index_not_nan(end);
+                eval(sprintf('MEANS(%d, index_filename) = -mean(loaded.return_%s_mean(index_end - %d: index_end), ''omitnan'');', index_method, method, smoothing_window));
                 eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(index_end - %d: index_end), ''omitnan'');', index_method, method, smoothing_window));
             else
                 eval(sprintf('MEANS(%d, index_filename) = mean(loaded.error_value_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
@@ -69,7 +69,7 @@ for index_unique = 1: numel(IA)
     MEAN_MTA_nonparam = MEANS(end - 1, locations);
     MEAN_MTA = MEANS(end, locations);
     if strcmp(env, 'mountaincar')
-        [~, IBEST_MTA] = max(MEAN_MTA);
+        [~, IBEST_MTA] = min(MEAN_MTA);
     else
         [~, IBEST_MTA] = min(MEAN_MTA);
     end
@@ -168,9 +168,9 @@ end
 L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 set(gca, 'xscale', 'log');
-if ~strcmp(env, 'mountaincar')
+% if ~strcmp(env, 'mountaincar')
     set(gca, 'yscale', 'log');
-end
+% end
 axis([0, inf, -inf, inf]);
 drawnow;
 end

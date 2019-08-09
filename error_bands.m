@@ -1,5 +1,5 @@
 % MANUALLY LOAD THE RESULTS FIRST
-sample_method = 'log';
+sample_method = 'linear';
 main_path = fileparts(mfilename('fullpath'));
 cd(main_path);
 addpath(genpath(fullfile(main_path, 'gadgets')));

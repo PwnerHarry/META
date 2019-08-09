@@ -13,7 +13,7 @@ filenames(reduce_index) = [];
 main_path = fileparts(mfilename('fullpath'));
 cd(main_path);
 addpath(genpath(fullfile(main_path, 'gadgets')));
-smoothing_window = 100;
+smoothing_window = 10;
 if strcmp(env, 'ringworld')
     METHOD_LIST = {'mta'};
 elseif strcmp(env, 'frozenlake')
