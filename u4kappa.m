@@ -13,7 +13,7 @@ filenames(reduce_index) = [];
 main_path = fileparts(mfilename('fullpath'));
 cd(main_path);
 addpath(genpath(fullfile(main_path, 'gadgets')));
-smoothing_window = 10;
+smoothing_window = 100;
 if strcmp(env, 'ringworld')
     METHOD_LIST = {'mta'};
 elseif strcmp(env, 'frozenlake')
@@ -54,7 +54,7 @@ STDS = STDS(:, I);
 
 % draw
 figure;
-BANDWIDTH = 0.1;
+BANDWIDTH = 0.05;
 LINECOLORS = [0, 0, 1];
 CURVES = []; LEGENDS = {};
 for index_method = 1: numel(METHOD_LIST)
