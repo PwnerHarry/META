@@ -1,4 +1,4 @@
-# MTA
+# META
 
 Implementation of the paper "Faster and More Accurate Trace-based Policy Evaluation via Overall Target Error Meta-Optimization" [1].
 
