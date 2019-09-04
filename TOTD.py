@@ -55,7 +55,7 @@ def totd(env, steps, target, behavior, evaluate, Lambda, encoder, gamma=lambda x
     value_learner = TOTD_LEARNER(env, D)
     value_trace = np.empty(steps); value_trace[:] = np.nan
     step = 0
-    while step <= steps:
+    while step < steps:
         o_curr, done = env.reset(), False
         x_curr = encoder(o_curr)
         value_learner.refresh()

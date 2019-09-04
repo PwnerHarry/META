@@ -18,7 +18,7 @@ def MTA(env, steps, target, behavior, evaluate, Lambda, encoder, learner_type='t
     learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
     warnings.filterwarnings("error")
     step = 0
-    while step <= steps:
+    while step < steps:
         o_curr, done, log_rho_accu = env.reset(), False, 0; x_curr = encoder(o_curr)
         for learner in learners: learner.refresh()
         value_trace[step] = evaluate(value_learner.w_curr, 'expectation')

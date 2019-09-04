@@ -14,7 +14,7 @@ def greedy(env, steps, target, behavior, evaluate, Lambda, encoder, learner_type
     value_trace = np.empty(steps); value_trace[:] = np.nan
     warnings.filterwarnings("error")
     step = 0
-    while step <= steps:
+    while step < steps:
         o_curr, done = env.reset(), False; x_curr = encoder(o_curr)
         for learner in learners: learner.refresh()
         value_trace[step] = evaluate(value_learner.w_curr, 'expectation')
