@@ -27,7 +27,7 @@ def AC(env, steps, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, crit
     W = np.zeros((env.action_space.n, D))
     return_trace = np.empty(steps); return_trace[:] = np.nan
     step = 0
-    while step <= steps:
+    while step < steps:
         for learner in learners: learner.refresh()
         o_curr, done, log_rho_accu, lambda_curr, return_cumulative, I = env.reset(), False, 0, 1, 0, 1; x_curr = encoder(o_curr); x_start = x_curr
         try:
