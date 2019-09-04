@@ -40,9 +40,6 @@ sleep 1
 module load python/3.7 scipy-stack
 source ~/ENV/bin/activate
 
-# COMPILE TO ACCELERATE
-python -m compileall ./
-
 # COARSE SEARCH FOR KAPPA
 python predict_frozenlake.py --parametric_lambda 0 --off_policy 1 --runtimes $RUNTIMES --steps $STEPS --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 1 * $ALPHA}"`
 python predict_frozenlake.py --parametric_lambda 0 --off_policy 1 --runtimes $RUNTIMES --steps $STEPS --evaluate_others 0 --alpha $ALPHA --kappa `awk "BEGIN {print 2 * $ALPHA}"`

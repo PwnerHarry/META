@@ -47,9 +47,6 @@ sleep 1
 module load python/3.7 scipy-stack
 source ~/ENV/bin/activate
 
-# COMPILE TO ACCELERATE
-python -m compileall ./
-
 # BASELINES AND LAMBDA_GREEDY
 python predict_ringworld.py --alpha $ALPHA --kappa 0 --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_MTA 0
 
