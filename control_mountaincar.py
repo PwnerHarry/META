@@ -13,7 +13,7 @@ parser.add_argument('--beta', type=float, default=0, help='')
 parser.add_argument('--eta', type=float, default=0, help='')
 parser.add_argument('--gamma', type=float, default=1, help='')
 parser.add_argument('--kappa', type=float, default=1e-5, help='')
-parser.add_argument('--episodes', type=int, default=1000, help='')
+parser.add_argument('--steps', type=int, default=20000, help='')
 parser.add_argument('--runtimes', type=int, default=8, help='')
 parser.add_argument('--learner_type', type=str, default='togtd', help='')
 parser.add_argument('--evaluate_others', type=int, default=1, help='')
@@ -44,11 +44,11 @@ if args.evaluate_others:
     # BASELINES
     BASELINE_LAMBDAS = [0, 0.4, 0.8, 0.9, 0.95, 0.975, 1]
     for baseline_lambda in BASELINE_LAMBDAS:
-        results = eval_AC(env_name, critic_type='baseline', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, encoder_lambda=encoder_lambda, constant_lambda=baseline_lambda, kappa=args.kappa)
+        results = eval_AC(env_name, critic_type='baseline', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, steps=args.steps, encoder=encoder, encoder_lambda=encoder_lambda, constant_lambda=baseline_lambda, kappa=args.kappa)
         exec("things_to_save[\'return_baseline_%g_mean\'] = np.nanmean(results, axis=0)" % (baseline_lambda * 1000)) # no dots in variable names for MATLAB
         exec("things_to_save[\'return_baseline_%g_std\'] = np.nanstd(results, axis=0)" % (baseline_lambda * 1000))
     # LAMBDA-GREEDY
-    results = eval_AC(env_name, critic_type='greedy', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, encoder_lambda=encoder_lambda, constant_lambda=0, kappa=args.kappa)
+    results = eval_AC(env_name, critic_type='greedy', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, steps=args.steps, encoder=encoder, encoder_lambda=encoder_lambda, constant_lambda=0, kappa=args.kappa)
     things_to_save['return_greedy_mean'], things_to_save['return_greedy_std'] = np.nanmean(results, axis=0), np.nanstd(results, axis=0)
     time_finish = time.time()
     print('time elapsed: %gs' % (time_finish - time_start))
@@ -58,7 +58,7 @@ if args.evaluate_others:
         filename = filename + 'a_%g_b_%g_y_%g_' % (args.alpha, args.beta, args.eta)
     else:
         filename = filename + 'a_%g_y_%g_' % (args.alpha, args.eta)
-    filename = filename + 'e_%g_r_%d.mat' % (args.episodes, args.runtimes)
+    filename = filename + 'e_%g_r_%d.mat' % (args.steps, args.runtimes)
     scipy.io.savemat(filename, things_to_save)
 
 
@@ -66,7 +66,7 @@ if args.evaluate_others:
 if args.evaluate_MTA:
     things_to_save = {}
     time_start = time.time()
-    results = eval_AC(env_name, critic_type='MTA', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, episodes=args.episodes, encoder=encoder, encoder_lambda=encoder_lambda, constant_lambda=0, kappa=args.kappa)
+    results = eval_AC(env_name, critic_type='MTA', learner_type=args.learner_type, gamma=gamma, alpha=args.alpha, beta=args.beta, eta=args.eta, runtimes=args.runtimes, steps=args.steps, encoder=encoder, encoder_lambda=encoder_lambda, constant_lambda=0, kappa=args.kappa)
     if args.parametric_lambda:
         things_to_save['return_MTA_mean'], things_to_save['return_MTA_std'] = np.nanmean(results, axis=0), np.nanstd(results, axis=0)
     else:
@@ -81,5 +81,5 @@ if args.evaluate_MTA:
         filename = filename + 'a_%g_b_%g_y_%g_' % (args.alpha, args.beta, args.eta)
     else:
         filename = filename + 'a_%g_y_%g_' % (args.alpha, args.eta)
-    filename = filename + 'k_%g_e_%g_r_%d.mat' % (args.kappa, args.episodes, args.runtimes)
+    filename = filename + 'k_%g_e_%g_r_%d.mat' % (args.kappa, args.steps, args.runtimes)
     scipy.io.savemat(filename, things_to_save)
