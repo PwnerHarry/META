@@ -50,7 +50,7 @@ for index_filename = 1: numel(filenames)
             if strcmp(env, 'mountaincar')
                 eval(sprintf('index_not_nan = find(~isnan(loaded.return_%s_mean));', method));
                 index_end = index_not_nan(end);
-                eval(sprintf('MEANS(%d, index_filename) = -mean(loaded.return_%s_mean(index_end - %d: index_end), ''omitnan'');', index_method, method, smoothing_window));
+                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(index_end - %d: index_end), ''omitnan'');', index_method, method, smoothing_window));
                 eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(index_end - %d: index_end), ''omitnan'');', index_method, method, smoothing_window));
             else
                 eval(sprintf('MEANS(%d, index_filename) = mean(loaded.error_value_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
@@ -168,9 +168,17 @@ end
 L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 set(gca, 'xscale', 'log');
-% if ~strcmp(env, 'mountaincar')
+if ~strcmp(env, 'mountaincar')
     set(gca, 'yscale', 'log');
-% end
+end
 axis([0, inf, -inf, inf]);
+xlabel('\alpha');
+if strcmp(env, 'mountaincar')
+    ylabel('return');
+else
+    ylabel('MSE');
+end
+set(gca, 'FontSize', 16);
+set(gca, 'FontName', 'Book Antiqua');
 drawnow;
 end

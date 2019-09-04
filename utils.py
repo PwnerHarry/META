@@ -82,17 +82,17 @@ class LAMBDA():# state-based parametric lambda
 
 # EVALUATION METHODS
 @jit(nopython=True, cache=True)
-def mse(estimate, target, weight):
-    return np.linalg.norm(np.multiply(estimate - target, weight), 2) ** 2
+def mse(estimate, target, weight_sqrt):
+    return np.linalg.norm(np.multiply(estimate - target, weight_sqrt), 2) ** 2
 
 @jit(nopython=True, cache=True)
 def evaluate_estimate(weight, expectation, variance, distribution, stat_type, state_set_matrix):
     # place the state representations row by row in the state_set_matrix
     estimate = get_estimate(weight, state_set_matrix)
     if stat_type == 'expectation':
-        return mse(estimate.reshape(-1), expectation.reshape(-1), distribution)
+        return mse(estimate.reshape(-1), expectation.reshape(-1), np.sqrt(distribution))
     elif stat_type == 'variance':
-        return mse(estimate.reshape(-1), variance.reshape(-1), distribution)
+        return mse(estimate.reshape(-1), variance.reshape(-1), np.sqrt(distribution))
 
 @jit(nopython=True, cache=True)
 def get_estimate(weight, state_set_matrix):
