@@ -9,7 +9,7 @@ def MTA(env, steps, target, behavior, evaluate, Lambda, encoder, learner_type='t
         encoder_lambda = encoder
     else:
         encoder_lambda = lambda x: onehot(x, env.observation_space.n)
-    value_trace = np.empty(steps); value_trace[:] = np.nan
+    value_trace = np.empty(steps // 1000); value_trace[:] = np.nan
     if learner_type == 'togtd':
         LEARNER, slow_lr_dict, fast_lr_dict = TOGTD_LEARNER, {'alpha_curr': alpha, 'beta_curr': beta}, {'alpha_curr': min(1.0, 2 * alpha), 'beta_curr': min(1.0, 2 * alpha)}
     elif learner_type == 'totd':
@@ -21,7 +21,8 @@ def MTA(env, steps, target, behavior, evaluate, Lambda, encoder, learner_type='t
     while step < steps:
         o_curr, done, log_rho_accu = env.reset(), False, 0; x_curr = encoder(o_curr)
         for learner in learners: learner.refresh()
-        value_trace[step] = evaluate(value_learner.w_curr, 'expectation')
+        if step % 1000 == 0:
+            value_trace[step // 1000] = evaluate(value_learner.w_curr, 'expectation')
         try:
             while not done:
                 action = decide(o_curr, behavior)

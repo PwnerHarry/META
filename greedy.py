@@ -11,13 +11,14 @@ def greedy(env, steps, target, behavior, evaluate, Lambda, encoder, learner_type
         LEARNER, slow_lr_dict, fast_lr_dict = TOTD_LEARNER, {'alpha_curr': alpha}, {'alpha_curr': min(1.0, 2 * alpha)}
     MC_exp_learner, MC_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D)
     learners = [MC_exp_learner, MC_var_learner, value_learner]
-    value_trace = np.empty(steps); value_trace[:] = np.nan
+    value_trace = np.empty(steps // 1000); value_trace[:] = np.nan
     warnings.filterwarnings("error")
     step = 0
     while step < steps:
         o_curr, done = env.reset(), False; x_curr = encoder(o_curr)
         for learner in learners: learner.refresh()
-        value_trace[step] = evaluate(value_learner.w_curr, 'expectation')
+        if step % 1000 == 0:
+            value_trace[step // 1000] = evaluate(value_learner.w_curr, 'expectation')
         try:
             while not done:
                 action = decide(o_curr, behavior)

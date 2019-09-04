@@ -53,13 +53,14 @@ def totd(env, steps, target, behavior, evaluate, Lambda, encoder, gamma=lambda x
     """
     D = np.size(encoder(env.reset()))
     value_learner = TOTD_LEARNER(env, D)
-    value_trace = np.empty(steps); value_trace[:] = np.nan
+    value_trace = np.empty(steps // 1000); value_trace[:] = np.nan
     step = 0
     while step < steps:
         o_curr, done = env.reset(), False
         x_curr = encoder(o_curr)
         value_learner.refresh()
-        value_trace[step] = evaluate(value_learner.w_curr, 'expectation')
+        if step % 1000 == 0:
+            value_trace[step // 1000] = evaluate(value_learner.w_curr, 'expectation')
         while not done:
             action = decide(o_curr, behavior)
             rho_curr = importance_sampling_ratio(target, behavior, o_curr, action)
