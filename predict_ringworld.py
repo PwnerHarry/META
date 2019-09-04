@@ -32,7 +32,7 @@ target_policy, behavior_policy = npm.repmat(np.array([args.target, 1 - args.targ
 start_dist = np.zeros(env.observation_space.n)
 start_dist[int(env.observation_space.n / 2)] = 1.0
 DP_expectation, DP_variance, DP_stat_dist = iterative_policy_evaluation(env, target_policy, gamma=gamma, start_dist=start_dist)
-DP_stat_dist_sqrt = np.sqrt(DP_stat_dist_sqrt)
+DP_stat_dist_sqrt = np.sqrt(DP_stat_dist)
 evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, DP_expectation, DP_variance, DP_stat_dist_sqrt, stat_type, get_state_set_matrix(env, encoder))
 
 things_to_save = {}
