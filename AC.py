@@ -26,10 +26,8 @@ def AC(env, steps, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, crit
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
     W = np.zeros((env.action_space.n, D))
     step = 0
-    episode, episodes = -1, 500 # an ugly setting for mountaincar!
-    return_trace = np.empty(episodes); return_trace[:] = np.nan
+    return_trace = np.empty(steps); return_trace[:] = np.nan
     while step < steps:
-        episode += 1
         for learner in learners: learner.refresh()
         o_curr, done, log_rho_accu, lambda_curr, return_cumulative, I = env.reset(), False, 0, 1, 0, 1; x_curr = encoder(o_curr); x_start = x_curr
         try:
@@ -76,8 +74,10 @@ def AC(env, steps, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, crit
             break
         except ValueError:
             break
-        return_trace[episode] = return_cumulative
+        if step < steps:
+            return_trace[step] = return_cumulative
     warnings.filterwarnings("default")
+    return_trace[-1] = return_cumulative
     return return_trace
 
 def eval_AC_per_run(env_name, runtime, runtimes, steps, critic_type, learner_type, gamma, alpha, beta, eta, encoder, encoder_lambda, constant_lambda, kappa):
