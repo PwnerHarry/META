@@ -74,7 +74,8 @@ def AC(env, steps, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, crit
             break
         except ValueError:
             break
-        return_trace[step] = return_cumulative
+        if step < steps:
+            return_trace[step] = return_cumulative
     warnings.filterwarnings("default")
     return return_trace
 
