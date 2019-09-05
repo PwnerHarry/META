@@ -11,7 +11,7 @@ expectation_list = [ ...
     "return_baseline_950", "return_baseline_975", ... % "return_baseline_990", ...
     "return_greedy", "return_MTA_nonparam", "return_MTA"]; %"return_baseline_1000", 
 LineColors = [linspecer(numel(expectation_list) - 3); [1, 0, 0]; [0, 1, 0]; [0, 0, 1];];
-num_points = 51;
+num_points = 101;
 
 CURVES = []; LEGENDS = {};
 figure();
