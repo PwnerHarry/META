@@ -32,6 +32,9 @@ for result_index = 1: numel(expectation_list)
         X = get_statistics2(results_mean, num_points, true);
     end
     MEAN = NaN(size(X)); STD = NaN(size(X));
+%     X_non_nan = intersect(find(~isnan(results_mean)), X);
+%     MEAN = interp1(X_non_nan, results_mean(X_non_nan), X);
+%     STD = interp1(X_non_nan, results_std(X_non_nan), X);
     MEAN(1) = mean(results_mean(X(1): round(0.5 * X(1) + 0.5 * X(2))), 'omitnan');
     STD(1) = mean(results_std(X(1): round(0.5 * X(1) + 0.5 * X(2))), 'omitnan');
     for i = 2: length(X) - 1
@@ -42,7 +45,7 @@ for result_index = 1: numel(expectation_list)
     STD(end) = mean(results_std(round(0.5 * X(end - 1) + 0.5 * X(end)): X(end)), 'omitnan');
     MIN = min(min(MEAN), MIN);
     INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-STD; STD];
-    INTERVAL(INTERVAL <= 0) = eps;
+    % INTERVAL(INTERVAL <= 0) = eps;
     [CURVE, ~] = band_drawer(X, MEAN, INTERVAL, LineColors(result_index, :)); %X, MEAN, INTERVAL, COLOR
     CURVES = [CURVES, CURVE];
     if strcmp(result_name, "return_mta") || strcmp(result_name, "return_MTA")
@@ -82,6 +85,8 @@ end
 axis([1, inf, MIN, inf]);
 set(gca, 'FontSize', 16);
 set(gca, 'FontName', 'Book Antiqua');
-xlabel('episodes');
+xlabel('steps');
 ylabel('return');
+xticks([0 100 200]);
+xticklabels({'0', '25000', '50000'});
 drawnow;

@@ -171,8 +171,8 @@ set(gca, 'xscale', 'log');
 if ~strcmp(env, 'mountaincar')
     set(gca, 'yscale', 'log');
 end
-axis([0, inf, -inf, inf]);
-xlabel('\alpha');
+axis([0, inf, 0, inf]);
+xlabel('learning rate');
 if strcmp(env, 'mountaincar')
     ylabel('return');
 else
