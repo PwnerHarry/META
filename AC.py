@@ -26,7 +26,7 @@ def AC(env, steps, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, crit
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
     W = np.zeros((env.action_space.n, D))
     step = 0
-    episode, episodes = -1, 1000
+    episode, episodes = -1, 250 # an ugly setting for mountaincar!
     return_trace = np.empty(episodes); return_trace[:] = np.nan
     while step < steps:
         episode += 1
