@@ -25,9 +25,11 @@ def AC(env, steps, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, crit
         Lambda = LAMBDA(env, initial_value=np.zeros(np.size(encoder_lambda(env.reset()))), approximator='linear')
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
     W = np.zeros((env.action_space.n, D))
-    return_trace = np.empty(steps); return_trace[:] = np.nan
     step = 0
+    episode, episodes = -1, 1000
+    return_trace = np.empty(episodes); return_trace[:] = np.nan
     while step < steps:
+        episode += 1
         for learner in learners: learner.refresh()
         o_curr, done, log_rho_accu, lambda_curr, return_cumulative, I = env.reset(), False, 0, 1, 0, 1; x_curr = encoder(o_curr); x_start = x_curr
         try:
@@ -75,7 +77,7 @@ def AC(env, steps, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, crit
         except ValueError:
             break
         if step < steps:
-            return_trace[step] = return_cumulative
+            return_trace[episode] = return_cumulative
     warnings.filterwarnings("default")
     return return_trace
 

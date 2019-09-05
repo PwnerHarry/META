@@ -95,7 +95,7 @@ main_path = fileparts(mfilename('fullpath'));
 cd(main_path);
 addpath(genpath(fullfile(main_path, 'gadgets')));
 figure;
-BANDWIDTH = 0.1;
+BANDWIDTH = 0.25;
 if strcmp(env, 'mountaincar') || strcmp(env, 'ringworld')
     LINECOLORS = [linspecer(numel(METHOD_LIST) - 2); [1, 0, 0]; [0, 0, 1];];
 else
