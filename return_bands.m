@@ -79,7 +79,7 @@ if strcmp(sample_method, 'log')
     set(gca, 'xscale', 'log');
 end
 % set(gca, 'yscale', 'log');
-axis([1, inf, -inf, inf]);
+axis([1, inf, MIN, inf]);
 set(gca, 'FontSize', 16);
 set(gca, 'FontName', 'Book Antiqua');
 xlabel('episodes');
