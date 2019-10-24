@@ -107,5 +107,7 @@ L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
+xlabel('\kappa');
+ylabel('MSE');
 drawnow;
 end
