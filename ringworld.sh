@@ -51,20 +51,10 @@ source ~/ENV/bin/activate
 python predict_ringworld.py --alpha $ALPHA --kappa 0 --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_MTA 0
 
 # COARSE SEARCH FOR KAPPA
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 1 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 2 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 3 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 4 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 5 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.1 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.2 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.3 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.4 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.5 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.01 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.02 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.03 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.04 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
-python predict_ringworld.py --alpha $ALPHA --kappa `awk "BEGIN {print 0.05 * $ALPHA}"` --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa 1e-7 --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa 1e-6 --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa 1e-5 --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa 1e-4 --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa 1e-3 --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa 1e-2 --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
+python predict_ringworld.py --alpha $ALPHA --kappa 1e-1 --steps $STEPS --runtimes $RUNTIMES --behavior $BEHAVIOR --target $TARGET --evaluate_others 0
