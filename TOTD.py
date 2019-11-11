@@ -42,9 +42,9 @@ class TOTD_LEARNER():
         w_next = w_curr + delta_curr * e_curr - alpha_curr * (np.dot(w_curr, x_curr) - np.dot(w_prev, x_curr)) * x_curr
         return w_next, e_curr
 
-def totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=lambda x: 0.95, alpha=0.05):
+def totd(env, steps, target, behavior, evaluate, Lambda, encoder, gamma=lambda x: 0.95, alpha=0.05):
     """
-    episodes:   number of episodes
+    steps:   number of steps
     target:     target policy matrix (|S|*|A|)
     behavior:   behavior policy matrix (|S|*|A|)
     Lambda:     LAMBDA object determining each lambda for each feature (or state or observation)
@@ -53,30 +53,31 @@ def totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=lambd
     """
     D = np.size(encoder(env.reset()))
     value_learner = TOTD_LEARNER(env, D)
-    value_trace = np.empty(episodes); value_trace[:] = np.nan
-    for episode in range(episodes):
+    value_trace = np.empty(steps // 1000); value_trace[:] = np.nan
+    step = 0
+    while step < steps:
         o_curr, done = env.reset(), False
         x_curr = encoder(o_curr)
         value_learner.refresh()
-        value_trace[episode] = evaluate(value_learner.w_curr, 'expectation')
+        if step % 1000 == 0:
+            value_trace[step // 1000] = evaluate(value_learner.w_curr, 'expectation')
         while not done:
             action = decide(o_curr, behavior)
             rho_curr = importance_sampling_ratio(target, behavior, o_curr, action)
-            o_next, r_next, done, _ = env.step(action)
-            x_next = encoder(o_next)
+            o_next, r_next, done, _ = env.step(action); x_next = encoder(o_next); step += 1
             value_learner.learn(r_next, done, gamma(x_next), gamma(x_curr), x_next, x_curr, Lambda.value(x_next), Lambda.value(x_curr), rho_curr, alpha)
             value_learner.next()
             x_curr = x_next
     return value_trace
 
-def eval_totd_per_run(env_name, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, evaluate, encoder):
+def eval_totd_per_run(env_name, runtime, runtimes, steps, target, behavior, gamma, Lambda, alpha, evaluate, encoder):
     np.random.seed(seed=runtime)
     env = gym.make(env_name)
     env.seed(runtime)
     print('%d of %d for totd(%g), alpha: %g' % (runtime + 1, runtimes, Lambda.value(encoder(0)), alpha))
-    value_trace = totd(env, episodes, target, behavior, evaluate, Lambda, encoder, gamma=gamma, alpha=alpha)
+    value_trace = totd(env, steps, target, behavior, evaluate, Lambda, encoder, gamma=gamma, alpha=alpha)
     return value_trace.reshape(1, -1)
 
-def eval_totd(env_name, behavior, target, Lambda, gamma, alpha, runtimes, episodes, evaluate, encoder):
-    results = Parallel(n_jobs=-1)(delayed(eval_totd_per_run)(env_name, runtime, runtimes, episodes, target, behavior, gamma, Lambda, alpha, evaluate, encoder) for runtime in range(runtimes))
+def eval_totd(env_name, behavior, target, Lambda, gamma, alpha, runtimes, steps, evaluate, encoder):
+    results = Parallel(n_jobs=-1)(delayed(eval_totd_per_run)(env_name, runtime, runtimes, steps, target, behavior, gamma, Lambda, alpha, evaluate, encoder) for runtime in range(runtimes))
     return np.concatenate(results, axis=0)

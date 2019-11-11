@@ -1,27 +1,24 @@
 % MANUALLY LOAD THE RESULTS FIRST
-sample_method = 'log';
+sample_method = 'linear';
 main_path = fileparts(mfilename('fullpath'));
 cd(main_path);
 addpath(genpath(fullfile(main_path, 'gadgets')));
 
 expectation_list = [ ...
-    "error_value_totd_0", "error_value_totd_20", "error_value_totd_40", ...
-    "error_value_totd_60", "error_value_totd_80", "error_value_totd_100", ...
-    "error_value_togtd_0", "error_value_togtd_20", "error_value_togtd_40", ...
-    "error_value_togtd_60", "error_value_togtd_80", "error_value_togtd_100", ...
-    "error_value_totd_400", "error_value_totd_800", "error_value_totd_900", ...
-    "error_value_totd_950", "error_value_totd_975", "error_value_totd_990", ...
-    "error_value_totd_1000", "error_value_togtd_400", "error_value_togtd_800", ...
-    "error_value_togtd_900", "error_value_togtd_950", "error_value_togtd_975", ...
-    "error_value_togtd_990", "error_value_togtd_1000", ...
-    "error_value_greedy", "error_value_mta"];
-LineColors = [linspecer(numel(expectation_list) - 2); [1, 0, 0]; [0, 0, 1];];
+"error_value_togtd_0", "error_value_togtd_400", "error_value_togtd_800", "error_value_togtd_900", ...
+"error_value_togtd_950", "error_value_togtd_975", "error_value_togtd_990", "error_value_togtd_1000", ...   
+"error_value_greedy", "error_value_mta_nonparam", "error_value_mta"];
+
+% "error_value_totd_0", "error_value_totd_400", "error_value_totd_800", "error_value_totd_900", ...
+% "error_value_totd_950", "error_value_totd_975", "error_value_totd_990", "error_value_totd_1000", ...
+
+LineColors = [linspecer(numel(expectation_list) - 3); [1, 0, 0]; [0, 1, 0]; [0, 0, 1];];
 num_points = 201;
 
 CURVES = []; LEGENDS = {};
 figure();
 MIN = inf;
-BANDWIDTH = 0.05;
+BANDWIDTH = 0.2;
 
 for result_index = 1: numel(expectation_list)
     result_name  = expectation_list(result_index);
@@ -51,47 +48,49 @@ for result_index = 1: numel(expectation_list)
     [CURVE, ~] = band_drawer(X, MEAN, INTERVAL, LineColors(result_index, :)); %X, MEAN, INTERVAL, COLOR
     CURVES = [CURVES, CURVE];
     if strcmp(result_name, "error_value_mta")
-        LEGEND = "MTA";
+        LEGEND = "META";
+    elseif strcmp(result_name, "error_value_mta_nonparam")
+        LEGEND = "META(np)";
     elseif strcmp(result_name, "error_value_togtd_0")
-        LEGEND = "GTD(0)";
+        LEGEND = "gtd(0)";
     elseif strcmp(result_name, "error_value_togtd_20")
-        LEGEND = "GTD(.2)";
+        LEGEND = "gtd(.2)";
     elseif strcmp(result_name, "error_value_togtd_40") || strcmp(result_name, "error_value_togtd_400")
-        LEGEND = "GTD(.4)";
+        LEGEND = "gtd(.4)";
     elseif strcmp(result_name, "error_value_togtd_60")
-        LEGEND = "GTD(.6)";
+        LEGEND = "gtd(.6)";
     elseif strcmp(result_name, "error_value_togtd_80") || strcmp(result_name, "error_value_togtd_800")
-        LEGEND = "GTD(.8)";
+        LEGEND = "gtd(.8)";
     elseif strcmp(result_name, "error_value_togtd_900")
-        LEGEND = "GTD(.9)";
+        LEGEND = "gtd(.9)";
     elseif strcmp(result_name, "error_value_togtd_950")
-        LEGEND = "GTD(.95)";
+        LEGEND = "gtd(.95)";
     elseif strcmp(result_name, "error_value_togtd_975")
-        LEGEND = "GTD(.975)";
+        LEGEND = "gtd(.975)";
     elseif strcmp(result_name, "error_value_togtd_990")
-        LEGEND = "GTD(.99)";
+        LEGEND = "gtd(.99)";
     elseif strcmp(result_name, "error_value_togtd_100") || strcmp(result_name, "error_value_togtd_1000")
-        LEGEND = "GTD(1)";
+        LEGEND = "gtd(1)";
     elseif strcmp(result_name, "error_value_totd_0")
-        LEGEND = "TD(0)";
+        LEGEND = "td(0)";
     elseif strcmp(result_name, "error_value_totd_20")
-        LEGEND = "TD(.2)";
+        LEGEND = "td(.2)";
     elseif strcmp(result_name, "error_value_totd_40") || strcmp(result_name, "error_value_totd_400")
-        LEGEND = "TD(.4)";
+        LEGEND = "td(.4)";
     elseif strcmp(result_name, "error_value_totd_60")
-        LEGEND = "TD(.6)";
+        LEGEND = "td(.6)";
     elseif strcmp(result_name, "error_value_totd_80") || strcmp(result_name, "error_value_totd_800")
-        LEGEND = "TD(.8)";
+        LEGEND = "td(.8)";
     elseif strcmp(result_name, "error_value_totd_900")
-        LEGEND = "TD(.9)";
+        LEGEND = "td(.9)";
     elseif strcmp(result_name, "error_value_totd_950")
-        LEGEND = "TD(.95)";
+        LEGEND = "td(.95)";
     elseif strcmp(result_name, "error_value_totd_975")
-        LEGEND = "TD(.975)";
+        LEGEND = "td(.975)";
     elseif strcmp(result_name, "error_value_totd_990")
-        LEGEND = "TD(.99)";
+        LEGEND = "td(.99)";
     elseif strcmp(result_name, "error_value_totd_100") || strcmp(result_name, "error_value_totd_1000")
-        LEGEND = "TD(1)";
+        LEGEND = "td(1)";
     elseif strcmp(result_name, "error_value_greedy")
         LEGEND = "greedy";
     end
@@ -104,7 +103,13 @@ if strcmp(sample_method, 'log')
     set(gca, 'xscale', 'log');
 end
 set(gca, 'yscale', 'log');
-axis([1, inf, MIN, inf]);
+axis([1, 1000, MIN, inf]);
 set(gca, 'FontSize', 16);
 set(gca, 'FontName', 'Book Antiqua');
+xlabel('steps');
+ylabel('MSE');
+
+xticks([0 100 1000]);
+xticklabels({'0', '10^5', '10^6'});
+
 drawnow;

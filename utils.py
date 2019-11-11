@@ -13,6 +13,12 @@ def decide(state_id, policy_matrix):
 
 @jit(nopython=True, cache=True)
 def softmax(x): # a numerically stable softmax!
+    # index_posinf = np.isposinf(x)
+    # if np.sum(index_posinf):
+    #     return index_posinf * np.ones(np.size(x)) / np.sum(index_posinf)
+    # else:
+    #     exps = np.exp(x - np.max(x))
+    #     return exps / np.sum(exps)
     exps = np.exp(x - np.max(x))
     return exps / np.sum(exps)
 
@@ -63,28 +69,30 @@ class LAMBDA():# state-based parametric lambda
         gradient = self.gradient(x)
         if normalize:
             gradient = gradient / np.linalg.norm(gradient, 2)
+        w_to_be = self.w - step_length * gradient
         if self.approximator == 'linear':
-            value_after = 1 - np.dot(x.reshape(-1), (self.w - step_length * gradient))
+            value_after = 1 - np.dot(x.reshape(-1), w_to_be)
         elif self.approximator == 'naive_linear':
-            value_after = np.dot(x.reshape(-1), (self.w - step_length * gradient))
+            value_after = np.dot(x.reshape(-1), w_to_be)
         elif self.approximator == 'tabular':
             value_after = np.dot(gradient, self.w) - step_length
         if value_after >= 0 and value_after <= 1:
-            self.w -= step_length * gradient
+            self.w = w_to_be
+        self.w = w_to_be
 
 # EVALUATION METHODS
 @jit(nopython=True, cache=True)
-def mse(estimate, target, weight):
-    return np.linalg.norm(np.multiply(estimate - target, weight), 2) ** 2
+def mse(estimate, target, weight_sqrt):
+    return np.linalg.norm(np.multiply(estimate - target, weight_sqrt), 2) ** 2
 
 @jit(nopython=True, cache=True)
-def evaluate_estimate(weight, expectation, variance, distribution, stat_type, state_set_matrix):
+def evaluate_estimate(weight, expectation, variance, dist_sqrt, stat_type, state_set_matrix):
     # place the state representations row by row in the state_set_matrix
     estimate = get_estimate(weight, state_set_matrix)
     if stat_type == 'expectation':
-        return mse(estimate.reshape(-1), expectation.reshape(-1), distribution)
+        return mse(estimate.reshape(-1), expectation.reshape(-1), dist_sqrt)
     elif stat_type == 'variance':
-        return mse(estimate.reshape(-1), variance.reshape(-1), distribution)
+        return mse(estimate.reshape(-1), variance.reshape(-1), dist_sqrt)
 
 @jit(nopython=True, cache=True)
 def get_estimate(weight, state_set_matrix):
@@ -117,7 +125,7 @@ def index2coord(s, n):
 
 @jit(nopython=True, cache=True)
 def tile_encoding(observation, shape, low, high, TILINGS, TILES_PER_DIMENSION):
-    feature = np.zeros(shape=(TILES_PER_DIMENSION ** shape, TILINGS))
+    feature = np.zeros((TILES_PER_DIMENSION ** shape, TILINGS))
     GRID_PER_DIMENSION, LENGTH_DIMENSIONS = TILES_PER_DIMENSION * TILINGS, high - low
     GRID_LENGTHS, TILE_LENGTHS = LENGTH_DIMENSIONS / GRID_PER_DIMENSION, LENGTH_DIMENSIONS / TILES_PER_DIMENSION
     for offset in range(TILINGS):
@@ -128,6 +136,16 @@ def tile_encoding(observation, shape, low, high, TILINGS, TILES_PER_DIMENSION):
             coordinate = coordinate * TILES_PER_DIMENSION + coordinates[i]
         feature[int(coordinate), offset] = 1.0
     return feature.reshape(-1)
+
+@jit(nopython=True, cache=True)
+def state_aggregation_2d(observation, low, high, INTERVALS_PER_DIMENSION):
+    loc_relative = (observation - low) / (high - low)
+    length_interval = 1 / INTERVALS_PER_DIMENSION
+    coordinate = np.zeros(2)
+    coordinate[0], coordinate[1] = loc_relative[0] // length_interval, loc_relative[1] // length_interval
+    feature = np.zeros(INTERVALS_PER_DIMENSION ** 2)
+    feature[int(coordinate[0] + coordinate[1] * INTERVALS_PER_DIMENSION)] = 1
+    return feature
 
 @jit(nopython=True, cache=True)
 def tilecoding4x4(s):

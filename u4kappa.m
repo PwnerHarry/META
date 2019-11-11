@@ -34,7 +34,7 @@ for index_filename = 1: numel(filenames)
         method = METHOD_LIST{index_method};
         try
             if strcmp(env, 'mountaincar')
-                eval(sprintf('MEANS(%d, index_filename) = -mean(loaded.return_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
+                eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
                 eval(sprintf('STDS(%d, index_filename) = mean(loaded.return_%s_std(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
             elseif strcmp(env, 'cartpole') || strcmp(env, 'frozenlake_AC')
                 eval(sprintf('MEANS(%d, index_filename) = mean(loaded.return_%s_mean(end - %d: end), ''omitnan'');', index_method, method, smoothing_window));
@@ -54,7 +54,7 @@ STDS = STDS(:, I);
 
 % draw
 figure;
-BANDWIDTH = 0.1;
+BANDWIDTH = 0.05;
 LINECOLORS = [0, 0, 1];
 CURVES = []; LEGENDS = {};
 for index_method = 1: numel(METHOD_LIST)
@@ -107,5 +107,7 @@ L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
 set(gca, 'xscale', 'log');
 set(gca, 'yscale', 'log');
+xlabel('\kappa');
+ylabel('MSE');
 drawnow;
 end
