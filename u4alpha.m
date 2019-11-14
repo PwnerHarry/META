@@ -17,7 +17,7 @@ elseif strcmp(env, 'frozenlake')
     METHOD_LIST = {'togtd_0', 'togtd_400', 'togtd_800', 'togtd_900', 'togtd_950', 'togtd_975', 'togtd_990', 'togtd_1000', 'greedy', 'mta_nonparam', 'mta'};
     smoothing_window = 25;
 elseif strcmp(env, 'mountaincar')
-    METHOD_LIST = {'baseline_0', 'baseline_400', 'baseline_800', 'baseline_900', 'baseline_950', 'baseline_975', 'baseline_1000', 'greedy', 'MTA'}; % 'baseline_1000', 
+    METHOD_LIST = {'baseline_0', 'baseline_400', 'baseline_800', 'baseline_900', 'baseline_950', 'baseline_975', 'greedy', 'MTA'}; % 'baseline_1000', 
     smoothing_window = 100;
 end
 
@@ -46,9 +46,9 @@ STD = table_greedy(:, 1, 2);
 INTERVAL = repmat(MEAN, 1, 2) + BANDWIDTH * [-STD, STD];
 [CURVE, ~] = band_drawer(ALPHAS_UNI, MEAN, INTERVAL, [1, 0, 0], 2);
 CURVES = [CURVES, CURVE];
-LEGENDS = [LEGENDS, get_legend(METHOD_LIST{index_lambda + 1})];
+LEGENDS = [LEGENDS, 'greedy'];
 % draw best META_np
-if strcmp(env, 'frozenlake')
+if strcmp(env, 'frozenlake') 
     MEANS = table_META_np(:, :, 1);
     STDS = table_META_np(:, :, 2);
     [MEAN, args_best] = min(MEANS, [], 2);
@@ -122,7 +122,7 @@ STD = table_greedy(:, 1, 2);
 INTERVAL = repmat(MEAN, 1, 2) + BANDWIDTH * [-STD, STD];
 [CURVE, ~] = band_drawer(ALPHAS_UNI, MEAN, INTERVAL, [1, 0, 0], 2);
 CURVES = [CURVES, CURVE];
-LEGENDS = [LEGENDS, get_legend(METHOD_LIST{index_lambda + 1})];
+LEGENDS = [LEGENDS, 'greedy'];
 % draw best baseline
 MEANS = table_baseline(:, :, 1);
 STDS = table_baseline(:, :, 2);
