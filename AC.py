@@ -25,6 +25,7 @@ def AC(env, steps, encoder, encoder_lambda, gamma, alpha, beta, eta, kappa, crit
         Lambda = LAMBDA(env, initial_value=np.zeros(np.size(encoder_lambda(env.reset()))), approximator='linear')
         MC_exp_learner, L_exp_learner, L_var_learner, value_learner = LEARNER(env, D), LEARNER(env, D), LEARNER(env, D), LEARNER(env, D); learners = [MC_exp_learner, L_exp_learner, L_var_learner, value_learner]
     W = np.zeros((env.action_space.n, D))
+    # W = np.random.uniform(low=-1e-2, high=1e-2, size=(env.action_space.n, D))
     step = 0
     return_trace = np.empty(steps); return_trace[:] = np.nan
     while step < steps:

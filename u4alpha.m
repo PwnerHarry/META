@@ -33,6 +33,10 @@ end
 CURVES = []; LEGENDS = {};
 % draw baselines
 for index_lambda = 1: length(LAMBDAS_UNI)
+    lambda = LAMBDAS_UNI(index_lambda);
+    if strcmp(env, 'mountaincar') && lambda == 1
+        continue;
+    end
     MEAN = table_baseline(:, index_lambda, 1);
     STD = table_baseline(:, index_lambda, 2);
     INTERVAL = repmat(MEAN, 1, 2) + BANDWIDTH * [-STD, STD];
@@ -124,8 +128,13 @@ INTERVAL = repmat(MEAN, 1, 2) + BANDWIDTH * [-STD, STD];
 CURVES = [CURVES, CURVE];
 LEGENDS = [LEGENDS, 'greedy'];
 % draw best baseline
+if strcmp(env, 'mountaincar')
+MEANS = table_baseline(:, 1: end - 1, 1);
+STDS = table_baseline(:, 1: end - 1, 2);
+else
 MEANS = table_baseline(:, :, 1);
 STDS = table_baseline(:, :, 2);
+end
 if strcmp(env, 'mountaincar')
     [MEAN, args_best] = max(MEANS, [], 2);
 else
