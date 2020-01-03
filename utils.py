@@ -281,8 +281,9 @@ def state_distribution(P, start_dist):
             absorb_states.append(i)
     start_dist = start_dist.reshape((1, n))
     state_dist += start_dist
-    state_dist[0, absorb_states] = 0
-    next_dict = np.sum(np.matmul(start_dist, P), axis = 0).reshape((1, n))
+    next_dict = np.copy(state_dist)
+    next_dict[0, absorb_states] = 0
+    next_dict = np.sum(np.matmul(next_dict, P), axis = 0).reshape((1, n))
     next_dict_norm = np.linalg.norm(next_dict.reshape(-1), 1)
     while next_dict_norm > 1e-14:
         state_dist += next_dict
