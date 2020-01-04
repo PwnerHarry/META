@@ -132,8 +132,13 @@ for index_alpha_uni = 1: length(ALPHAS_UNI)
     index_alphas = find(ALPHAS == alpha);
     index_baselines = find(KAPPAS == 0);
     index_alphas = intersect(index_alphas, index_baselines);
+    if strcmp(env, 'frozenlake')
+    table_greedy(index_alpha_uni, 1, 1) = MEANS(end - 2, index_alphas);
+    table_greedy(index_alpha_uni, 1, 2) = STDS(end - 2, index_alphas);    
+    else
     table_greedy(index_alpha_uni, 1, 1) = MEANS(end - 1, index_alphas);
     table_greedy(index_alpha_uni, 1, 2) = STDS(end - 1, index_alphas);
+    end
 end
 end
 
