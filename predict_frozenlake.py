@@ -33,8 +33,9 @@ else:
     behavior = np.copy(target)
 
 start_dist = np.zeros(env.observation_space.n); start_dist[0] = 1.0
-DP_expectation, DP_variance, DP_stat_dist = iterative_policy_evaluation(env, target, gamma=gamma, start_dist=start_dist)
+DP_expectation, DP_variance, DP_stat_dist, index_terminal = iterative_policy_evaluation(env, target, gamma=gamma, start_dist=start_dist)
 DP_stat_dist_sqrt = np.sqrt(DP_stat_dist)
+DP_stat_dist_sqrt[index_terminal] = 0
 evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, DP_expectation, DP_variance, DP_stat_dist_sqrt, stat_type, get_state_set_matrix(env, encoder))
 
 

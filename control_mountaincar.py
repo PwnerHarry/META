@@ -60,7 +60,6 @@ if args.evaluate_others:
     filename = filename + 'e_%g_r_%d.mat' % (args.steps, args.runtimes)
     scipy.io.savemat(filename, things_to_save)
 
-
 # MTA
 if args.evaluate_MTA:
     things_to_save = {}

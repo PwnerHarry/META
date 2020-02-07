@@ -270,7 +270,7 @@ def iterative_policy_evaluation(env, policy, gamma, start_dist):
     for s in range(env.observation_space.n):
         for s_prime in range(env.observation_space.n):
             P_pi[s, s_prime] = np.dot(policy[s, :], P[s, :, s_prime])
-    return j, (v - np.square(j)), state_distribution(P_pi, start_dist)
+    return j, (v - np.square(j)), state_distribution(P_pi, start_dist), terminal_states
 
 def state_distribution(P, start_dist):
     n = np.shape(P)[0]

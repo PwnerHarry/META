@@ -1,4 +1,7 @@
-import time, argparse, warnings, scipy.io, numpy as np, numpy.matlib as npm
+import time, argparse, warnings
+import scipy.io
+import numpy as np
+import numpy.matlib as npm
 from greedy import *
 from mta import *
 from TOGTD import *
@@ -31,8 +34,9 @@ target_policy, behavior_policy = npm.repmat(np.array([args.target, 1 - args.targ
 # get ground truth expectation, variance and stationary distribution
 start_dist = np.zeros(env.observation_space.n)
 start_dist[int(env.observation_space.n / 2)] = 1.0
-DP_expectation, DP_variance, DP_stat_dist = iterative_policy_evaluation(env, target_policy, gamma=gamma, start_dist=start_dist)
+DP_expectation, DP_variance, DP_stat_dist, index_terminal = iterative_policy_evaluation(env, target_policy, gamma=gamma, start_dist=start_dist)
 DP_stat_dist_sqrt = np.sqrt(DP_stat_dist)
+DP_stat_dist_sqrt[index_terminal] = 0
 evaluate = lambda estimate, stat_type: evaluate_estimate(estimate, DP_expectation, DP_variance, DP_stat_dist_sqrt, stat_type, get_state_set_matrix(env, encoder))
 
 things_to_save = {}
