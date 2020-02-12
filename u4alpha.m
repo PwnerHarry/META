@@ -63,7 +63,7 @@ if strcmp(env, 'frozenlake')
     INTERVAL = repmat(MEAN, 1, 2) + BANDWIDTH * [-STD, STD];
     [CURVE, ~] = band_drawer(ALPHAS_UNI, MEAN, INTERVAL, [0, 1, 0], 2);
     CURVES = [CURVES, CURVE];
-    LEGENDS = [LEGENDS, 'M*np'];
+    LEGENDS = [LEGENDS, 'METAnp'];
 end
 % draw best META
 MEANS = table_META(:, :, 1);
@@ -80,7 +80,7 @@ end
 INTERVAL = repmat(MEAN, 1, 2) + BANDWIDTH * [-STD, STD];
 [CURVE, ~] = band_drawer(ALPHAS_UNI, MEAN, INTERVAL, [0, 0, 1], 2);
 CURVES = [CURVES, CURVE];
-LEGENDS = [LEGENDS, get_legend(METHOD_LIST{end})];
+LEGENDS = [LEGENDS, 'META'];
 
 L = legend(CURVES, LEGENDS);
 set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);

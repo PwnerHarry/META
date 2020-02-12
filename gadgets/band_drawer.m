@@ -7,6 +7,13 @@ if nargin == 3 % X, MEAN, INTERVAL
     INTERVAL = varargin{3};
     LineWidth = 1;
     Curve = plot(X, MEAN, 'LineWidth', LineWidth);
+elseif nargin == 4 % X, MEAN, INTERVAL, COLOR, LineWidth
+    X = varargin{1};
+    MEAN = varargin{2};
+    INTERVAL = varargin{3};
+    COLOR = varargin{4};
+    LineWidth = 1;
+    Curve = plot(X, MEAN, 'LineWidth', LineWidth, 'COLOR', COLOR);
 elseif nargin == 5 % X, MEAN, INTERVAL, COLOR, LineWidth
     X = varargin{1};
     MEAN = varargin{2};

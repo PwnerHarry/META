@@ -18,7 +18,7 @@ num_points = 201;
 CURVES = []; LEGENDS = {};
 figure();
 MIN = inf;
-BANDWIDTH = 0.2;
+BANDWIDTH = 0.4;
 
 for result_index = 1: numel(expectation_list)
     result_name  = expectation_list(result_index);
@@ -45,12 +45,13 @@ for result_index = 1: numel(expectation_list)
     MIN = min(min(MEAN), MIN);
     INTERVAL = repmat(MEAN, 2, 1) + BANDWIDTH * [-STD; STD];
     INTERVAL(INTERVAL <= 0) = eps;
-    [CURVE, ~] = band_drawer(X, MEAN, INTERVAL, LineColors(result_index, :)); %X, MEAN, INTERVAL, COLOR
-    CURVES = [CURVES, CURVE];
+    LineWidth = 1;
     if strcmp(result_name, "error_value_mta")
         LEGEND = "META";
+        LineWidth = 2;
     elseif strcmp(result_name, "error_value_mta_nonparam")
-        LEGEND = "META(np)";
+        LEGEND = "METAnp";
+        LineWidth = 2;
     elseif strcmp(result_name, "error_value_togtd_0")
         LEGEND = "gtd(0)";
     elseif strcmp(result_name, "error_value_togtd_20")
@@ -93,12 +94,15 @@ for result_index = 1: numel(expectation_list)
         LEGEND = "td(1)";
     elseif strcmp(result_name, "error_value_greedy")
         LEGEND = "greedy";
+        LineWidth = 2;
     end
     LEGENDS = [LEGENDS, LEGEND];
+    [CURVE, ~] = band_drawer(X', MEAN, INTERVAL', LineColors(result_index, :), LineWidth);
+    CURVES = [CURVES, CURVE];
 end
 
 L = legend(CURVES, LEGENDS);
-set(L, 'FontName', 'Book Antiqua', 'FontSize', 18);
+set(L, 'FontName', 'Book Antiqua', 'FontSize', 16);
 if strcmp(sample_method, 'log')
     set(gca, 'xscale', 'log');
 end
