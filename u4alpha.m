@@ -170,4 +170,14 @@ end
 set(gca, 'FontSize', 16);
 set(gca, 'FontName', 'Book Antiqua');
 drawnow;
+%%%%%%%
+tMETA_MEAN = table_META(:, :, 1);
+tMETA_STD = table_META(:, :, 2);
+[m, I] = min(tMETA_MEAN, [], 2);
+if strcmp(env, 'frozenlake')
+    tMETAnp_MEAN = table_META_np(:, :, 1);
+    tMETAnp_STD = table_META_np(:, :, 2);
+    [mnp, Inp] = min(tMETAnp_MEAN, [], 2);
+end
+%%%%%%%
 end

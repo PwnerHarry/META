@@ -5,12 +5,12 @@ cd(main_path);
 addpath(genpath(fullfile(main_path, 'gadgets')));
 
 expectation_list = [ ...
-"error_value_togtd_0", "error_value_togtd_400", "error_value_togtd_800", "error_value_togtd_900", ...
-"error_value_togtd_950", "error_value_togtd_975", "error_value_togtd_990", "error_value_togtd_1000", ...   
+"error_value_totd_0", "error_value_totd_400", "error_value_totd_800", "error_value_totd_900", ...
+"error_value_totd_950", "error_value_totd_975", "error_value_totd_990", "error_value_totd_1000", ...
 "error_value_greedy", "error_value_mta_nonparam", "error_value_mta"];
 
-% "error_value_totd_0", "error_value_totd_400", "error_value_totd_800", "error_value_totd_900", ...
-% "error_value_totd_950", "error_value_totd_975", "error_value_totd_990", "error_value_totd_1000", ...
+% "error_value_togtd_0", "error_value_togtd_400", "error_value_togtd_800", "error_value_togtd_900", ...
+% "error_value_togtd_950", "error_value_togtd_975", "error_value_togtd_990", "error_value_togtd_1000", ...   
 
 LineColors = [linspecer(numel(expectation_list) - 3); [1, 0, 0]; [0, 1, 0]; [0, 0, 1];];
 num_points = 201;
@@ -107,13 +107,20 @@ if strcmp(sample_method, 'log')
     set(gca, 'xscale', 'log');
 end
 set(gca, 'yscale', 'log');
-axis([1, 1000, MIN, inf]);
+
 set(gca, 'FontSize', 16);
 set(gca, 'FontName', 'Book Antiqua');
 xlabel('steps');
 ylabel('MSE');
 
-xticks([0 100 1000]);
-xticklabels({'0', '10^5', '10^6'});
+%frozenlake
+% axis([1, 1000, MIN, inf]);
+% xticks([0 100 1000]);
+% xticklabels({'0', '10^5', '10^6'});
+
+%ringworld
+axis([1, 300, MIN, inf]);
+xticks([0 100 300]);
+xticklabels({'0', '10^5', '3\times10^5'});
 
 drawnow;
