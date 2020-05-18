@@ -1,6 +1,6 @@
 # META
 
-Implementation of the paper "META-Learning State-based Eligibility Traces for More Sample-Efficient Policy Evaluation" [1].
+Implementation of the paper "META-Learning State-based Eligibility Traces for More Sample-Efficient Policy Evaluation" [1]. Watch the video of the paper here: https://www.youtube.com/watch?v=3Ud8Ils1_mo
 
 The "ringworld" tests use our implemented version of the environment.
 
